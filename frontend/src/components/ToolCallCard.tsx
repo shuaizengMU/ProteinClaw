@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { WsEvent } from "../types";
+import type { WsEvent } from "../types";
 
 interface Props {
   toolCall: WsEvent;
