@@ -24,15 +24,17 @@ No advanced features (skill capture, literature-augmented validation, evolutiona
 
 ```
 ProteinClaw/
-├── proteinclaw/              # FastAPI backend
+├── proteinbox/               # Protein analysis tool & database layer
+│   ├── tools/
+│   │   ├── registry.py       # Tool base class (ProteinTool) + auto-discovery
+│   │   ├── uniprot.py        # UniProt query tool (MVP)
+│   │   └── blast.py          # BLAST tool (MVP)
+│   └── __init__.py
+├── proteinclaw/              # FastAPI backend + AI agent
 │   ├── agent/
 │   │   ├── loop.py           # ReAct agent main loop
 │   │   ├── llm.py            # LiteLLM wrapper, multi-model routing
 │   │   └── prompt.py         # System prompt templates
-│   ├── tools/
-│   │   ├── registry.py       # Tool base class + auto-discovery
-│   │   ├── uniprot.py        # UniProt query tool (MVP)
-│   │   └── blast.py          # BLAST tool (MVP)
 │   ├── api/
 │   │   ├── chat.py           # POST /chat, WebSocket /ws/chat
 │   │   └── tools.py          # GET /tools
@@ -51,7 +53,7 @@ ProteinClaw/
 ```
 User input → FastAPI WebSocket → ReAct Loop → LiteLLM
                                       ↕ tool_call
-                                 Tool Registry → External APIs (UniProt, NCBI)
+                                 proteinbox.tools.registry → External APIs (UniProt, NCBI)
                                       ↕ observation
                                  Next LLM inference → Final answer → Stream to frontend
 ```
@@ -79,7 +81,7 @@ while not done and steps < max_steps:
 
 **Streaming:** LiteLLM `stream=True`; tokens pushed incrementally over WebSocket. Tool call events pushed as discrete messages for frontend rendering.
 
-## Tool Layer
+## ProteinBox — Tool Layer
 
 ### ToolResult Type
 
@@ -106,7 +108,7 @@ class ProteinTool(BaseModel):
         raise NotImplementedError
 ```
 
-**Tool auto-discovery:** At startup, `registry.py` imports all modules in `proteinclaw/tools/` via `pkgutil.iter_modules`. Each module decorated with `@register_tool` is added to a global `TOOL_REGISTRY` dict keyed by `name`. New tools require only creating a new file in `proteinclaw/tools/` — no `__init__.py` edits needed.
+**Tool auto-discovery:** At startup, `registry.py` imports all modules in `proteinbox/tools/` via `pkgutil.iter_modules`. Each module decorated with `@register_tool` is added to a global `TOOL_REGISTRY` dict keyed by `name`. New tools require only creating a new file in `proteinclaw/tools/` — no `__init__.py` edits needed.
 
 New tools are registered via `@register_tool` decorator and auto-discovered at startup. No additional configuration required.
 
