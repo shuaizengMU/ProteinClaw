@@ -353,7 +353,7 @@ git commit -m "feat: add Windows desktop build script"
 
 The Docker Quick Start was already removed. Now add a "Building the Desktop App" section that points to the two scripts.
 
-- [ ] **Step 1: Add build instructions to README.md**
+- [x] **Step 1: Add build instructions to README.md**
 
 Find the `## Architecture` section in `README.md` and insert the following section before it:
 
@@ -379,7 +379,7 @@ Output artifact locations:
 **Prerequisites:** Rust (`rustup`), Node.js 20+, `cargo install tauri-cli`
 ```
 
-- [ ] **Step 2: Verify README renders correctly**
+- [x] **Step 2: Verify README renders correctly**
 
 ```bash
 # Quick sanity check — look for the new section
@@ -388,7 +388,7 @@ grep -n "Building the Desktop App" README.md
 
 Expected: one matching line.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add README.md

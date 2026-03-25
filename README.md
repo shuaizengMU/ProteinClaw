@@ -90,6 +90,28 @@ Copy `.env.example` to `.env` and fill in the keys you need:
 
 ---
 
+## Building the Desktop App
+
+Run the build script for your platform from the **project root**. The script checks prerequisites, downloads the bundled `uv` binary, builds the frontend, and produces an installable package.
+
+**macOS:**
+```bash
+bash scripts/build-mac.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+.\scripts\build-windows.ps1
+```
+
+Output artifact locations:
+- macOS: `src-tauri/target/release/bundle/dmg/*.dmg`
+- Windows: `src-tauri/target/release/bundle/nsis/*.exe`
+
+**Prerequisites:** Rust (`rustup`), Node.js 20+, `cargo install tauri-cli`
+
+---
+
 ## Architecture
 
 ProteinClaw consists of two layers: **ProteinBox** (tool registry — UniProt, BLAST, and future tools) and the **ProteinClaw agent** (a ReAct loop backed by LiteLLM for multi-model routing). The agent receives your query, decides which tools to call, runs them via a FastAPI backend, and streams results to a React frontend over WebSocket. See [`docs/superpowers/specs/2026-03-24-proteinclaw-design.md`](docs/superpowers/specs/2026-03-24-proteinclaw-design.md) for the full design.
