@@ -55,8 +55,8 @@ fn start_python_server(
     Command::new(uv)
         .args([
             "run",
-            "--project", project_dir.to_str().unwrap(),
-            "--venv", venv_dir.to_str().unwrap(),
+            "--project", project_dir.to_str().unwrap_or_default(),
+            "--venv", venv_dir.to_str().unwrap_or_default(),
             "uvicorn",
             "proteinclaw.server.main:app",
             "--host", "127.0.0.1",
@@ -79,14 +79,18 @@ fn main() {
             // First-launch: create venv if absent
             if !venv_exists(&app_data_dir) {
                 // TODO: show splash window here (future enhancement)
-                Command::new(&uv)
+                let status = Command::new(&uv)
                     .args([
                         "sync",
-                        "--project", resource_dir.to_str().unwrap(),
-                        "--venv", venv_dir.to_str().unwrap(),
+                        "--project", resource_dir.to_str().unwrap_or_default(),
+                        "--venv", venv_dir.to_str().unwrap_or_default(),
                     ])
                     .status()
-                    .expect("uv sync failed");
+                    .expect("failed to spawn uv sync");
+                if !status.success() {
+                    eprintln!("uv sync failed with exit code: {:?}", status.code());
+                    std::process::exit(1);
+                }
             }
 
             // Start Python server — retry up to 3 times before giving up
@@ -138,8 +142,10 @@ fn main() {
             // so __BACKEND_PORT__ is set before any React code runs.
             if let Some(window) = app.get_webview_window("main") {
                 let script = format!("window.__BACKEND_PORT__ = {};", port);
-                let _ = window.eval(&script);
-                let _ = window.show();
+                window.eval(&script).expect("failed to inject __BACKEND_PORT__");
+                if let Err(e) = window.show() {
+                    eprintln!("Warning: failed to show window: {}", e);
+                }
             }
 
             Ok(())
