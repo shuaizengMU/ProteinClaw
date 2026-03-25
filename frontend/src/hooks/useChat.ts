@@ -1,7 +1,14 @@
+declare global {
+  interface Window {
+    __BACKEND_PORT__?: number;
+  }
+}
+
 import { useState, useCallback } from "react";
 import type { ChatMessage, WsEvent, SendPayload } from "../types";
 
-const WS_URL = "ws://localhost:8000/ws/chat";
+const port = window.__BACKEND_PORT__ ?? 8000;
+const WS_URL = `ws://localhost:${port}/ws/chat`;
 
 let msgIdCounter = 0;
 
