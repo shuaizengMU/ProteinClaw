@@ -14,34 +14,11 @@ It runs on top of **ProteinBox**, a unified tool and database layer for protein 
 
 ## Demo
 
-> Screenshot coming soon. See [Quick Start](#quick-start--docker-recommended) to run it yourself.
+> Screenshot coming soon. See [Quick Start](#quick-start) to run it yourself.
 
 ---
 
-## Quick Start — Docker (recommended)
-
-**Prerequisites:** [Docker](https://docs.docker.com/get-docker/) and at least one LLM API key (e.g. OpenAI).
-
-```bash
-# 1. Clone the repo
-git clone https://github.com/your-org/ProteinClaw.git
-cd ProteinClaw
-
-# 2. Set your API keys
-cp .env.example .env
-# Edit .env and fill in at least one key (e.g. OPENAI_API_KEY)
-
-# 3. Start everything
-docker compose up
-```
-
-Open [http://localhost:5173](http://localhost:5173) in your browser.
-
-Try asking: **"What is P04637?"** or **"Find homologs for this sequence: MEEPQSDPSVEPPLSQETFSDLWKLLPENN"**
-
----
-
-## Quick Start — Local Python
+## Quick Start
 
 **Prerequisites:** Python 3.11+, Node.js 20+
 
@@ -93,7 +70,7 @@ Type your research question in plain English. ProteinClaw will decide which tool
 | `deepseek-chat` | DeepSeek | `DEEPSEEK_API_KEY` |
 | `deepseek-reasoner` | DeepSeek | `DEEPSEEK_API_KEY` |
 | `minimax-text-01` | MiniMax | `MINIMAX_API_KEY` |
-| `ollama/llama3` | Ollama (local) | None — run `docker compose --profile ollama up` |
+| `ollama/llama3` | Ollama (local) | None — run Ollama locally |
 
 You only need one key to get started.
 
