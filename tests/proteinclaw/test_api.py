@@ -3,7 +3,11 @@ import json
 from unittest.mock import patch, AsyncMock
 from httpx import AsyncClient, ASGITransport
 from starlette.testclient import TestClient
-from proteinclaw.main import app
+from proteinclaw.server.main import app
+from proteinclaw.core.agent.events import (
+    TokenEvent, DoneEvent, ToolCallEvent, ObservationEvent, ErrorEvent
+)
+
 
 @pytest.mark.asyncio
 async def test_get_tools():
@@ -14,14 +18,23 @@ async def test_get_tools():
     assert "tools" in data
     assert isinstance(data["tools"], list)
 
+
+@pytest.mark.asyncio
+async def test_health():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        response = await client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
 @pytest.mark.asyncio
 async def test_post_chat():
-    async def mock_agent(**kwargs):
-        yield {"type": "token", "content": "Hello "}
-        yield {"type": "token", "content": "world"}
-        yield {"type": "done"}
+    async def mock_run(**kwargs):
+        yield TokenEvent(content="Hello ")
+        yield TokenEvent(content="world")
+        yield DoneEvent()
 
-    with patch("proteinclaw.api.chat.run_agent", side_effect=mock_agent):
+    with patch("proteinclaw.server.chat.run", side_effect=mock_run):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post("/chat", json={
                 "message": "What is P04637?",
@@ -33,15 +46,16 @@ async def test_post_chat():
     assert "reply" in data
     assert "Hello" in data["reply"]
 
-def test_websocket_chat():
-    async def mock_agent(**kwargs):
-        yield {"type": "tool_call", "tool": "uniprot", "args": {"accession_id": "P04637"}}
-        yield {"type": "observation", "tool": "uniprot", "result": {"success": True, "data": {"name": "TP53"}}}
-        yield {"type": "token", "content": "TP53 is "}
-        yield {"type": "token", "content": "a tumor suppressor."}
-        yield {"type": "done"}
 
-    with patch("proteinclaw.api.chat.run_agent", side_effect=mock_agent):
+def test_websocket_chat():
+    async def mock_run(**kwargs):
+        yield ToolCallEvent(tool="uniprot", args={"accession_id": "P04637"})
+        yield ObservationEvent(tool="uniprot", result={"success": True, "data": {"name": "TP53"}})
+        yield TokenEvent(content="TP53 is ")
+        yield TokenEvent(content="a tumor suppressor.")
+        yield DoneEvent()
+
+    with patch("proteinclaw.server.chat.run", side_effect=mock_run):
         client = TestClient(app)
         with client.websocket_connect("/ws/chat") as ws:
             ws.send_json({
