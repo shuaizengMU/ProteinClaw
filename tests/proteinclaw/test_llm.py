@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from proteinclaw.agent.llm import call_llm, call_llm_stream, build_tools_schema
+from proteinclaw.core.agent.llm import call_llm, call_llm_stream, build_tools_schema
 from proteinbox.tools.registry import ProteinTool, ToolResult
 
 
@@ -31,7 +31,7 @@ def test_call_llm_returns_message():
     mock_response.choices[0].message.content = "Hello"
     mock_response.choices[0].message.tool_calls = None
 
-    with patch("proteinclaw.agent.llm.litellm.completion", return_value=mock_response):
+    with patch("proteinclaw.core.agent.llm.litellm.completion", return_value=mock_response):
         msg = call_llm(
             model="gpt-4o",
             messages=[{"role": "user", "content": "hi"}],
@@ -51,7 +51,7 @@ def test_call_llm_with_tool_call():
     mock_response.choices[0].message.content = None
     mock_response.choices[0].message.tool_calls = [mock_tool_call]
 
-    with patch("proteinclaw.agent.llm.litellm.completion", return_value=mock_response):
+    with patch("proteinclaw.core.agent.llm.litellm.completion", return_value=mock_response):
         msg = call_llm(
             model="gpt-4o",
             messages=[{"role": "user", "content": "echo hello"}],

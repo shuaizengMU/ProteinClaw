@@ -1,5 +1,5 @@
 from proteinbox.tools.registry import ProteinTool, ToolResult
-from proteinclaw.agent.prompt import build_system_prompt
+from proteinclaw.core.agent.prompt import build_system_prompt
 
 
 class FakeTool(ProteinTool):
