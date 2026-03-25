@@ -13,36 +13,36 @@ class Event:
 
 @dataclass
 class ThinkingEvent(Event):
-    type: str = "thinking"
+    type: str = field(default="thinking", init=False)
     content: str = ""
 
 
 @dataclass
 class ToolCallEvent(Event):
-    type: str = "tool_call"
+    type: str = field(default="tool_call", init=False)
     tool: str = ""
-    args: dict = field(default_factory=dict)
+    args: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class ObservationEvent(Event):
-    type: str = "observation"
+    type: str = field(default="observation", init=False)
     tool: str = ""
     result: Any = None
 
 
 @dataclass
 class TokenEvent(Event):
-    type: str = "token"
+    type: str = field(default="token", init=False)
     content: str = ""
 
 
 @dataclass
 class DoneEvent(Event):
-    type: str = "done"
+    type: str = field(default="done", init=False)
 
 
 @dataclass
 class ErrorEvent(Event):
-    type: str = "error"
+    type: str = field(default="error", init=False)
     message: str = ""

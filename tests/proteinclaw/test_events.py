@@ -1,4 +1,3 @@
-from dataclasses import asdict
 from proteinclaw.core.agent.events import (
     ThinkingEvent, ToolCallEvent, ObservationEvent,
     TokenEvent, DoneEvent, ErrorEvent,
