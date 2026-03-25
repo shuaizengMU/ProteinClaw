@@ -66,7 +66,7 @@ def _run_tui() -> None:
 
             async for ev in run(
                 query=query,
-                history=self.history[:-1],
+                history=self.history[:-1],  # exclude the just-appended user turn; run() adds it via query=
                 model=self.model,
             ):
                 if isinstance(ev, TokenEvent):
