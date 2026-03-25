@@ -1,6 +1,6 @@
 import os
 import pytest
-from proteinclaw.config import Settings, SUPPORTED_MODELS
+from proteinclaw.core.config import Settings, SUPPORTED_MODELS
 
 def test_supported_models_contains_required_keys():
     required = {"gpt-4o", "claude-opus-4-5", "deepseek-chat", "deepseek-reasoner",
