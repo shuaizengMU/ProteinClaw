@@ -4,75 +4,118 @@ declare global {
   }
 }
 
-import { useState, useCallback } from "react";
-import type { ChatMessage, WsEvent, SendPayload } from "../types";
+import { useState, useCallback, useEffect, useRef } from "react";
+import type { Message, WsEvent, SendPayload } from "../types";
 
 const port = window.__BACKEND_PORT__ ?? 8000;
 const WS_URL = `ws://localhost:${port}/ws/chat`;
 
-let msgIdCounter = 0;
-
-interface TrackedMessage extends ChatMessage {
-  id: number;
-}
-
-export function useChat() {
-  const [messages, setMessages] = useState<TrackedMessage[]>([]);
+/**
+ * Manages the active WebSocket session.
+ *
+ * onMessage is called at logical boundaries only (not per token):
+ *   1. Immediately with the user message when send() is called.
+ *   2. Once with the final assistant message when WS closes (done/error).
+ *
+ * streamingAssistant holds the in-progress assistant message for live display.
+ * It becomes null in the same React batch as the onMessage(assistantMsg) call,
+ * so the persisted message and cleared streaming state render together (no flash).
+ */
+export function useChat(
+  conversationId: string,
+  onMessage: (msg: Message) => void
+) {
+  const [streamingAssistant, setStreamingAssistant] = useState<Message | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
 
-  const send = useCallback((text: string, model: string) => {
-    setLoading(true);
+  // Always call the latest onMessage without adding it to send's deps
+  const onMessageRef = useRef(onMessage);
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+  });
 
-    const history = messages.map((m) => ({ role: m.role, content: m.content }));
+  // Track open WS so we can close it on conversation switch
+  const wsRef = useRef<WebSocket | null>(null);
 
-    const userMsg: TrackedMessage = { id: msgIdCounter++, role: "user", content: text };
-    const assistantId = msgIdCounter++;
-    const assistantMsg: TrackedMessage = { id: assistantId, role: "assistant", content: "", toolCalls: [] };
+  // Reset streaming state when conversation changes
+  useEffect(() => {
+    setStreamingAssistant(null);
+    setLoading(false);
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+  }, [conversationId]);
 
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+  const send = useCallback(
+    (
+      text: string,
+      model: string,
+      history: Array<{ role: string; content: string }>
+    ) => {
+      setLoading(true);
 
-    const ws = new WebSocket(WS_URL);
+      // Persist user message immediately
+      onMessageRef.current({ role: "user", content: text });
 
-    const payload: SendPayload = { message: text, model, history };
-    ws.onopen = () => ws.send(JSON.stringify(payload));
+      const ws = new WebSocket(WS_URL);
+      wsRef.current = ws;
 
-    ws.onmessage = (e) => {
-      const event: WsEvent = JSON.parse(e.data);
+      let currentContent = "";
+      let currentToolCalls: WsEvent[] = [];
 
-      setMessages((prev) =>
-        prev.map((msg) => {
-          if (msg.id !== assistantId) return msg;
-          const updated = { ...msg };
-          if (event.type === "thinking") {
-            updated.content += `\n_${event.content}_`;
-          } else if (event.type === "tool_call" || event.type === "observation") {
-            updated.toolCalls = [...(updated.toolCalls ?? []), event];
-          } else if (event.type === "token") {
-            updated.content += event.content ?? "";
-          } else if (event.type === "error") {
-            updated.content += `\n[Error: ${event.message}]`;
-          }
-          return updated;
-        })
-      );
+      const payload: SendPayload = { message: text, model, history };
+      ws.onopen = () => ws.send(JSON.stringify(payload));
 
-      if (event.type === "done" || event.type === "error") {
+      ws.onmessage = (e) => {
+        const event: WsEvent = JSON.parse(e.data);
+
+        if (event.type === "thinking") {
+          currentContent += `\n_${event.content}_`;
+        } else if (
+          event.type === "tool_call" ||
+          event.type === "observation"
+        ) {
+          currentToolCalls = [...currentToolCalls, event];
+        } else if (event.type === "token") {
+          currentContent += event.content ?? "";
+        } else if (event.type === "error") {
+          currentContent += `\n[Error: ${event.message}]`;
+        }
+
+        const assistantMsg: Message = {
+          role: "assistant",
+          content: currentContent,
+          toolCalls: currentToolCalls,
+        };
+        setStreamingAssistant(assistantMsg);
+
+        if (event.type === "done" || event.type === "error") {
+          // Batched with setStreamingAssistant(null) — single render, no flash
+          onMessageRef.current(assistantMsg);
+          setStreamingAssistant(null);
+          setLoading(false);
+          ws.close();
+          wsRef.current = null;
+        }
+      };
+
+      ws.onerror = () => {
+        const errMsg: Message = {
+          role: "assistant",
+          content: "[WebSocket connection error]",
+          toolCalls: [],
+        };
+        onMessageRef.current(errMsg);
+        setStreamingAssistant(null);
         setLoading(false);
-        ws.close();
-      }
-    };
+        wsRef.current = null;
+      };
+    },
+    [] // no deps — uses refs for everything that could change
+  );
 
-    ws.onerror = () => {
-      setLoading(false);
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === assistantId
-            ? { ...msg, content: "[WebSocket connection error]" }
-            : msg
-        )
-      );
-    };
-  }, [messages]);
-
-  return { messages, loading, send };
+  return { loading, send, streamingAssistant };
 }
