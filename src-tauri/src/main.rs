@@ -23,13 +23,18 @@ fn venv_exists(app_data_dir: &PathBuf) -> bool {
     app_data_dir.join("venv").join("pyvenv.cfg").exists()
 }
 
-fn uv_binary_path(resource_dir: &PathBuf) -> PathBuf {
-    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-    return resource_dir.join("binaries").join("uv-aarch64-apple-darwin");
-    #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-    return resource_dir.join("binaries").join("uv-x86_64-apple-darwin");
+fn uv_binary_path() -> PathBuf {
+    // Tauri places external binaries alongside the main executable (Contents/MacOS/ on macOS),
+    // stripping the target-triple suffix used in src-tauri/binaries/.
+    let exe_dir = std::env::current_exe()
+        .expect("cannot get exe path")
+        .parent()
+        .expect("exe has no parent")
+        .to_path_buf();
     #[cfg(target_os = "windows")]
-    return resource_dir.join("binaries").join("uv-x86_64-pc-windows-msvc.exe");
+    return exe_dir.join("uv.exe");
+    #[cfg(not(target_os = "windows"))]
+    return exe_dir.join("uv");
 }
 
 fn poll_health(port: u16, timeout_secs: u64) -> bool {
@@ -73,7 +78,7 @@ fn main() {
             let resource_dir = app.path().resource_dir().expect("resource dir");
             let app_data_dir = app.path().app_data_dir().expect("app data dir");
             let venv_dir = app_data_dir.join("venv");
-            let uv = uv_binary_path(&resource_dir);
+            let uv = uv_binary_path();
             let port = find_free_port(8000);
 
             // First-launch: create venv if absent
