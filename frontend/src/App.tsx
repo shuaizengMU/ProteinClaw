@@ -11,7 +11,6 @@ export default function App() {
 
   const {
     projects,
-    activeProjectId,
     activeConversationId,
     activeConversation,
     createProject,
