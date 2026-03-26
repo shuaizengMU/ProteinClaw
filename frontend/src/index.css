@@ -51,19 +51,15 @@
 }
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
+  width: 100%;
+  height: 100vh;
   display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+  overflow: hidden;
 }
 
 body {
   margin: 0;
+  overflow: hidden;
 }
 
 h1,
@@ -108,4 +104,435 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* ── Layout ─────────────────────────────────────────────── */
+.app-layout {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.sidebar-header {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.new-project-btn {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  font-family: var(--sans);
+}
+
+.new-project-btn:hover {
+  opacity: 0.9;
+}
+
+.inline-input-form {
+  display: flex;
+}
+
+.inline-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text-h);
+  outline: none;
+}
+
+.inline-input:focus {
+  border-color: var(--accent);
+}
+
+.project-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.project-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.project-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-h);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--sans);
+}
+
+.project-header:hover {
+  background: var(--accent-bg);
+}
+
+.project-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-meta {
+  font-size: 12px;
+  color: var(--text);
+  background: var(--code-bg);
+  border-radius: 10px;
+  padding: 1px 6px;
+}
+
+.project-toggle {
+  font-size: 10px;
+  color: var(--text);
+}
+
+.conversation-list {
+  padding: 4px 0;
+  background: var(--social-bg);
+}
+
+.new-chat-btn {
+  width: 100%;
+  padding: 6px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  color: var(--accent);
+  font-family: var(--sans);
+}
+
+.new-chat-btn:hover {
+  background: var(--accent-bg);
+}
+
+.conversation-item {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 6px 16px;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  box-sizing: border-box;
+  font-family: var(--sans);
+}
+
+.conversation-item:hover {
+  background: var(--accent-bg);
+}
+
+.conversation-item.active {
+  border-left-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.conversation-title {
+  display: block;
+  font-size: 13px;
+  color: var(--text-h);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conversation-date {
+  display: block;
+  font-size: 11px;
+  color: var(--text);
+}
+
+/* ── Chat Window ─────────────────────────────────────────── */
+.chat-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.chat-window--empty {
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text);
+  padding: 32px;
+}
+
+.empty-state h2 {
+  font-size: 20px;
+  color: var(--text-h);
+  margin: 0 0 8px;
+}
+
+.empty-state p {
+  font-size: 15px;
+}
+
+/* ── TopBar ──────────────────────────────────────────────── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.top-bar__title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-h);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── MessageList ─────────────────────────────────────────── */
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 16px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ── MessageBubble ───────────────────────────────────────── */
+.message-bubble {
+  margin-bottom: 24px;
+}
+
+.message-role {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+
+.message-bubble--user .message-role {
+  color: var(--accent);
+}
+
+.message-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-h);
+  white-space: pre-wrap;
+}
+
+.message-content--markdown {
+  white-space: normal;
+}
+
+.message-content--markdown p {
+  margin: 0 0 12px;
+}
+
+.message-content--markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.message-content--markdown pre {
+  background: var(--code-bg);
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.message-content--markdown code {
+  font-family: var(--mono);
+  background: var(--code-bg);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 13px;
+  display: inline;
+}
+
+.message-content--markdown pre code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+.message-content--markdown ul,
+.message-content--markdown ol {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+
+.message-content--markdown li {
+  margin-bottom: 4px;
+}
+
+.thinking-indicator {
+  font-size: 14px;
+  color: var(--text);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+/* ── ToolCallCard ────────────────────────────────────────── */
+.tool-call-card {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin: 6px 0;
+  font-size: 13px;
+  background: var(--code-bg);
+  overflow: hidden;
+}
+
+.tool-call-card__header {
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-h);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sans);
+  font-size: 13px;
+}
+
+.tool-call-card__header:hover {
+  background: var(--accent-bg);
+}
+
+.tool-call-card__body {
+  padding: 0 10px 8px;
+  border-top: 1px solid var(--border);
+}
+
+.tool-call-card__body pre {
+  margin: 4px 0;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.tool-call-card__body strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tool-call-status--ok {
+  color: #16a34a;
+}
+
+.tool-call-status--err {
+  color: #dc2626;
+}
+
+/* ── InputArea ───────────────────────────────────────────── */
+.input-area {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.input-area__textarea {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-family: var(--sans);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  resize: none;
+  overflow-y: auto;
+  min-height: 38px;
+  max-height: 150px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text-h);
+  box-sizing: border-box;
+}
+
+.input-area__textarea:focus {
+  outline: none;
+  border-color: var(--accent-border);
+}
+
+.input-area__textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.input-area__submit {
+  padding: 0 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: var(--sans);
+  flex-shrink: 0;
+  height: 38px;
+}
+
+.input-area__submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.input-area__submit:not(:disabled):hover {
+  opacity: 0.88;
 }
