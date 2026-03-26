@@ -19,8 +19,26 @@ fn find_free_port(start: u16) -> u16 {
     panic!("No free port found");
 }
 
-fn venv_exists(app_data_dir: &PathBuf) -> bool {
-    app_data_dir.join("venv").join("pyvenv.cfg").exists()
+fn venv_is_current(app_data_dir: &PathBuf, current_version: &str) -> bool {
+    if !app_data_dir.join("venv").join("pyvenv.cfg").exists() {
+        return false;
+    }
+    match std::fs::read_to_string(app_data_dir.join("venv_version.txt")) {
+        Ok(v) => v.trim() == current_version,
+        Err(_) => false,
+    }
+}
+
+/// Recursively copy a file or directory to dst (using `cp -R` on Unix/macOS).
+fn copy_path(src: &PathBuf, dst: &PathBuf) {
+    if src.is_dir() {
+        Command::new("cp")
+            .args(["-R", src.to_str().unwrap_or_default(), dst.to_str().unwrap_or_default()])
+            .status()
+            .expect("cp -R failed");
+    } else {
+        std::fs::copy(src, dst).expect("cp file failed");
+    }
 }
 
 fn uv_binary_path() -> PathBuf {
@@ -52,17 +70,18 @@ fn poll_health(port: u16, timeout_secs: u64) -> bool {
 }
 
 fn start_python_server(
-    uv: &PathBuf,
-    project_dir: &PathBuf,
     venv_dir: &PathBuf,
     port: u16,
 ) -> std::io::Result<Child> {
-    Command::new(uv)
+    // Use the venv Python directly — avoids uv trying to re-sync on every launch.
+    #[cfg(target_os = "windows")]
+    let python = venv_dir.join("Scripts").join("python.exe");
+    #[cfg(not(target_os = "windows"))]
+    let python = venv_dir.join("bin").join("python");
+
+    Command::new(python)
         .args([
-            "run",
-            "--project", project_dir.to_str().unwrap_or_default(),
-            "--venv", venv_dir.to_str().unwrap_or_default(),
-            "uvicorn",
+            "-m", "uvicorn",
             "proteinclaw.server.main:app",
             "--host", "127.0.0.1",
             "--port", &port.to_string(),
@@ -80,28 +99,48 @@ fn main() {
             let venv_dir = app_data_dir.join("venv");
             let uv = uv_binary_path();
             let port = find_free_port(8000);
+            let current_version = app.package_info().version.to_string();
 
-            // First-launch: create venv if absent
-            if !venv_exists(&app_data_dir) {
-                // TODO: show splash window here (future enhancement)
+            // Create or rebuild venv when missing or when the app version has changed.
+            // We copy the project files to a writable temp dir before running uv sync
+            // because the .app bundle is read-only on macOS — setuptools needs to write
+            // {pkg}.egg-info into the project directory during the build step.
+            if !venv_is_current(&app_data_dir, &current_version) {
+                // Remove stale venv so uv sync starts clean.
+                let _ = std::fs::remove_dir_all(&venv_dir);
+                let tmp_project = std::env::temp_dir().join("proteinclaw-setup");
+                let _ = std::fs::remove_dir_all(&tmp_project);
+                std::fs::create_dir_all(&tmp_project).expect("create tmp project dir");
+                for item in ["pyproject.toml", "uv.lock", "proteinclaw", "proteinbox"] {
+                    let src = resource_dir.join(item);
+                    if src.exists() {
+                        copy_path(&src, &tmp_project.join(item));
+                    }
+                }
+
                 let status = Command::new(&uv)
+                    .env("UV_PROJECT_ENVIRONMENT", venv_dir.to_str().unwrap_or_default())
                     .args([
                         "sync",
-                        "--project", resource_dir.to_str().unwrap_or_default(),
-                        "--venv", venv_dir.to_str().unwrap_or_default(),
+                        "--no-editable",
+                        "--project", tmp_project.to_str().unwrap_or_default(),
                     ])
                     .status()
                     .expect("failed to spawn uv sync");
+                let _ = std::fs::remove_dir_all(&tmp_project);
                 if !status.success() {
                     eprintln!("uv sync failed with exit code: {:?}", status.code());
                     std::process::exit(1);
                 }
+                // Record the version so future launches skip re-sync unless the app updates.
+                std::fs::write(app_data_dir.join("venv_version.txt"), &current_version)
+                    .expect("failed to write venv_version.txt");
             }
 
             // Start Python server — retry up to 3 times before giving up
             let mut child: Option<Child> = None;
             for attempt in 1..=4 {
-                match start_python_server(&uv, &resource_dir, &venv_dir, port) {
+                match start_python_server(&venv_dir, port) {
                     Ok(c) => {
                         if poll_health(port, 30) {
                             child = Some(c);

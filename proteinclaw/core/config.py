@@ -7,7 +7,7 @@ SUPPORTED_MODELS: dict[str, dict] = {
     "claude-opus-4-5":   {"provider": "anthropic"},
     "deepseek-chat":     {"provider": "deepseek",  "api_base": "https://api.deepseek.com"},
     "deepseek-reasoner": {"provider": "deepseek",  "api_base": "https://api.deepseek.com"},
-    "minimax-text-01":   {"provider": "minimax",   "api_base": "https://api.minimax.chat/v1"},
+    "minimax-text-01":   {"provider": "openai",    "api_base": "https://api.minimax.chat/v1"},
     "ollama/llama3":     {"provider": "ollama",    "api_base": "http://localhost:11434"},
 }
 

@@ -1,6 +1,7 @@
 import { ChatWindow } from "./components/ChatWindow";
-import { ModelSelector, useStoredModel } from "./components/ModelSelector";
+import { ModelSelector } from "./components/ModelSelector";
 import { useChat } from "./hooks/useChat";
+import { useStoredModel } from "./hooks/useStoredModel";
 
 export default function App() {
   const [model, setModel] = useStoredModel();
