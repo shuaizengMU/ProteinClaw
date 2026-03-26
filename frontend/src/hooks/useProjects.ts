@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { Project, Conversation, Message } from "../types";
 import { loadProjects, saveProjects } from "../lib/storage";
 
@@ -44,25 +44,28 @@ export function useProjects() {
     setActiveConversationId(conversationId);
   }
 
-  function appendMessage(conversationId: string, message: Message): void {
-    setProjects((prev) => {
-      const updated = prev.map((p) => ({
-        ...p,
-        conversations: p.conversations.map((c) => {
-          if (c.id !== conversationId) return c;
-          const messages = [...c.messages, message];
-          // Auto-set title from first user message
-          const title =
-            c.title === "New Chat" && message.role === "user"
-              ? message.content.slice(0, 60)
-              : c.title;
-          return { ...c, messages, title };
-        }),
-      }));
-      saveProjects(updated);
-      return updated;
-    });
-  }
+  const appendMessage = useCallback(
+    (conversationId: string, message: Message): void => {
+      setProjects((prev) => {
+        const updated = prev.map((p) => ({
+          ...p,
+          conversations: p.conversations.map((c) => {
+            if (c.id !== conversationId) return c;
+            const messages = [...c.messages, message];
+            // Auto-set title from first user message
+            const title =
+              c.title === "New Chat" && message.role === "user"
+                ? message.content.slice(0, 60)
+                : c.title;
+            return { ...c, messages, title };
+          }),
+        }));
+        saveProjects(updated);
+        return updated;
+      });
+    },
+    [] // only uses setProjects (stable) and saveProjects (module-level)
+  );
 
   const activeConversation =
     projects

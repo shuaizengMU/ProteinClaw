@@ -34,7 +34,10 @@ export default function App() {
     setExpandedProjectId((prev) => (prev === projectId ? null : projectId));
   }
 
-  // Stable callback: persists each logical message to the active conversation
+  // Persists each logical message to the active conversation.
+  // Memoized so useChat's onMessageRef always holds the latest version
+  // without triggering WS reconnects. Stale-conversation safety comes from
+  // useChat closing the WS on conversationId change, not from this guard.
   const handleMessage = useCallback(
     (msg: Message) => {
       if (activeConversationId) {
