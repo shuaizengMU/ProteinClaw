@@ -24,7 +24,11 @@ Redesign the ProteinClaw frontend to match the aesthetic and UX of the Claude ap
 ```
 App
 ├── Sidebar
-│   └── ConversationList (conversation items)
+│   ├── NewProjectButton
+│   └── ProjectList
+│       └── ProjectItem (accordion, expand/collapse)
+│           ├── NewChatButton
+│           └── ConversationList (chat items inside project)
 └── ChatWindow
     ├── TopBar (conversation title + ModelSelector)
     ├── MessageList  ← scrollable, overflow-y: auto
@@ -37,8 +41,9 @@ App
 
 | File | Purpose |
 |------|---------|
-| `src/components/Sidebar.tsx` | Sidebar shell + New Chat button |
-| `src/hooks/useConversations.ts` | CRUD for conversation list, LocalStorage sync |
+| `src/components/Sidebar.tsx` | Sidebar shell + New Project button + ProjectList |
+| `src/components/ProjectItem.tsx` | Accordion item: project header (expand/collapse) + chat list + New Chat button |
+| `src/hooks/useProjects.ts` | CRUD for projects and conversations, LocalStorage sync |
 | `src/lib/storage.ts` | Raw LocalStorage read/write helpers |
 
 ### Changed Files
@@ -53,9 +58,16 @@ App
 
 ## Data Model
 
-Stored in `localStorage` under key `proteinclaw_conversations`:
+Stored in `localStorage` under key `proteinclaw_projects`:
 
 ```ts
+interface Project {
+  id: string;           // crypto.randomUUID()
+  name: string;         // user-defined project name
+  createdAt: number;    // Unix timestamp ms
+  conversations: Conversation[];
+}
+
 interface Conversation {
   id: string;           // crypto.randomUUID()
   title: string;        // First user message, truncated to 60 chars
@@ -71,13 +83,14 @@ interface Message {
 }
 ```
 
-`useConversations` exposes:
-- `conversations: Conversation[]` — sorted newest first
-- `activeId: string | null`
-- `createConversation(model) → id`
-- `selectConversation(id)`
-- `deleteConversation(id)`
-- `appendMessage(id, message)` — called by `useChat` on each WS event
+`useProjects` exposes:
+- `projects: Project[]` — sorted newest first
+- `activeProjectId: string | null`
+- `activeConversationId: string | null`
+- `createProject(name) → id`
+- `createConversation(projectId, model) → id`
+- `selectConversation(projectId, conversationId)`
+- `appendMessage(conversationId, message)` — called by `useChat` on each WS event
 
 ## Scroll Behaviour
 
@@ -102,10 +115,15 @@ interface Message {
 ## Sidebar
 
 - Fixed width: 240px
-- "New Chat" button at top → calls `createConversation`, clears ChatWindow
-- Conversation list: each item shows title (truncated) + relative date
-- Active conversation highlighted with `--accent-bg` left border
-- No delete UI in v1 (keep scope minimal)
+- **"New Project" button** at top → prompts for project name (inline input), calls `createProject`
+- **Project list** (accordion style):
+  - Each `ProjectItem` shows project name + chat count; click header to expand/collapse
+  - Expanded state: shows "＋ New Chat" button + list of conversations in that project
+  - "New Chat" → calls `createConversation(projectId, model)`, auto-selects new chat
+  - Active conversation highlighted with `--accent-bg` left border
+  - Each conversation item shows title (truncated to 40 chars) + relative date
+- Newly created project is auto-expanded
+- No rename/delete UI in v1 (keep scope minimal)
 
 ## What Is Not Changing
 
