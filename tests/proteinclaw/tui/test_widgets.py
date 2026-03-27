@@ -122,8 +122,12 @@ async def test_conversation_complete_tool_card_clears_pending():
         conv = pilot.app.query_one(ConversationWidget)
         conv.add_tool_card("uniprot", {"id": "P04637"})
         await pilot.pause()
+        card = conv._pending_card
         conv.complete_tool_card("TP53_HUMAN")
+        await pilot.pause()
         assert conv._pending_card is None
+        # Verify set_result was actually called on the card
+        assert "TP53_HUMAN" in str(card.query_one("#result").content)
 
 
 async def test_conversation_tool_card_new_response_resets_buffer():
@@ -137,6 +141,20 @@ async def test_conversation_tool_card_new_response_resets_buffer():
         conv.append_token("after tool")
         await pilot.pause()
         # Should have: 1 Static (before), 1 ToolCard, 1 Static (after) = 3 children
+        assert len(conv.children) == 3
+
+
+async def test_conversation_thinking_resets_current_response():
+    """append_thinking resets _current_response so next token starts a fresh Static."""
+    async with _ConvApp().run_test() as pilot:
+        conv = pilot.app.query_one(ConversationWidget)
+        conv.append_token("before thinking")
+        await pilot.pause()
+        conv.append_thinking("planning...")
+        await pilot.pause()
+        conv.append_token("after thinking")
+        await pilot.pause()
+        # Should have: 1 Static (before), 1 Static (thinking), 1 Static (after) = 3
         assert len(conv.children) == 3
 
 
