@@ -87,8 +87,5 @@ class SetupScreen(Screen):
         config_mod.load_user_config()
 
         # Import here to avoid circular import at module level
-        try:
-            from proteinclaw.cli.tui.screens.main import MainScreen  # noqa: PLC0415
-            self.app.switch_screen(MainScreen())
-        except ModuleNotFoundError:
-            pass  # MainScreen not yet implemented; navigation skipped
+        from proteinclaw.cli.tui.screens.main import MainScreen  # noqa: PLC0415
+        self.app.switch_screen(MainScreen())

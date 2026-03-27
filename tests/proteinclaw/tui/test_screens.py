@@ -57,3 +57,78 @@ async def test_setup_screen_save_calls_save_user_config():
 
     assert len(saved) == 1
     assert saved[0][0].get("DEEPSEEK_API_KEY") == "ds-test"
+
+
+from unittest.mock import patch
+from proteinclaw.cli.tui.screens.main import MainScreen
+from proteinclaw.core.agent.events import TokenEvent, DoneEvent, ErrorEvent, ToolCallEvent, ObservationEvent
+from proteinclaw.cli.tui.widgets.status_bar import StatusBar
+from proteinclaw.cli.tui.widgets.conversation import ConversationWidget
+
+
+class _MainApp(App):
+    def on_mount(self) -> None:
+        self.push_screen(MainScreen())
+
+    def query_one(self, selector, expect_type=None):
+        if expect_type is not None:
+            return self.screen.query_one(selector, expect_type)
+        return self.screen.query_one(selector)
+
+
+async def test_main_screen_layout_has_required_widgets():
+    async with _MainApp().run_test() as pilot:
+        pilot.app.query_one(StatusBar)
+        pilot.app.query_one(ConversationWidget)
+        from textual.widgets import Input
+        pilot.app.query_one(Input)
+
+
+async def test_main_screen_clear_command():
+    async with _MainApp().run_test() as pilot:
+        from textual.widgets import Input
+        inp = pilot.app.query_one(Input)
+        inp.value = "/clear"
+        await pilot.press("enter")
+        await pilot.pause()
+        conv = pilot.app.query_one(ConversationWidget)
+        assert len(conv.children) == 0
+
+
+async def test_main_screen_unknown_command_shows_message():
+    async with _MainApp().run_test() as pilot:
+        from textual.widgets import Input
+        inp = pilot.app.query_one(Input)
+        inp.value = "/notacommand"
+        await pilot.press("enter")
+        await pilot.pause()
+        conv = pilot.app.query_one(ConversationWidget)
+        assert len(conv.children) > 0
+
+
+async def test_main_screen_model_command_switches_model():
+    async with _MainApp().run_test() as pilot:
+        from textual.widgets import Input
+        inp = pilot.app.query_one(Input)
+        inp.value = "/model deepseek-chat"
+        await pilot.press("enter")
+        await pilot.pause()
+        bar = pilot.app.query_one(StatusBar)
+        assert "deepseek-chat" in str(bar.query_one("#status-label").content)
+
+
+async def test_main_screen_streams_token_events():
+    async def _fake_run(query, history, model):
+        yield TokenEvent(content="Hello")
+        yield TokenEvent(content=" world")
+        yield DoneEvent()
+
+    with patch("proteinclaw.cli.tui.screens.main.run", side_effect=_fake_run):
+        async with _MainApp().run_test() as pilot:
+            from textual.widgets import Input
+            inp = pilot.app.query_one(Input)
+            inp.value = "What is P04637?"
+            await pilot.press("enter")
+            await pilot.pause(delay=0.1)
+            conv = pilot.app.query_one(ConversationWidget)
+            assert len(conv.children) >= 1
