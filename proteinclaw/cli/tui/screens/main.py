@@ -81,7 +81,7 @@ class MainScreen(Screen):
                 status.set_state("ready")
             elif isinstance(ev, ErrorEvent):
                 status.set_state("error", ev.message)
-                response_tokens.append(f"[Error: {ev.message}]")
+                # Do not append error text to history — it is not a valid assistant turn
 
         if response_tokens:
             self._history.append(
@@ -122,11 +122,17 @@ class MainScreen(Screen):
                 ))
 
         elif parts[0] == "/tools":
-            from proteinbox.tools.registry import discover_tools
-            tools = discover_tools()
-            for name, tool in tools.items():
+            try:
+                from proteinbox.tools.registry import discover_tools
+                tools = discover_tools()
+                for name, tool in tools.items():
+                    await conv.mount(Static(
+                        f"[cyan]{name}[/cyan]: {tool.description}",
+                        markup=True,
+                    ))
+            except Exception as exc:  # noqa: BLE001
                 await conv.mount(Static(
-                    f"[cyan]{name}[/cyan]: {tool.description}",
+                    f"[red]Error loading tools: {exc}[/red]",
                     markup=True,
                 ))
 
