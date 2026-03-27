@@ -14,7 +14,12 @@ dependencies = [
     "pydantic>=2.7",
     "pydantic-settings>=2.2",
     "python-dotenv>=1.0",
+    "textual>=0.50",
 ]
+
+[project.urls]
+Homepage = "https://github.com/EvoScientist/ProteinClaw"
+Repository = "https://github.com/EvoScientist/ProteinClaw"
 
 [project.optional-dependencies]
 dev = [
@@ -23,9 +28,6 @@ dev = [
     "pytest-mock>=3.14",
     "httpx[ws]>=0.27",
     "respx>=0.21",
-]
-cli = [
-    "textual>=0.50",
 ]
 
 [project.scripts]
