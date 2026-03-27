@@ -1,0 +1,4 @@
+1. 不再使用docker
+2. 我希望和ComfyUI使用嘞似的框架
+3. 我需要打包成桌面app， 包括Windows和macOS
+4， 项目需要同时支持cli界面

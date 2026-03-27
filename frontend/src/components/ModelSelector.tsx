@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 const MODELS = [
   "gpt-4o",
   "claude-opus-4-5",
@@ -33,11 +31,4 @@ export function ModelSelector({ value, onChange }: Props) {
       ))}
     </select>
   );
-}
-
-export function useStoredModel(): [string, (m: string) => void] {
-  const [model, setModel] = useState(
-    () => localStorage.getItem(STORAGE_KEY) ?? "gpt-4o"
-  );
-  return [model, setModel];
 }

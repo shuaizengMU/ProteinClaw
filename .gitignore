@@ -7,3 +7,5 @@ dist/
 node_modules/
 frontend/dist/
 proposal_aims.txt
+src-tauri/.DS_Store
+.DS_Store

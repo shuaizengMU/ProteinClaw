@@ -22,7 +22,17 @@ def build_tools_schema(tools: dict) -> list[dict]:
 
 def _get_litellm_kwargs(model: str) -> dict[str, Any]:
     cfg = SUPPORTED_MODELS.get(model, {})
-    kwargs: dict[str, Any] = {"model": model}
+    provider = cfg.get("provider", "")
+
+    # litellm recognises OpenAI and Anthropic model names natively.
+    # Other providers need a "provider/" prefix.
+    # Models that already contain "/" (e.g. "ollama/llama3") are used as-is.
+    if "/" in model or provider in ("openai", "anthropic", ""):
+        litellm_model = model
+    else:
+        litellm_model = f"{provider}/{model}"
+
+    kwargs: dict[str, Any] = {"model": litellm_model}
     if "api_base" in cfg:
         kwargs["api_base"] = cfg["api_base"]
     return kwargs

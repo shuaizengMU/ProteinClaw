@@ -32,10 +32,10 @@ export function ToolCallCard({ toolCall, observation }: Props) {
         }}
       >
         {open ? "▼" : "▶"} Tool: <code>{toolCall.tool}</code>
-        {observation && (observation.result as any)?.success === false && (
+        {observation && observation.result?.["success"] === false && (
           <span style={{ color: "red", marginLeft: 8 }}>✗ failed</span>
         )}
-        {observation && (observation.result as any)?.success === true && (
+        {observation && observation.result?.["success"] === true && (
           <span style={{ color: "green", marginLeft: 8 }}>✓</span>
         )}
       </button>
