@@ -5,7 +5,7 @@ import sys
 
 from proteinclaw.core.config import settings, SUPPORTED_MODELS
 from proteinclaw.core.agent.loop import run
-from proteinclaw.core.agent.events import TokenEvent, ErrorEvent, ToolCallEvent, ObservationEvent
+from proteinclaw.core.agent.events import ErrorEvent
 from proteinclaw.cli.renderer import render_event_stdout
 
 
