@@ -83,8 +83,8 @@ class SetupScreen(Screen):
 
         config_mod.save_user_config(keys, default_model)
 
-        # Reinitialise settings so the saved keys take effect immediately
-        config_mod.settings = config_mod.Settings()
+        # Reload config (reads the just-saved file and reinitialises settings singleton)
+        config_mod.load_user_config()
 
         # Import here to avoid circular import at module level
         try:
