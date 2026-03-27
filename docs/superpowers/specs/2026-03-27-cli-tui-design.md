@@ -125,13 +125,15 @@ Path: `~/.config/proteinclaw/config.toml`
 
 ```toml
 [keys]
-anthropic_api_key = "sk-ant-..."
-openai_api_key = ""
-deepseek_api_key = "..."
+ANTHROPIC_API_KEY = "sk-ant-..."
+OPENAI_API_KEY = ""
+DEEPSEEK_API_KEY = "..."
 
 [defaults]
 model = "deepseek-chat"
 ```
+
+TOML key names use uppercase env-var alias names (matching `Settings` field aliases) so that `load_user_config()` can inject them directly via `os.environ`.
 
 ### Priority
 
@@ -143,14 +145,22 @@ model = "deepseek-chat"
 CONFIG_PATH = Path("~/.config/proteinclaw/config.toml").expanduser()
 
 def load_user_config() -> None:
-    """Read config.toml and inject into environment if env vars not already set."""
+    """Read config.toml and set os.environ[KEY] for any key not already in the environment.
+    Keys in config.toml use uppercase alias names (e.g. ANTHROPIC_API_KEY).
+    After this call, reconstruct the settings singleton: global settings; settings = Settings()
+    to pick up newly injected env vars."""
 
 def save_user_config(keys: dict[str, str], default_model: str) -> None:
-    """Write keys and default model to config.toml."""
+    """Write keys (uppercase alias names) and default model to config.toml."""
 
 def needs_setup() -> bool:
-    """Return True if no usable API key is available from any source."""
+    """Return True if the API key required by settings.default_model is empty.
+    Specifically: check the key for the provider of settings.default_model in SUPPORTED_MODELS.
+    Example: if default_model is 'deepseek-chat', check that DEEPSEEK_API_KEY is non-empty.
+    Called after load_user_config() has run."""
 ```
+
+**Settings singleton refresh:** `load_user_config()` must reinitialise the module-level `settings` object after injecting env vars, because `pydantic_settings.BaseSettings` reads env vars only at construction time. Implementation: after setting `os.environ` values, do `global settings; settings = Settings()` inside `load_user_config()`.
 
 ## Data Flow
 
@@ -161,8 +171,8 @@ main()
   └── _run_tui()
         └── ProteinClawApp.on_mount()
               ├── load_user_config()
-              ├── needs_setup() == True  → push_screen(SetupScreen)
-              └── needs_setup() == False → push_screen(MainScreen)
+              ├── needs_setup() == True  → switch_screen(SetupScreen)
+              └── needs_setup() == False → switch_screen(MainScreen)
 ```
 
 ### Setup Flow
@@ -170,17 +180,25 @@ main()
 ```
 SetupScreen — user fills keys and clicks Save
   ├── save_user_config(keys, default_model)
-  └── app.push_screen(MainScreen)
+  └── app.switch_screen(MainScreen)   # replaces SetupScreen; pop would re-show the wizard
 ```
 
+Use `switch_screen()` (not `push_screen()`) so that `SetupScreen` is removed from the Textual screen stack. `push_screen()` would leave it underneath `MainScreen` and allow Escape to reveal it again.
+
 ### Conversation Flow
+
+`ConversationWidget` maintains a `_pending_card: ToolCard | None` pointer to track the most recently created tool card. For MVP, each `ObservationEvent` is routed to `_pending_card`. This is sufficient because the agent loop processes one tool call at a time before emitting the next `ToolCallEvent`.
 
 ```
 MainScreen.on_input_submitted(query)
   └── async for event in run(query, history, model):
+        ├── ThinkingEvent   → ConversationWidget.append_thinking(content)
+        │                     (each event writes a discrete dim italic line; not added to history)
         ├── TokenEvent      → ConversationWidget.append_token(content)
         ├── ToolCallEvent   → ConversationWidget.add_tool_card(tool, args)
-        ├── ObservationEvent→ current ToolCard.set_result(result)
+        │                     (sets _pending_card to the new ToolCard)
+        ├── ObservationEvent→ _pending_card.set_result(result)
+        │                     (clears _pending_card to None)
         ├── DoneEvent       → StatusBar.set_state("ready")
         └── ErrorEvent      → StatusBar.set_state("error", message)
 ```
