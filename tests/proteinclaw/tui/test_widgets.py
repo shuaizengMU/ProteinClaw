@@ -1,5 +1,4 @@
 from __future__ import annotations
-import pytest
 from textual.app import App, ComposeResult
 
 from proteinclaw.cli.tui.widgets.tool_card import ToolCard

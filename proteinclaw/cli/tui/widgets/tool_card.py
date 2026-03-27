@@ -17,8 +17,8 @@ class ToolCard(Widget):
     }
     """
 
-    def __init__(self, tool: str, args: dict) -> None:
-        super().__init__()
+    def __init__(self, tool: str, args: dict, **kwargs) -> None:
+        super().__init__(**kwargs)
         self._tool = tool
         self._args = args
 
