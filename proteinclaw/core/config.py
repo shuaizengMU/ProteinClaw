@@ -1,5 +1,8 @@
 from pydantic_settings import BaseSettings
 from pydantic import Field
+import os
+import tomllib
+from pathlib import Path
 
 
 SUPPORTED_MODELS: dict[str, dict] = {
@@ -26,11 +29,6 @@ class Settings(BaseSettings):
 settings = Settings()
 
 
-import os
-import tomllib
-from pathlib import Path
-
-
 CONFIG_PATH = Path("~/.config/proteinclaw/config.toml").expanduser()
 
 # Maps provider name → Settings field alias (env var name)
@@ -55,8 +53,7 @@ def load_user_config() -> None:
     """
     global settings
     if not CONFIG_PATH.exists():
-        settings = Settings()
-        return
+        return   # nothing to inject; settings is already constructed
     with open(CONFIG_PATH, "rb") as f:
         data = tomllib.load(f)
     for key, value in data.get("keys", {}).items():

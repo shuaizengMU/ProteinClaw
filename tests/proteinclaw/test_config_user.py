@@ -113,3 +113,10 @@ def test_needs_setup_false_for_anthropic(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
     with patch.object(config_mod, "settings", config_mod.Settings()):
         assert needs_setup() is False
+
+
+def test_needs_setup_true_for_unknown_provider(monkeypatch):
+    """Model with a provider not in _PROVIDER_KEY_MAP should return True."""
+    monkeypatch.setenv("DEFAULT_MODEL", "not-a-real-model")
+    with patch.object(config_mod, "settings", config_mod.Settings()):
+        assert needs_setup() is True
