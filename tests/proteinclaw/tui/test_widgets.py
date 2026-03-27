@@ -79,3 +79,74 @@ async def test_status_bar_set_model():
         await pilot.pause()
         label_text = str(bar.query_one("#status-label").content)
         assert "gpt-4o" in label_text
+
+
+from proteinclaw.cli.tui.widgets.conversation import ConversationWidget
+
+
+class _ConvApp(App):
+    def compose(self) -> ComposeResult:
+        yield ConversationWidget(id="conv")
+
+
+async def test_conversation_append_thinking_mounts_widget():
+    async with _ConvApp().run_test() as pilot:
+        conv = pilot.app.query_one(ConversationWidget)
+        assert len(conv.children) == 0
+        conv.append_thinking("planning next step")
+        await pilot.pause()
+        assert len(conv.children) == 1
+
+
+async def test_conversation_append_token_accumulates():
+    async with _ConvApp().run_test() as pilot:
+        conv = pilot.app.query_one(ConversationWidget)
+        conv.append_token("Hello")
+        conv.append_token(", world")
+        await pilot.pause()
+        # Only one Static widget for the whole streamed response
+        assert len(conv.children) == 1
+
+
+async def test_conversation_add_tool_card_sets_pending():
+    async with _ConvApp().run_test() as pilot:
+        conv = pilot.app.query_one(ConversationWidget)
+        conv.add_tool_card("uniprot", {"id": "P04637"})
+        await pilot.pause()
+        assert conv._pending_card is not None
+        assert isinstance(conv._pending_card, ToolCard)
+
+
+async def test_conversation_complete_tool_card_clears_pending():
+    async with _ConvApp().run_test() as pilot:
+        conv = pilot.app.query_one(ConversationWidget)
+        conv.add_tool_card("uniprot", {"id": "P04637"})
+        await pilot.pause()
+        conv.complete_tool_card("TP53_HUMAN")
+        assert conv._pending_card is None
+
+
+async def test_conversation_tool_card_new_response_resets_buffer():
+    """append_token after add_tool_card creates a new Static, not appending to old buffer."""
+    async with _ConvApp().run_test() as pilot:
+        conv = pilot.app.query_one(ConversationWidget)
+        conv.append_token("before tool")
+        await pilot.pause()
+        conv.add_tool_card("blast", {"sequence": "MKTII"})
+        await pilot.pause()
+        conv.append_token("after tool")
+        await pilot.pause()
+        # Should have: 1 Static (before), 1 ToolCard, 1 Static (after) = 3 children
+        assert len(conv.children) == 3
+
+
+async def test_conversation_clear_removes_all_children():
+    async with _ConvApp().run_test() as pilot:
+        conv = pilot.app.query_one(ConversationWidget)
+        conv.append_token("hello")
+        conv.add_tool_card("uniprot", {"id": "P04637"})
+        await pilot.pause()
+        conv.clear_conversation()
+        await pilot.pause()
+        assert len(conv.children) == 0
+        assert conv._pending_card is None
