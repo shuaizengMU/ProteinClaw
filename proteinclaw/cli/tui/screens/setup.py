@@ -33,7 +33,7 @@ def _models_for_provider(provider: str) -> list[str]:
 
 
 def _display_name(provider_id: str) -> str:
-    return next(display for pid, display, _ in _PROVIDERS if pid == provider_id)
+    return next((display for pid, display, _ in _PROVIDERS if pid == provider_id), provider_id)
 
 
 class SetupScreen(Screen):
@@ -174,6 +174,7 @@ class SetupScreen(Screen):
     async def on_key(self, event) -> None:  # type: ignore[override]
         focused = self.focused
         if event.key == "escape" and getattr(focused, "id", None) == "api-key-input":
+            event.stop()
             self._api_key = ""
             await self._advance_with_summary("✓ API key   skipped", 3)
 
