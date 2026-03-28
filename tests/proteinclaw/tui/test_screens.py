@@ -41,7 +41,7 @@ async def test_wizard_step2_label_contains_provider_display_name():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
         pilot.app.screen.query_one("#provider-select", Select).value = "deepseek"
         await pilot.pause()
-        label_text = str(pilot.app.screen.query_one("#step-label", Label).renderable)
+        label_text = str(pilot.app.screen.query_one("#step-label", Label).content)
         assert "DeepSeek" in label_text
 
 
@@ -89,7 +89,8 @@ async def test_wizard_complete_saves_correct_key_and_model():
 
     with patch.object(config_mod, "save_user_config", _fake_save), \
          patch.object(config_mod, "load_user_config", lambda: None), \
-         patch("proteinclaw.cli.tui.screens.setup.MainScreen"):
+         patch("proteinclaw.cli.tui.screens.setup.MainScreen"), \
+         patch("textual.app.App.switch_screen"):
         async with _SetupApp().run_test(size=(120, 50)) as pilot:
             pilot.app.screen.query_one("#provider-select", Select).value = "deepseek"
             await pilot.pause()
