@@ -62,7 +62,7 @@ class SetupScreen(Screen):
     }
     """
 
-    current_step: reactive[int] = reactive(1)
+    current_step: reactive[int] = reactive(1, init=False)
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -108,7 +108,7 @@ class SetupScreen(Screen):
 
         elif step == 3:
             step_label.update("Step 3 / 3 — Default model")
-            hint_label.update("Press Enter to confirm")
+            hint_label.update("Select a model to continue")
             models = _models_for_provider(self._selected_provider)
             options = [(m, m) for m in models]
             select = Select(options, id="model-select")
