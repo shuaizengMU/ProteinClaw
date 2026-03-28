@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import proteinclaw.core.config as config_mod
 from proteinclaw.core.config import SUPPORTED_MODELS
-from proteinclaw.cli.tui.screens.main import MainScreen  # noqa: PLC0415
+from proteinclaw.cli.tui.screens.main import MainScreen
 
 from textual.app import ComposeResult
 from textual.containers import Vertical
@@ -20,8 +20,7 @@ _PROVIDERS: list[tuple[str, str, str]] = [
     ("ollama",    "Ollama (local, no API key needed)", ""),
 ]
 
-
-# Providers that reuse another provider's SDK in SUPPORTED_MODELS but are distinct in the wizard
+# Providers that reuse another provider's SDK in SUPPORTED_MODELS but are distinct here
 _PROVIDER_MODELS_OVERRIDE: dict[str, list[str]] = {
     "minimax": ["minimax-text-01"],
 }
@@ -33,32 +32,57 @@ def _models_for_provider(provider: str) -> list[str]:
     return [m for m, cfg in SUPPORTED_MODELS.items() if cfg["provider"] == provider]
 
 
+def _display_name(provider_id: str) -> str:
+    return next(display for pid, display, _ in _PROVIDERS if pid == provider_id)
+
+
 class SetupScreen(Screen):
-    """Three-step first-run wizard: provider → API key → model."""
+    """Codex-style progressive onboarding: completed steps stack above the active card."""
 
     CSS = """
     SetupScreen {
         align: center middle;
     }
-    #setup-container {
+    #outer {
         width: 64;
         height: auto;
+    }
+    #title {
+        text-align: center;
+        text-style: bold;
+        margin: 0 0 0 0;
+    }
+    #subtitle {
+        text-align: center;
+        color: $text-muted;
+        margin: 0 0 1 0;
+    }
+    #summaries {
+        margin: 0 0 1 2;
+        height: auto;
+    }
+    #card {
         border: solid $primary;
         padding: 1 2;
+        height: auto;
     }
-    #step-label {
-        margin: 1 0 0 0;
-        color: $text-muted;
-    }
-    #hint-label {
-        color: $text-muted;
+    #action-title {
+        text-style: bold;
         margin: 0 0 1 0;
+    }
+    #helper-text {
+        color: $text-muted;
+        margin: 1 0 0 0;
+    }
+    #footer-hint {
+        color: $text-muted;
+        margin: 1 0 0 2;
     }
     Input {
-        margin: 0 0 1 0;
+        margin: 0 0 0 0;
     }
     Select {
-        margin: 0 0 1 0;
+        margin: 0 0 0 0;
     }
     """
 
@@ -70,11 +94,15 @@ class SetupScreen(Screen):
         self._api_key: str = ""
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="setup-container"):
-            yield Label("Welcome to ProteinClaw!\n")
-            yield Label("", id="step-label")
-            yield Vertical(id="step-content")
-            yield Label("", id="hint-label")
+        with Vertical(id="outer"):
+            yield Label("ProteinClaw", id="title")
+            yield Label("Set up your default model to get started.", id="subtitle")
+            yield Vertical(id="summaries")
+            with Vertical(id="card"):
+                yield Label("", id="action-title")
+                yield Vertical(id="card-content")
+                yield Label("", id="helper-text")
+            yield Label("", id="footer-hint")
 
     async def on_mount(self) -> None:
         await self._render_step()
@@ -84,59 +112,74 @@ class SetupScreen(Screen):
 
     async def _render_step(self) -> None:
         step = self.current_step
-        content = self.query_one("#step-content", Vertical)
-        step_label = self.query_one("#step-label", Label)
-        hint_label = self.query_one("#hint-label", Label)
+        card_content = self.query_one("#card-content", Vertical)
+        action_title = self.query_one("#action-title", Label)
+        helper_text = self.query_one("#helper-text", Label)
+        footer_hint = self.query_one("#footer-hint", Label)
 
-        await content.remove_children()
+        await card_content.remove_children()
 
         if step == 1:
-            step_label.update("Step 1 / 3 — Choose your LLM provider")
-            hint_label.update("")
+            action_title.update("Choose a provider")
+            helper_text.update("Provider decides which API key and models appear next.")
+            footer_hint.update("")
             options = [(display, pid) for pid, display, _ in _PROVIDERS]
             select: Select[str] = Select(options, id="provider-select")
-            await content.mount(select)
+            await card_content.mount(select)
             select.focus()
 
         elif step == 2:
-            _, display_name, _ = next(p for p in _PROVIDERS if p[0] == self._selected_provider)
-            step_label.update(f"Step 2 / 3 — {display_name} API Key")
-            hint_label.update("Press Enter to continue, Escape to skip")
+            name = _display_name(self._selected_provider)
+            action_title.update(f"Enter your {name} API key")
+            helper_text.update(f"Provider: {name}")
+            footer_hint.update("Enter continue   Esc skip")
             inp = Input(placeholder="Paste your API key here", password=True, id="api-key-input")
-            await content.mount(inp)
+            await card_content.mount(inp)
             inp.focus()
 
         elif step == 3:
-            step_label.update("Step 3 / 3 — Default model")
-            hint_label.update("Select a model to continue")
+            name = _display_name(self._selected_provider)
+            action_title.update("Choose a default model")
+            helper_text.update(f"Provider: {name}")
+            footer_hint.update("Select a model to continue")
             models = _models_for_provider(self._selected_provider)
             options = [(m, m) for m in models]
             select = Select(options, id="model-select")
-            await content.mount(select)
+            await card_content.mount(select)
             select.focus()
 
-    def on_select_changed(self, event: Select.Changed) -> None:
+    async def _append_summary(self, text: str) -> None:
+        summaries = self.query_one("#summaries", Vertical)
+        await summaries.mount(Label(text))
+
+    async def on_select_changed(self, event: Select.Changed) -> None:
         if event.value is Select.BLANK:
             return
 
         if event.select.id == "provider-select":
             self._selected_provider = str(event.value)
-            # Ollama needs no API key — jump straight to model selection
-            self.current_step = 3 if self._selected_provider == "ollama" else 2
+            name = _display_name(self._selected_provider)
+            next_step = 3 if self._selected_provider == "ollama" else 2
+            await self._advance_with_summary(f"✓ Provider  {name}", next_step)
 
         elif event.select.id == "model-select":
             self._finish(str(event.value))
 
-    def on_input_submitted(self, event: Input.Submitted) -> None:
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.input.id == "api-key-input":
             self._api_key = event.value.strip()
-            self.current_step = 3
+            summary = "✓ API key   entered" if self._api_key else "✓ API key   skipped"
+            await self._advance_with_summary(summary, 3)
 
-    def on_key(self, event) -> None:  # type: ignore[override]
+    async def on_key(self, event) -> None:  # type: ignore[override]
         focused = self.focused
         if event.key == "escape" and getattr(focused, "id", None) == "api-key-input":
             self._api_key = ""
-            self.current_step = 3
+            await self._advance_with_summary("✓ API key   skipped", 3)
+
+    async def _advance_with_summary(self, summary_text: str, next_step: int) -> None:
+        await self._append_summary(summary_text)
+        self.current_step = next_step
 
     def _finish(self, model: str) -> None:
         keys: dict[str, str] = {}

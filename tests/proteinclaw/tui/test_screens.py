@@ -38,7 +38,7 @@ async def test_setup_flow_api_key_label_contains_provider_display_name():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
         pilot.app.screen.query_one("#provider-select", Select).value = "deepseek"
         await pilot.pause()
-        label_text = str(pilot.app.screen.query_one("#action-title", Label).renderable)
+        label_text = str(pilot.app.screen.query_one("#action-title", Label).content)
         assert "DeepSeek" in label_text
 
 
@@ -107,7 +107,7 @@ async def test_setup_flow_provider_summary_visible_after_selection():
         pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
         await pilot.pause()
         labels = pilot.app.screen.query_one("#summaries", Vertical).query(Label)
-        texts = [str(lbl.renderable) for lbl in labels]
+        texts = [str(lbl.content) for lbl in labels]
         assert any("Anthropic" in t for t in texts)
 
 
@@ -120,7 +120,7 @@ async def test_setup_flow_api_key_summary_visible_after_submission():
         await pilot.press("enter")
         await pilot.pause()
         labels = pilot.app.screen.query_one("#summaries", Vertical).query(Label)
-        texts = [str(lbl.renderable) for lbl in labels]
+        texts = [str(lbl.content) for lbl in labels]
         assert any("API key" in t and "entered" in t for t in texts)
 
 
