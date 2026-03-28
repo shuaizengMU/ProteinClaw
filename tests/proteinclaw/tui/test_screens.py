@@ -1,15 +1,14 @@
 from __future__ import annotations
-import os
+
 from unittest.mock import patch
 
 import pytest
 import proteinclaw.core.config as config_mod
 from proteinclaw.cli.tui.screens.setup import SetupScreen
-from textual.app import App, ComposeResult
+from textual.app import App
+from textual.containers import Vertical
 from textual.widgets import Input, Label, Select
 
-
-# ── SetupScreen wizard helpers ─────────────────────────────────────────────────
 
 class _SetupApp(App):
     """Minimal host that starts on SetupScreen."""
@@ -18,47 +17,42 @@ class _SetupApp(App):
         await self.push_screen(SetupScreen())
 
 
-# ── Step 1: provider select ────────────────────────────────────────────────────
-
 @pytest.mark.asyncio
-async def test_wizard_step1_shows_provider_select():
+async def test_setup_flow_initial_state_shows_provider_select():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
         select = pilot.app.screen.query_one("#provider-select", Select)
+        assert select is not None
 
-
-# ── Step 1 → Step 2 ───────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
-async def test_wizard_step1_anthropic_advances_to_api_key_input():
+async def test_setup_flow_provider_selection_advances_to_api_key_input():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
         pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
         await pilot.pause()
         inp = pilot.app.screen.query_one("#api-key-input", Input)
+        assert inp is not None
 
 
 @pytest.mark.asyncio
-async def test_wizard_step2_label_contains_provider_display_name():
+async def test_setup_flow_api_key_label_contains_provider_display_name():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
         pilot.app.screen.query_one("#provider-select", Select).value = "deepseek"
         await pilot.pause()
-        label_text = str(pilot.app.screen.query_one("#step-label", Label).content)
+        label_text = str(pilot.app.screen.query_one("#action-title", Label).renderable)
         assert "DeepSeek" in label_text
 
 
-# ── Ollama skips step 2 ───────────────────────────────────────────────────────
-
 @pytest.mark.asyncio
-async def test_wizard_ollama_skips_api_key_and_goes_to_model_select():
+async def test_setup_flow_ollama_skips_api_key_and_goes_to_model_select():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
         pilot.app.screen.query_one("#provider-select", Select).value = "ollama"
         await pilot.pause()
         model_select = pilot.app.screen.query_one("#model-select", Select)
+        assert model_select is not None
 
-
-# ── Step 2 → Step 3 ───────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
-async def test_wizard_enter_on_api_key_advances_to_model_select():
+async def test_setup_flow_enter_on_api_key_advances_to_model_select():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
         pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
         await pilot.pause()
@@ -66,31 +60,33 @@ async def test_wizard_enter_on_api_key_advances_to_model_select():
         await pilot.press("enter")
         await pilot.pause()
         model_select = pilot.app.screen.query_one("#model-select", Select)
+        assert model_select is not None
 
 
 @pytest.mark.asyncio
-async def test_wizard_escape_on_api_key_skips_and_advances_to_model_select():
+async def test_setup_flow_escape_on_api_key_skips_and_advances_to_model_select():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
         pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
         await pilot.pause()
         await pilot.press("escape")
         await pilot.pause()
         model_select = pilot.app.screen.query_one("#model-select", Select)
+        assert model_select is not None
 
-
-# ── Full flow: save_user_config called correctly ───────────────────────────────
 
 @pytest.mark.asyncio
-async def test_wizard_complete_saves_correct_key_and_model():
+async def test_setup_flow_complete_saves_correct_key_and_model():
     saved: list[tuple] = []
 
     def _fake_save(keys, model):
         saved.append((keys, model))
 
-    with patch.object(config_mod, "save_user_config", _fake_save), \
-         patch.object(config_mod, "load_user_config", lambda: None), \
-         patch("proteinclaw.cli.tui.screens.setup.MainScreen"), \
-         patch("textual.app.App.switch_screen"):
+    with (
+        patch.object(config_mod, "save_user_config", _fake_save),
+        patch.object(config_mod, "load_user_config", lambda: None),
+        patch("proteinclaw.cli.tui.screens.setup.MainScreen"),
+        patch("textual.app.App.switch_screen"),
+    ):
         async with _SetupApp().run_test(size=(120, 50)) as pilot:
             pilot.app.screen.query_one("#provider-select", Select).value = "deepseek"
             await pilot.pause()
@@ -103,6 +99,29 @@ async def test_wizard_complete_saves_correct_key_and_model():
     assert len(saved) == 1
     assert saved[0][0] == {"DEEPSEEK_API_KEY": "ds-key"}
     assert saved[0][1] == "deepseek-chat"
+
+
+@pytest.mark.asyncio
+async def test_setup_flow_provider_summary_visible_after_selection():
+    async with _SetupApp().run_test(size=(120, 50)) as pilot:
+        pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
+        await pilot.pause()
+        labels = pilot.app.screen.query_one("#summaries", Vertical).query(Label)
+        texts = [str(lbl.renderable) for lbl in labels]
+        assert any("Anthropic" in t for t in texts)
+
+
+@pytest.mark.asyncio
+async def test_setup_flow_api_key_summary_visible_after_submission():
+    async with _SetupApp().run_test(size=(120, 50)) as pilot:
+        pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
+        await pilot.pause()
+        pilot.app.screen.query_one("#api-key-input", Input).value = "sk-test"
+        await pilot.press("enter")
+        await pilot.pause()
+        labels = pilot.app.screen.query_one("#summaries", Vertical).query(Label)
+        texts = [str(lbl.renderable) for lbl in labels]
+        assert any("entered" in t for t in texts)
 
 
 from proteinclaw.cli.tui.screens.main import MainScreen
