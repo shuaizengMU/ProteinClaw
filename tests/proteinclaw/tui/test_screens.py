@@ -121,7 +121,7 @@ async def test_setup_flow_api_key_summary_visible_after_submission():
         await pilot.pause()
         labels = pilot.app.screen.query_one("#summaries", Vertical).query(Label)
         texts = [str(lbl.renderable) for lbl in labels]
-        assert any("entered" in t for t in texts)
+        assert any("API key" in t and "entered" in t for t in texts)
 
 
 from proteinclaw.cli.tui.screens.main import MainScreen
