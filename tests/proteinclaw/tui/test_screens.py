@@ -6,7 +6,6 @@ import pytest
 import proteinclaw.core.config as config_mod
 from proteinclaw.cli.tui.screens.setup import SetupScreen
 from textual.app import App
-from textual.containers import Vertical
 from textual.widgets import Input, Label, Select
 
 
@@ -22,6 +21,15 @@ async def test_setup_flow_initial_state_shows_provider_select():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
         select = pilot.app.screen.query_one("#provider-select", Select)
         assert select is not None
+
+
+@pytest.mark.asyncio
+async def test_setup_flow_shows_codex_style_header_copy():
+    async with _SetupApp().run_test(size=(120, 50)) as pilot:
+        title = str(pilot.app.screen.query_one("#title", Label).content)
+        subtitle = str(pilot.app.screen.query_one("#subtitle", Label).content)
+        assert title == "ProteinClaw"
+        assert "default model" in subtitle
 
 
 @pytest.mark.asyncio
@@ -102,26 +110,18 @@ async def test_setup_flow_complete_saves_correct_key_and_model():
 
 
 @pytest.mark.asyncio
-async def test_setup_flow_provider_summary_visible_after_selection():
+async def test_setup_flow_uses_single_card_layout_without_summary_stack():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
-        pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
-        await pilot.pause()
-        labels = pilot.app.screen.query_one("#summaries", Vertical).query(Label)
-        texts = [str(lbl.content) for lbl in labels]
-        assert any("Anthropic" in t for t in texts)
+        assert len(list(pilot.app.screen.query("#summaries"))) == 0
 
 
 @pytest.mark.asyncio
-async def test_setup_flow_api_key_summary_visible_after_submission():
+async def test_setup_flow_context_label_visible_after_provider_selection():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
-        pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
+        pilot.app.screen.query_one("#provider-select", Select).value = "deepseek"
         await pilot.pause()
-        pilot.app.screen.query_one("#api-key-input", Input).value = "sk-test"
-        await pilot.press("enter")
-        await pilot.pause()
-        labels = pilot.app.screen.query_one("#summaries", Vertical).query(Label)
-        texts = [str(lbl.content) for lbl in labels]
-        assert any("API key" in t and "entered" in t for t in texts)
+        context = str(pilot.app.screen.query_one("#context-label", Label).content)
+        assert "DeepSeek" in context
 
 
 from proteinclaw.cli.tui.screens.main import MainScreen

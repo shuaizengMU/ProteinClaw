@@ -8,9 +8,9 @@ $ErrorActionPreference = "Stop"
 $UV_VERSION = "0.6.6"
 
 # ── Colour helpers ──────────────────────────
-function ok($msg)   { Write-Host "✓ $msg" -ForegroundColor Green }
-function fail($msg) { Write-Host "✗ $msg" -ForegroundColor Red; exit 1 }
-function info($msg) { Write-Host "→ $msg" -ForegroundColor Cyan }
+function ok($msg)   { Write-Host "[OK] $msg" -ForegroundColor Green }
+function fail($msg) { Write-Host "[FAIL] $msg" -ForegroundColor Red; exit 1 }
+function info($msg) { Write-Host "--> $msg" -ForegroundColor Cyan }
 
 # ── 1. Prerequisite checks ──────────────────
 info "Checking prerequisites..."
@@ -24,8 +24,8 @@ catch { fail "node not found. Install Node.js: winget install OpenJS.NodeJS" }
 try { $null = Get-Command npm -ErrorAction Stop }
 catch { fail "npm not found. Install Node.js: winget install OpenJS.NodeJS" }
 
-try { cargo tauri --version | Out-Null }
-catch { fail "cargo tauri not found. Install: cargo install tauri-cli" }
+cargo tauri --version 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) { fail "cargo tauri not found. Install: cargo install tauri-cli" }
 
 ok "All prerequisites met"
 

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import proteinclaw.core.config as config_mod
-from proteinclaw.core.config import SUPPORTED_MODELS
 from proteinclaw.cli.tui.screens.main import MainScreen
+from proteinclaw.core.config import SUPPORTED_MODELS
 
 from textual.app import ComposeResult
 from textual.containers import Vertical
@@ -11,16 +11,16 @@ from textual.screen import Screen
 from textual.widgets import Input, Label, Select
 
 
-# (provider_id, display_name, env_key)  — env_key is "" for Ollama
+# (provider_id, display_name, env_key) - env_key is "" for Ollama
 _PROVIDERS: list[tuple[str, str, str]] = [
-    ("anthropic", "Anthropic",                        "ANTHROPIC_API_KEY"),
-    ("openai",    "OpenAI",                           "OPENAI_API_KEY"),
-    ("deepseek",  "DeepSeek",                         "DEEPSEEK_API_KEY"),
-    ("minimax",   "MiniMax",                          "MINIMAX_API_KEY"),
-    ("ollama",    "Ollama (local, no API key needed)", ""),
+    ("anthropic", "Anthropic", "ANTHROPIC_API_KEY"),
+    ("openai", "OpenAI", "OPENAI_API_KEY"),
+    ("deepseek", "DeepSeek", "DEEPSEEK_API_KEY"),
+    ("minimax", "MiniMax", "MINIMAX_API_KEY"),
+    ("ollama", "Ollama (local, no API key needed)", ""),
 ]
 
-# Providers that reuse another provider's SDK in SUPPORTED_MODELS but are distinct here
+# Providers that reuse another provider's SDK in SUPPORTED_MODELS but are distinct here.
 _PROVIDER_MODELS_OVERRIDE: dict[str, list[str]] = {
     "minimax": ["minimax-text-01"],
 }
@@ -37,7 +37,7 @@ def _display_name(provider_id: str) -> str:
 
 
 class SetupScreen(Screen):
-    """Codex-style progressive onboarding: completed steps stack above the active card."""
+    """Codex-style progressive onboarding in a single centered card."""
 
     CSS = """
     SetupScreen {
@@ -50,16 +50,11 @@ class SetupScreen(Screen):
     #title {
         text-align: center;
         text-style: bold;
-        margin: 0 0 0 0;
     }
     #subtitle {
         text-align: center;
         color: $text-muted;
         margin: 0 0 1 0;
-    }
-    #summaries {
-        margin: 0 0 1 2;
-        height: auto;
     }
     #card {
         border: solid $primary;
@@ -68,6 +63,10 @@ class SetupScreen(Screen):
     }
     #action-title {
         text-style: bold;
+        margin: 0 0 1 0;
+    }
+    #context-label {
+        color: $text-muted;
         margin: 0 0 1 0;
     }
     #helper-text {
@@ -79,10 +78,10 @@ class SetupScreen(Screen):
         margin: 1 0 0 2;
     }
     Input {
-        margin: 0 0 0 0;
+        margin: 0;
     }
     Select {
-        margin: 0 0 0 0;
+        margin: 0;
     }
     """
 
@@ -97,9 +96,9 @@ class SetupScreen(Screen):
         with Vertical(id="outer"):
             yield Label("ProteinClaw", id="title")
             yield Label("Set up your default model to get started.", id="subtitle")
-            yield Vertical(id="summaries")
             with Vertical(id="card"):
                 yield Label("", id="action-title")
+                yield Label("", id="context-label")
                 yield Vertical(id="card-content")
                 yield Label("", id="helper-text")
             yield Label("", id="footer-hint")
@@ -111,46 +110,49 @@ class SetupScreen(Screen):
         await self._render_step()
 
     async def _render_step(self) -> None:
-        step = self.current_step
         card_content = self.query_one("#card-content", Vertical)
         action_title = self.query_one("#action-title", Label)
+        context_label = self.query_one("#context-label", Label)
         helper_text = self.query_one("#helper-text", Label)
         footer_hint = self.query_one("#footer-hint", Label)
 
         await card_content.remove_children()
 
-        if step == 1:
+        if self.current_step == 1:
             action_title.update("Choose a provider")
+            context_label.update("")
             helper_text.update("Provider decides which API key and models appear next.")
-            footer_hint.update("")
+            footer_hint.update("Select a provider to continue")
             options = [(display, pid) for pid, display, _ in _PROVIDERS]
             select: Select[str] = Select(options, id="provider-select")
             await card_content.mount(select)
             select.focus()
+            return
 
-        elif step == 2:
-            name = _display_name(self._selected_provider)
-            action_title.update(f"Enter your {name} API key")
-            helper_text.update(f"Provider: {name}")
+        provider_name = _display_name(self._selected_provider)
+
+        if self.current_step == 2:
+            action_title.update(f"Enter your {provider_name} API key")
+            context_label.update(f"Provider: {provider_name}")
+            helper_text.update("Stored locally and only used for this provider.")
             footer_hint.update("Enter continue   Esc skip")
-            inp = Input(placeholder="Paste your API key here", password=True, id="api-key-input")
-            await card_content.mount(inp)
-            inp.focus()
+            input_widget = Input(
+                placeholder="Paste your API key here",
+                password=True,
+                id="api-key-input",
+            )
+            await card_content.mount(input_widget)
+            input_widget.focus()
+            return
 
-        elif step == 3:
-            name = _display_name(self._selected_provider)
-            action_title.update("Choose a default model")
-            helper_text.update(f"Provider: {name}")
-            footer_hint.update("Select a model to continue")
-            models = _models_for_provider(self._selected_provider)
-            options = [(m, m) for m in models]
-            select = Select(options, id="model-select")
-            await card_content.mount(select)
-            select.focus()
-
-    async def _append_summary(self, text: str) -> None:
-        summaries = self.query_one("#summaries", Vertical)
-        await summaries.mount(Label(text))
+        action_title.update("Choose a default model")
+        context_label.update(f"Provider: {provider_name}")
+        helper_text.update("Only models for the selected provider are shown here.")
+        footer_hint.update("Select a model to finish")
+        options = [(model, model) for model in _models_for_provider(self._selected_provider)]
+        select = Select(options, id="model-select")
+        await card_content.mount(select)
+        select.focus()
 
     async def on_select_changed(self, event: Select.Changed) -> None:
         if event.value is Select.BLANK:
@@ -158,29 +160,23 @@ class SetupScreen(Screen):
 
         if event.select.id == "provider-select":
             self._selected_provider = str(event.value)
-            name = _display_name(self._selected_provider)
-            next_step = 3 if self._selected_provider == "ollama" else 2
-            await self._advance_with_summary(f"✓ Provider  {name}", next_step)
+            self.current_step = 3 if self._selected_provider == "ollama" else 2
+            return
 
-        elif event.select.id == "model-select":
+        if event.select.id == "model-select":
             self._finish(str(event.value))
 
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.input.id == "api-key-input":
             self._api_key = event.value.strip()
-            summary = "✓ API key   entered" if self._api_key else "✓ API key   skipped"
-            await self._advance_with_summary(summary, 3)
+            self.current_step = 3
 
     async def on_key(self, event) -> None:  # type: ignore[override]
         focused = self.focused
         if event.key == "escape" and getattr(focused, "id", None) == "api-key-input":
             event.stop()
             self._api_key = ""
-            await self._advance_with_summary("✓ API key   skipped", 3)
-
-    async def _advance_with_summary(self, summary_text: str, next_step: int) -> None:
-        await self._append_summary(summary_text)
-        self.current_step = next_step
+            self.current_step = 3
 
     def _finish(self, model: str) -> None:
         keys: dict[str, str] = {}
@@ -191,5 +187,4 @@ class SetupScreen(Screen):
 
         config_mod.save_user_config(keys, model)
         config_mod.load_user_config()
-
         self.app.switch_screen(MainScreen())
