@@ -2,61 +2,111 @@ from __future__ import annotations
 import os
 from unittest.mock import patch
 
+import pytest
 import proteinclaw.core.config as config_mod
 from proteinclaw.cli.tui.screens.setup import SetupScreen
 from textual.app import App, ComposeResult
-from textual.widgets import Input
+from textual.widgets import Input, Label, Select
 
+
+# ── SetupScreen wizard helpers ─────────────────────────────────────────────────
 
 class _SetupApp(App):
     """Minimal host that starts on SetupScreen."""
 
-    def on_mount(self) -> None:
-        self.push_screen(SetupScreen())
-
-    def query(self, selector=None):  # type: ignore[override]
-        """Delegate queries to the active screen so tests work with push_screen."""
-        if selector is None:
-            return self.screen.query()
-        return self.screen.query(selector)
-
-    def query_one(self, selector, expect_type=None):  # type: ignore[override]
-        """Delegate query_one to the active screen."""
-        if expect_type is not None:
-            return self.screen.query_one(selector, expect_type)
-        return self.screen.query_one(selector)
+    async def on_mount(self) -> None:
+        await self.push_screen(SetupScreen())
 
 
-async def test_setup_screen_shows_key_inputs():
-    async with _SetupApp().run_test() as pilot:
-        inputs = pilot.app.query(Input)
-        input_ids = {inp.id for inp in inputs}
-        assert "ANTHROPIC_API_KEY" in input_ids
-        assert "DEEPSEEK_API_KEY" in input_ids
+# ── Step 1: provider select ────────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_wizard_step1_shows_provider_select():
+    async with _SetupApp().run_test(size=(120, 50)) as pilot:
+        select = pilot.app.screen.query_one("#provider-select", Select)
+        assert select is not None
 
 
-async def test_setup_screen_prefills_from_env(monkeypatch):
-    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-prefill")
-    async with _SetupApp().run_test() as pilot:
-        field = pilot.app.query_one("#ANTHROPIC_API_KEY", Input)
-        assert field.value == "sk-ant-prefill"
+# ── Step 1 → Step 2 ───────────────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_wizard_step1_anthropic_advances_to_api_key_input():
+    async with _SetupApp().run_test(size=(120, 50)) as pilot:
+        pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
+        await pilot.pause()
+        inp = pilot.app.screen.query_one("#api-key-input", Input)
+        assert inp is not None
 
 
-async def test_setup_screen_save_calls_save_user_config():
+@pytest.mark.asyncio
+async def test_wizard_step2_label_contains_provider_display_name():
+    async with _SetupApp().run_test(size=(120, 50)) as pilot:
+        pilot.app.screen.query_one("#provider-select", Select).value = "deepseek"
+        await pilot.pause()
+        label_text = str(pilot.app.screen.query_one("#step-label", Label).renderable)
+        assert "DeepSeek" in label_text
+
+
+# ── Ollama skips step 2 ───────────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_wizard_ollama_skips_api_key_and_goes_to_model_select():
+    async with _SetupApp().run_test(size=(120, 50)) as pilot:
+        pilot.app.screen.query_one("#provider-select", Select).value = "ollama"
+        await pilot.pause()
+        model_select = pilot.app.screen.query_one("#model-select", Select)
+        assert model_select is not None
+
+
+# ── Step 2 → Step 3 ───────────────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_wizard_enter_on_api_key_advances_to_model_select():
+    async with _SetupApp().run_test(size=(120, 50)) as pilot:
+        pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
+        await pilot.pause()
+        pilot.app.screen.query_one("#api-key-input", Input).value = "sk-ant-test"
+        await pilot.press("enter")
+        await pilot.pause()
+        model_select = pilot.app.screen.query_one("#model-select", Select)
+        assert model_select is not None
+
+
+@pytest.mark.asyncio
+async def test_wizard_escape_on_api_key_skips_and_advances_to_model_select():
+    async with _SetupApp().run_test(size=(120, 50)) as pilot:
+        pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
+        await pilot.pause()
+        await pilot.press("escape")
+        await pilot.pause()
+        model_select = pilot.app.screen.query_one("#model-select", Select)
+        assert model_select is not None
+
+
+# ── Full flow: save_user_config called correctly ───────────────────────────────
+
+@pytest.mark.asyncio
+async def test_wizard_complete_saves_correct_key_and_model():
     saved: list[tuple] = []
 
     def _fake_save(keys, model):
         saved.append((keys, model))
 
     with patch.object(config_mod, "save_user_config", _fake_save), \
-         patch.object(config_mod, "Settings", config_mod.Settings):
+         patch.object(config_mod, "load_user_config", lambda: None), \
+         patch("proteinclaw.cli.tui.screens.setup.MainScreen"):
         async with _SetupApp().run_test(size=(120, 50)) as pilot:
-            pilot.app.query_one("#DEEPSEEK_API_KEY", Input).value = "ds-test"
-            await pilot.click("#save-btn")
+            pilot.app.screen.query_one("#provider-select", Select).value = "deepseek"
+            await pilot.pause()
+            pilot.app.screen.query_one("#api-key-input", Input).value = "ds-key"
+            await pilot.press("enter")
+            await pilot.pause()
+            pilot.app.screen.query_one("#model-select", Select).value = "deepseek-chat"
             await pilot.pause()
 
     assert len(saved) == 1
-    assert saved[0][0].get("DEEPSEEK_API_KEY") == "ds-test"
+    assert saved[0][0] == {"DEEPSEEK_API_KEY": "ds-key"}
+    assert saved[0][1] == "deepseek-chat"
 
 
 from unittest.mock import patch
