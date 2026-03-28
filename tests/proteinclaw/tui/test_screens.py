@@ -24,7 +24,6 @@ class _SetupApp(App):
 async def test_wizard_step1_shows_provider_select():
     async with _SetupApp().run_test(size=(120, 50)) as pilot:
         select = pilot.app.screen.query_one("#provider-select", Select)
-        assert select is not None
 
 
 # ── Step 1 → Step 2 ───────────────────────────────────────────────────────────
@@ -35,7 +34,6 @@ async def test_wizard_step1_anthropic_advances_to_api_key_input():
         pilot.app.screen.query_one("#provider-select", Select).value = "anthropic"
         await pilot.pause()
         inp = pilot.app.screen.query_one("#api-key-input", Input)
-        assert inp is not None
 
 
 @pytest.mark.asyncio
@@ -55,7 +53,6 @@ async def test_wizard_ollama_skips_api_key_and_goes_to_model_select():
         pilot.app.screen.query_one("#provider-select", Select).value = "ollama"
         await pilot.pause()
         model_select = pilot.app.screen.query_one("#model-select", Select)
-        assert model_select is not None
 
 
 # ── Step 2 → Step 3 ───────────────────────────────────────────────────────────
@@ -69,7 +66,6 @@ async def test_wizard_enter_on_api_key_advances_to_model_select():
         await pilot.press("enter")
         await pilot.pause()
         model_select = pilot.app.screen.query_one("#model-select", Select)
-        assert model_select is not None
 
 
 @pytest.mark.asyncio
@@ -80,7 +76,6 @@ async def test_wizard_escape_on_api_key_skips_and_advances_to_model_select():
         await pilot.press("escape")
         await pilot.pause()
         model_select = pilot.app.screen.query_one("#model-select", Select)
-        assert model_select is not None
 
 
 # ── Full flow: save_user_config called correctly ───────────────────────────────
@@ -109,7 +104,6 @@ async def test_wizard_complete_saves_correct_key_and_model():
     assert saved[0][1] == "deepseek-chat"
 
 
-from unittest.mock import patch
 from proteinclaw.cli.tui.screens.main import MainScreen
 from proteinclaw.core.agent.events import TokenEvent, DoneEvent, ErrorEvent, ToolCallEvent, ObservationEvent
 from proteinclaw.cli.tui.widgets.status_bar import StatusBar
