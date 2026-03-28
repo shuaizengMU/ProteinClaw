@@ -14,7 +14,7 @@ class ProteinClawApp(App):
         load_user_config()
         if needs_setup():
             from proteinclaw.cli.tui.screens.setup import SetupScreen
-            self.switch_screen(SetupScreen())
+            await self.push_screen(SetupScreen())
         else:
             from proteinclaw.cli.tui.screens.main import MainScreen
-            self.switch_screen(MainScreen())
+            await self.push_screen(MainScreen())
