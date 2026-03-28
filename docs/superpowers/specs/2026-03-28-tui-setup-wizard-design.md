@@ -16,7 +16,8 @@ The current setup screen shows all four API key fields plus a model selector sim
 ### Step 1 — Provider Selection (Select widget)
 - Options: Anthropic, OpenAI, DeepSeek, MiniMax, Ollama
 - Single-select using Textual `Select`
-- Ollama skips Step 2 (no API key required)
+- **Selecting an option immediately advances** to Step 2 (no Enter needed)
+- Ollama skips Step 2 (no API key required) and advances directly to Step 3
 
 ### Step 2 — API Key Entry (Input widget, password mode)
 - Label shows which provider's key is needed
@@ -27,6 +28,7 @@ The current setup screen shows all four API key fields plus a model selector sim
 ### Step 3 — Model Selection (Select widget)
 - Options filtered from `SUPPORTED_MODELS` by chosen provider
 - Single-select using Textual `Select`
+- **Selecting an option immediately saves and transitions** to MainScreen (no Enter needed)
 
 ### Completion
 - Calls `save_user_config(keys, default_model)` with the collected key and model
@@ -78,28 +80,28 @@ The current setup screen shows all four API key fields plus a model selector sim
 
 ## Implementation
 
-### File changed
+### Files changed
 - `proteinclaw/cli/tui/screens/setup.py` — full rewrite
+- `tests/proteinclaw/tui/test_screens.py` — remove 3 old flat-form tests, add 7 new wizard tests
 
 ### No changes required
 - `proteinclaw/core/config.py` — `save_user_config`, `needs_setup`, `SUPPORTED_MODELS` unchanged
 - `proteinclaw/cli/tui/app.py` — unchanged
-- All other files — unchanged
 
 ### Internal state
 ```python
-_selected_provider: str       # set after Step 1
-_api_key: str                 # set after Step 2 (may be empty)
-_current_step: reactive[int]  # 1, 2, or 3
+_selected_provider: str      # set after Step 1
+_api_key: str                # set after Step 2 (may be empty)
+current_step: reactive[int]  # 1, 2, or 3
 ```
 
 ### Step advancement logic
-- Step 1 → Step 2: on Select change + Enter (skip Step 2 if Ollama)
-- Step 2 → Step 3: on Input submitted or Escape
-- Step 3 → done: on Select change + Enter → save + switch_screen
+- Step 1 → Step 2: `Select.Changed` on `#provider-select` (skip to Step 3 if Ollama)
+- Step 2 → Step 3: `Input.Submitted` (Enter) or `Escape` key on `#api-key-input`
+- Step 3 → done: `Select.Changed` on `#model-select` → `_finish(model)` → save + switch_screen
 
 ### Widget rendering
-`watch__current_step` (or a helper method) clears and re-mounts the step-specific widgets into a content container. The header label and step counter update reactively.
+`watch_current_step` clears and re-mounts step-specific widgets into a `#step-content` container. The `#step-label` and `#hint-label` update on each step.
 
 ## Out of Scope
 - Multi-provider configuration (user configures one provider per wizard run)
