@@ -21,7 +21,15 @@ _PROVIDERS: list[tuple[str, str, str]] = [
 ]
 
 
+# Providers that reuse another provider's SDK in SUPPORTED_MODELS but are distinct in the wizard
+_PROVIDER_MODELS_OVERRIDE: dict[str, list[str]] = {
+    "minimax": ["minimax-text-01"],
+}
+
+
 def _models_for_provider(provider: str) -> list[str]:
+    if provider in _PROVIDER_MODELS_OVERRIDE:
+        return _PROVIDER_MODELS_OVERRIDE[provider]
     return [m for m, cfg in SUPPORTED_MODELS.items() if cfg["provider"] == provider]
 
 
