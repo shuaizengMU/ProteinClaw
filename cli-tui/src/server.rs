@@ -69,6 +69,6 @@ mod tests {
         let occupied = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         let occupied_port = occupied.local_addr().unwrap().port();
         let next = find_free_port(occupied_port);
-        assert!(next > occupied_port || next != occupied_port);
+        assert_ne!(next, occupied_port);
     }
 }
