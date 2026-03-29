@@ -77,13 +77,18 @@ pub fn save_to(config: &Config, path: impl AsRef<Path>) -> anyhow::Result<()> {
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    let mut lines = vec!["[keys]\n".to_string()];
+    // Build TOML document using serde to get correct escaping
+    let mut keys_table = toml::Table::new();
     for (k, v) in &config.keys {
-        lines.push(format!("{} = \"{}\"\n", k, v));
+        keys_table.insert(k.clone(), toml::Value::String(v.clone()));
     }
-    lines.push("\n[defaults]\n".to_string());
-    lines.push(format!("model = \"{}\"\n", config.default_model));
-    std::fs::write(path, lines.join(""))?;
+    let mut defaults_table = toml::Table::new();
+    defaults_table.insert("model".to_string(), toml::Value::String(config.default_model.clone()));
+    let mut doc = toml::Table::new();
+    doc.insert("keys".to_string(), toml::Value::Table(keys_table));
+    doc.insert("defaults".to_string(), toml::Value::Table(defaults_table));
+    let toml_str = toml::to_string(&doc)?;
+    std::fs::write(path, toml_str)?;
     Ok(())
 }
 

@@ -277,7 +277,11 @@ fn build_conversation_text(messages: &[Message]) -> Text<'_> {
                 ]));
                 if let Some(r) = result {
                     let r_str = serde_json::to_string(r).unwrap_or_default();
-                    let truncated = if r_str.len() > 80 { format!("{}...", &r_str[..80]) } else { r_str };
+                    let truncated = if r_str.chars().count() > 80 {
+                        format!("{}...", r_str.chars().take(80).collect::<String>())
+                    } else {
+                        r_str
+                    };
                     lines.push(Line::from(vec![
                         Span::styled(format!("║  result: {}", truncated), tool_style),
                     ]));
