@@ -1,4 +1,6 @@
 import React from "react"
+import { openSync } from "fs"
+import { ReadStream } from "tty"
 import { parseArgs } from "./cli.js"
 import { loadConfig, needsSetup } from "./services/config.js"
 import { createWsClient } from "./services/ws.js"
@@ -8,6 +10,18 @@ import { Setup }  from "./screens/Setup.js"
 import { REPL }   from "./screens/REPL.js"
 import { Doctor } from "./screens/Doctor.js"
 import { renderSync } from "./ink/root.js"
+
+/** Get a usable TTY stdin stream. On Bun/WSL2, process.stdin.isTTY can be
+ *  false even in an interactive terminal; opening /dev/tty directly fixes it. */
+function getTTYStdin(): NodeJS.ReadStream {
+  if (process.stdin.isTTY) return process.stdin
+  try {
+    const fd = openSync("/dev/tty", "r+")
+    return new ReadStream(fd) as NodeJS.ReadStream
+  } catch {
+    return process.stdin
+  }
+}
 
 const VERSION = "0.1.0"
 
@@ -108,7 +122,7 @@ async function main() {
   process.on("exit",   () => { ws.close(); server.kill() })
   process.on("SIGINT", () => { ws.close(); server.kill(); process.exit(0) })
 
-  renderSync(<App ws={ws} />)
+  renderSync(<App ws={ws} />, { stdin: getTTYStdin() })
 }
 
 main().catch(err => {
