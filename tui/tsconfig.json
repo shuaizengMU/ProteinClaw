@@ -8,8 +8,10 @@
     "strict": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "baseUrl": ".",
     "paths": {
-      "ink": ["./src/ink/index.tsx"]
+      "ink": ["./src/ink/index.tsx"],
+      "react/compiler-runtime": ["./node_modules/react-compiler-runtime/dist/index.js"]
     }
   },
   "include": ["src/**/*", "tests/**/*"]
