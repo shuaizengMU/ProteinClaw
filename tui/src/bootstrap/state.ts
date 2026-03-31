@@ -15,3 +15,7 @@ export function getIsInteractive(): boolean {
 export function updateLastInteractionTime(): void {
   // noop
 }
+
+export function markScrollActivity(): void {
+  // noop stub — ScrollBox scrolling activity tracking not needed in ProteinClaw
+}
