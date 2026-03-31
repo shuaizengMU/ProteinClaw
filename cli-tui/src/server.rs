@@ -22,7 +22,11 @@ pub fn find_free_port(start: u16) -> u16 {
 /// and block until the port accepts TCP connections (max `timeout_secs`).
 pub async fn start() -> anyhow::Result<ServerHandle> {
     let port = find_free_port(8000);
-    let child = Command::new("python")
+    let python = ["python3", "python"].iter()
+        .find(|p| std::process::Command::new(p).arg("--version").output().is_ok())
+        .copied()
+        .unwrap_or("python3");
+    let child = Command::new(python)
         .args([
             "-m", "uvicorn",
             "proteinclaw.server.main:app",
