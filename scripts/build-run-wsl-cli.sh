@@ -1,1 +1,0 @@
- cargo build -p proteinclaw-tui && ./target/debug/proteinclaw-tui

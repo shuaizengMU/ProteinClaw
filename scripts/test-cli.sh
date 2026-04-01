@@ -94,5 +94,6 @@ ok "All CLI smoke tests completed"
 sep
 echo ""
 echo "To launch the interactive TUI:"
-echo -e "  ${BOLD}uv run proteinclaw${RESET}"
+echo -e "  ${BOLD}scripts/tui.sh${RESET}   (Linux/WSL)"
+echo -e "  ${BOLD}scripts/tui.ps1${RESET}  (Windows)"
 echo ""
