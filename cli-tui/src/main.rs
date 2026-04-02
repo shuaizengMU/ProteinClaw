@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
     // ── Input textarea ───────────────────────────────────────────────────────
     let mut textarea = TextArea::default();
     textarea.set_placeholder_text("Message ProteinClaw…  (Enter to send, Shift+Enter for newline)");
-    style_textarea(&mut textarea, false);
+    widgets::input::apply_style(&mut textarea);
 
     // ── Terminal ─────────────────────────────────────────────────────────────
     enable_raw_mode()?;
@@ -71,6 +71,8 @@ async fn main() -> Result<()> {
                 }
             }
         }
+
+        app.update(Action::Tick);
 
         // Poll keyboard / terminal events
         if event::poll(tick)? {
@@ -117,7 +119,47 @@ fn handle_chat_key(
     textarea: &mut TextArea,
     cmd_tx: &mpsc::UnboundedSender<WsCmd>,
 ) {
-    // Scroll (vim-style + arrows)
+    use crate::widgets::command_popup::filtered_commands;
+
+    // ── Command popup navigation ─────────────────────────────────────────────
+    if app.command_popup.is_some() {
+        match (key.modifiers, key.code) {
+            (KeyModifiers::NONE, KeyCode::Esc) => {
+                app.update(Action::PopupClose);
+                return;
+            }
+            (KeyModifiers::NONE, KeyCode::Up) => {
+                app.update(Action::PopupUp);
+                return;
+            }
+            (KeyModifiers::NONE, KeyCode::Down) => {
+                app.update(Action::PopupDown);
+                return;
+            }
+            (KeyModifiers::NONE, KeyCode::Enter) => {
+                // Fill selected command into textarea
+                if let Some(ref popup) = app.command_popup {
+                    let cmds = filtered_commands(&popup.filter);
+                    let idx = popup.selected.min(cmds.len().saturating_sub(1));
+                    if let Some((cmd, _)) = cmds.get(idx) {
+                        *textarea = TextArea::default();
+                        textarea.set_placeholder_text(
+                            "Message ProteinClaw…  (Enter to send, Shift+Enter for newline)",
+                        );
+                        widgets::input::apply_style(textarea);
+                        for ch in cmd.chars() {
+                            textarea.insert_char(ch);
+                        }
+                    }
+                }
+                app.update(Action::PopupClose);
+                return;
+            }
+            _ => {}
+        }
+    }
+
+    // ── Scroll (vim-style + arrows) ──────────────────────────────────────────
     match (key.modifiers, key.code) {
         (KeyModifiers::NONE, KeyCode::Up) | (KeyModifiers::NONE, KeyCode::Char('k')) => {
             app.update(Action::ScrollUp);
@@ -128,15 +170,12 @@ fn handle_chat_key(
             return;
         }
         (KeyModifiers::NONE, KeyCode::Char('g')) => {
-            // gg = scroll to bottom (single g resets for now)
             app.update(Action::ScrollToBottom);
             return;
         }
         (KeyModifiers::CONTROL, KeyCode::Char('o')) => {
-            // Toggle the most recent collapsible part
             let parts = app.collapsible_parts();
             if let Some((mi, pi)) = parts.last().copied() {
-                // Determine type by checking the part
                 if let Some(crate::app::ChatMessage::Assistant { parts: p, .. }) =
                     app.messages.get(mi)
                 {
@@ -156,18 +195,44 @@ fn handle_chat_key(
         _ => {}
     }
 
-    // Enter → send message (plain Enter; Shift+Enter is passed to textarea)
+    // ── Enter → execute command or send message ──────────────────────────────
     if key.modifiers == KeyModifiers::NONE && key.code == KeyCode::Enter {
         let text: String = textarea.lines().join("\n").trim().to_string();
         if !text.is_empty() {
-            // Reset textarea
             *textarea = TextArea::default();
             textarea.set_placeholder_text(
                 "Message ProteinClaw…  (Enter to send, Shift+Enter for newline)",
             );
-            style_textarea(textarea, false);
+            widgets::input::apply_style(textarea);
+            app.command_popup = None;
 
-            // Send to WS
+            if text.starts_with('/') {
+                let (cmd, rest) = text.split_once(' ').unwrap_or((&text, ""));
+                match cmd {
+                    "/clear"  => { app.update(Action::CommandClear); }
+                    "/help"   => { app.update(Action::CommandHelp); }
+                    "/export" => { app.update(Action::CommandExport); }
+                    "/model"  => {
+                        let model = rest.trim().to_string();
+                        if !model.is_empty() {
+                            app.update(Action::CommandSetModel(model));
+                        }
+                    }
+                    "/system" => {
+                        let sys = rest.trim().to_string();
+                        if !sys.is_empty() {
+                            app.update(Action::CommandSetSystem(sys));
+                        }
+                    }
+                    _ => {
+                        app.messages.push(crate::app::ChatMessage::Error(
+                            format!("Unknown command: {}. Type /help for a list.", cmd),
+                        ));
+                    }
+                }
+                return;
+            }
+
             let history = app.history.clone();
             let model = app.config.model.clone();
             let _ = ws::send_message(cmd_tx, text.clone(), history, model);
@@ -176,9 +241,29 @@ fn handle_chat_key(
         return;
     }
 
-    // All other keys → forward to textarea
+    // ── All other keys → forward to textarea ────────────────────────────────
     textarea.input(key);
-    style_textarea(textarea, !textarea.is_empty());
+    widgets::input::apply_style(textarea);
+
+    // Sync command popup with current input
+    let first_line = textarea.lines().first().map(|s| s.as_str()).unwrap_or("").to_string();
+    if first_line.starts_with('/') {
+        let filter = first_line[1..].to_string();
+        match app.command_popup {
+            None => {
+                app.command_popup = Some(crate::app::CommandPopupState { filter, selected: 0 });
+            }
+            Some(ref mut p) => {
+                p.filter = filter;
+                let max = crate::widgets::command_popup::filtered_commands(&p.filter)
+                    .len()
+                    .saturating_sub(1);
+                p.selected = p.selected.min(max);
+            }
+        }
+    } else {
+        app.command_popup = None;
+    }
 }
 
 fn handle_setup_key(key: event::KeyEvent, app: &mut App) {
@@ -204,23 +289,3 @@ fn handle_setup_key(key: event::KeyEvent, app: &mut App) {
     }
 }
 
-// ── Textarea styling ──────────────────────────────────────────────────────────
-
-fn style_textarea(textarea: &mut TextArea, has_content: bool) {
-    use ratatui::{
-        style::{Color, Style},
-        widgets::{Block, Borders},
-    };
-    let border_color = if has_content {
-        Color::Cyan
-    } else {
-        Color::DarkGray
-    };
-    textarea.set_block(
-        Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(border_color))
-            .title(" Message (Enter → send  Shift+Enter → newline  Ctrl+C → quit) "),
-    );
-    textarea.set_cursor_line_style(Style::default());
-}
