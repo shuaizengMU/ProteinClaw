@@ -222,6 +222,8 @@ impl App {
             }
             Action::PopupDown => {
                 if let Some(ref mut p) = self.command_popup {
+                    // No upper bound here — the widget (command_popup.rs) clamps
+                    // selected against filtered_commands().len() before rendering.
                     p.selected += 1;
                 }
             }
@@ -239,7 +241,12 @@ impl App {
                 self.command_popup = None;
             }
             Action::CommandSetSystem(_s) => {
-                // System prompt not persisted yet — future work
+                self.messages.push(ChatMessage::Assistant {
+                    parts: vec![AssistantPart::Text(
+                        "System prompt support is not yet implemented.".to_string(),
+                    )],
+                    done: true,
+                });
                 self.command_popup = None;
             }
             Action::CommandHelp => {
@@ -266,7 +273,14 @@ impl App {
                         .unwrap_or_default()
                         .as_secs()
                 );
-                let _ = std::fs::write(&filename, serde_json::to_string_pretty(&self.history).unwrap_or_default());
+                let json = serde_json::to_string_pretty(&self.history).unwrap_or_default();
+                match std::fs::write(&filename, json) {
+                    Ok(()) => self.messages.push(ChatMessage::Assistant {
+                        parts: vec![AssistantPart::Text(format!("Session exported to `{}`", filename))],
+                        done: true,
+                    }),
+                    Err(e) => self.messages.push(ChatMessage::Error(format!("Export failed: {}", e))),
+                }
                 self.command_popup = None;
             }
         }
