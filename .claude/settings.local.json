@@ -63,7 +63,19 @@
       "Bash(/mnt/d/data/code/ProteinClaw/.worktrees/mvp-implementation/venv/bin/pytest tests/proteinbox/test_blast.py -v --tb=short)",
       "Bash(curl -sS https://bootstrap.pypa.io/get-pip.py)",
       "Bash(~/.local/bin/pip --version)",
-      "Bash(~/.local/bin/pip install:*)"
+      "Bash(~/.local/bin/pip install:*)",
+      "Skill(claude-hud:configure)",
+      "Read(//Users/shuaizeng/.config/**)",
+      "Read(//Users/shuaizeng/**)",
+      "Bash(cargo build:*)",
+      "Bash(cargo doc:*)",
+      "Bash(cargo tree:*)",
+      "Bash(grep -r \"pub enum Message\" ~/.cargo/registry/src/*/tungstenite-0.24.0/src/message.rs)",
+      "Bash(cargo test:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)",
+      "Bash(git branch:*)"
     ]
   }
 }
