@@ -6,12 +6,31 @@ from pathlib import Path
 
 
 SUPPORTED_MODELS: dict[str, dict] = {
+    # OpenAI
     "gpt-4o":            {"provider": "openai"},
+    # Anthropic
     "claude-opus-4-5":   {"provider": "anthropic"},
-    "deepseek-chat":     {"provider": "deepseek",  "api_base": "https://api.deepseek.com"},
-    "deepseek-reasoner": {"provider": "deepseek",  "api_base": "https://api.deepseek.com"},
-    "minimax-text-01":   {"provider": "openai",    "api_base": "https://api.minimax.chat/v1"},
-    "ollama/llama3":     {"provider": "ollama",    "api_base": "http://localhost:11434"},
+    # Google
+    "gemini-2.5-pro":    {"provider": "google",   "api_base": "https://generativelanguage.googleapis.com/v1beta/openai"},
+    "gemini-2.5-flash":  {"provider": "google",   "api_base": "https://generativelanguage.googleapis.com/v1beta/openai"},
+    # DeepSeek
+    "deepseek-chat":     {"provider": "deepseek", "api_base": "https://api.deepseek.com"},
+    "deepseek-reasoner": {"provider": "deepseek", "api_base": "https://api.deepseek.com"},
+    # Qwen (DashScope)
+    "qwen-max":          {"provider": "openai",   "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1"},
+    "qwen-plus":         {"provider": "openai",   "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1"},
+    # MiniMax
+    "minimax-text-01":   {"provider": "openai",   "api_base": "https://api.minimax.chat/v1"},
+    # OpenRouter
+    "openrouter/google/gemini-2.5-flash-preview-05-20": {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
+    "openrouter/deepseek/deepseek-chat-v3-0324":        {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
+    "openrouter/meta-llama/llama-4-maverick":            {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
+    "openrouter/qwen/qwen3-235b-a22b":                  {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
+    "openrouter/auto":   {"provider": "openai",   "api_base": "https://openrouter.ai/api/v1"},
+    # Ollama (local)
+    "ollama/llama4":     {"provider": "ollama",   "api_base": "http://localhost:11434"},
+    "ollama/qwen3":      {"provider": "ollama",   "api_base": "http://localhost:11434"},
+    "ollama/llama3":     {"provider": "ollama",   "api_base": "http://localhost:11434"},
 }
 
 
@@ -35,8 +54,11 @@ CONFIG_PATH = Path("~/.config/proteinclaw/config.toml").expanduser()
 _PROVIDER_KEY_MAP: dict[str, str] = {
     "openai":    "OPENAI_API_KEY",
     "anthropic": "ANTHROPIC_API_KEY",
+    "google":    "GEMINI_API_KEY",
     "deepseek":  "DEEPSEEK_API_KEY",
     "minimax":   "MINIMAX_API_KEY",
+    "dashscope": "DASHSCOPE_API_KEY",
+    "openrouter":"OPENROUTER_API_KEY",
 }
 
 
