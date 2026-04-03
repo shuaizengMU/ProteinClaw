@@ -7,7 +7,8 @@ use ratatui::{
 };
 use tui_textarea::TextArea;
 
-use crate::app::{App, Screen, SetupState};
+use crate::app::{App, Screen, SetupState, SetupStep};
+use crate::registry::PROVIDERS;
 use crate::widgets::{self, LayoutMode};
 
 // ── Public entry point ───────────────────────────────────────────────────────
@@ -65,64 +66,156 @@ fn draw_chat(f: &mut Frame, app: &App, textarea: &TextArea) {
     }
 }
 
-// ── Setup wizard (unchanged from original) ───────────────────────────────────
+// ── Setup wizard ─────────────────────────────────────────────────────────────
 
 fn draw_setup(f: &mut Frame, st: &SetupState) {
     let area = f.area();
-    let vpad = area.height.saturating_sub(18) / 2;
-    let hpad = area.width.saturating_sub(60) / 2;
-    let popup = Rect {
-        x: hpad,
-        y: vpad,
-        width: area.width.min(60),
-        height: area.height.min(18),
+    let popup_h: u16 = match st.step {
+        SetupStep::Provider => (PROVIDERS.len() as u16 + 6).min(area.height),
+        SetupStep::Model => {
+            let n = PROVIDERS[st.provider_idx].models.len() as u16;
+            (n + 8).min(area.height)
+        }
+        SetupStep::ApiKey => 12u16.min(area.height),
     };
+    let popup_w: u16 = 50.min(area.width);
+    let vpad = area.height.saturating_sub(popup_h) / 2;
+    let hpad = area.width.saturating_sub(popup_w) / 2;
+    let popup = Rect { x: hpad, y: vpad, width: popup_w, height: popup_h };
 
     f.render_widget(Clear, popup);
 
+    let title = match st.step {
+        SetupStep::Provider => " Setup — 1/3 Provider ",
+        SetupStep::Model    => " Setup — 2/3 Model ",
+        SetupStep::ApiKey   => " Setup — 3/3 API Key ",
+    };
     let block = Block::default()
-        .title(" ProteinClaw — First-run Setup ")
+        .title(title)
         .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::Cyan));
     f.render_widget(block, popup);
 
     let inner = Rect {
-        x: popup.x + 1,
+        x: popup.x + 2,
         y: popup.y + 1,
-        width: popup.width.saturating_sub(2),
+        width: popup.width.saturating_sub(4),
         height: popup.height.saturating_sub(2),
     };
 
+    match st.step {
+        SetupStep::Provider => draw_setup_provider(f, inner, st),
+        SetupStep::Model    => draw_setup_model(f, inner, st),
+        SetupStep::ApiKey   => draw_setup_api_key(f, inner, st),
+    }
+}
+
+fn draw_setup_provider(f: &mut Frame, area: Rect, st: &SetupState) {
     let mut lines: Vec<Line> = vec![
+        Line::from(Span::styled("Select a provider:", Style::default().fg(Color::Yellow))),
+        Line::raw(""),
+    ];
+    for (i, p) in PROVIDERS.iter().enumerate() {
+        let marker = if i == st.provider_idx { "> " } else { "  " };
+        let style = if i == st.provider_idx {
+            Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)
+        } else {
+            Style::default()
+        };
+        lines.push(Line::from(Span::styled(format!("{}{}", marker, p.name), style)));
+    }
+    lines.push(Line::raw(""));
+    lines.push(Line::from(vec![
+        Span::styled("[↑↓]", Style::default().fg(Color::Cyan)),
+        Span::raw(" select  "),
+        Span::styled("[Enter]", Style::default().fg(Color::Cyan)),
+        Span::raw(" confirm"),
+    ]));
+    if let Some(err) = &st.error {
+        lines.push(Line::from(Span::styled(err.as_str(), Style::default().fg(Color::Red))));
+    }
+    f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), area);
+}
+
+fn draw_setup_model(f: &mut Frame, area: Rect, st: &SetupState) {
+    let provider = &PROVIDERS[st.provider_idx];
+    let mut lines: Vec<Line> = vec![
+        Line::from(vec![
+            Span::raw("Provider: "),
+            Span::styled(provider.name, Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+        ]),
+        Line::from(Span::styled("Select a model:", Style::default().fg(Color::Yellow))),
+        Line::raw(""),
+    ];
+    for (i, m) in provider.models.iter().enumerate() {
+        let marker = if i == st.model_idx { "> " } else { "  " };
+        let style = if i == st.model_idx {
+            Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)
+        } else {
+            Style::default()
+        };
+        let label = if m.tag.is_empty() {
+            m.name.to_string()
+        } else {
+            format!("{} {}", m.name, m.tag)
+        };
+        lines.push(Line::from(Span::styled(format!("{}{}", marker, label), style)));
+    }
+    lines.push(Line::raw(""));
+    lines.push(Line::from(vec![
+        Span::styled("[↑↓]", Style::default().fg(Color::Cyan)),
+        Span::raw(" select  "),
+        Span::styled("[Enter]", Style::default().fg(Color::Cyan)),
+        Span::raw(" confirm  "),
+        Span::styled("[Esc]", Style::default().fg(Color::Cyan)),
+        Span::raw(" back"),
+    ]));
+    if let Some(err) = &st.error {
+        lines.push(Line::from(Span::styled(err.as_str(), Style::default().fg(Color::Red))));
+    }
+    f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), area);
+}
+
+fn draw_setup_api_key(f: &mut Frame, area: Rect, st: &SetupState) {
+    let provider = &PROVIDERS[st.provider_idx];
+    let model = &provider.models[st.model_idx];
+
+    // Mask key: show first 6 chars, rest as asterisks
+    let masked = if st.key_buf.len() <= 6 {
+        st.key_buf.clone()
+    } else {
+        let visible = &st.key_buf[..6];
+        format!("{}{}", visible, "*".repeat(st.key_buf.len() - 6))
+    };
+
+    let mut lines: Vec<Line> = vec![
+        Line::from(vec![
+            Span::raw("Provider: "),
+            Span::styled(provider.name, Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+        ]),
+        Line::from(vec![
+            Span::raw("Model:    "),
+            Span::styled(model.name, Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+        ]),
+        Line::raw(""),
         Line::from(Span::styled(
-            "No API key found in the environment.",
+            format!("Enter your {}:", provider.env_var),
             Style::default().fg(Color::Yellow),
         )),
-        Line::raw(""),
-        Line::from(Span::raw("Set one of these before launching ProteinClaw:")),
-        Line::raw("  ANTHROPIC_API_KEY"),
-        Line::raw("  OPENAI_API_KEY"),
-        Line::raw("  DEEPSEEK_API_KEY"),
-        Line::raw("  MINIMAX_API_KEY"),
-        Line::raw(""),
         Line::from(vec![
-            Span::raw("Model: "),
-            Span::styled(&st.model_buf, Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+            Span::styled(&masked, Style::default().fg(Color::White)),
             Span::styled("_", Style::default().fg(Color::Green).add_modifier(Modifier::SLOW_BLINK)),
         ]),
         Line::raw(""),
         Line::from(vec![
-            Span::styled("[Enter] ", Style::default().fg(Color::Cyan)),
-            Span::raw("save and continue   "),
-            Span::styled("[Backspace] ", Style::default().fg(Color::Cyan)),
-            Span::raw("delete"),
+            Span::styled("[Enter]", Style::default().fg(Color::Cyan)),
+            Span::raw(" save  "),
+            Span::styled("[Esc]", Style::default().fg(Color::Cyan)),
+            Span::raw(" back"),
         ]),
     ];
-
     if let Some(err) = &st.error {
-        lines.push(Line::raw(""));
         lines.push(Line::from(Span::styled(err.as_str(), Style::default().fg(Color::Red))));
     }
-
-    f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), inner);
+    f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), area);
 }
