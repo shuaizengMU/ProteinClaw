@@ -287,24 +287,34 @@ fn handle_chat_key(
 }
 
 fn handle_setup_key(key: event::KeyEvent, app: &mut App) {
-    if let Screen::Setup(_) = &app.screen {
-        match key.code {
-            KeyCode::Enter => app.update(Action::SetupNext),
-            KeyCode::Char(c) => {
-                if let Screen::Setup(ref st) = app.screen.clone() {
-                    let mut buf = st.model_buf.clone();
-                    buf.push(c);
-                    app.update(Action::SetupModelInput(buf));
+    if let Screen::Setup(ref st) = app.screen {
+        match st.step {
+            app::SetupStep::Provider | app::SetupStep::Model => {
+                match key.code {
+                    KeyCode::Up => app.update(Action::SetupUp),
+                    KeyCode::Down => app.update(Action::SetupDown),
+                    KeyCode::Enter => app.update(Action::SetupNext),
+                    KeyCode::Esc => app.update(Action::SetupBack),
+                    _ => {}
                 }
             }
-            KeyCode::Backspace => {
-                if let Screen::Setup(ref st) = app.screen.clone() {
-                    let mut buf = st.model_buf.clone();
-                    buf.pop();
-                    app.update(Action::SetupModelInput(buf));
+            app::SetupStep::ApiKey => {
+                match key.code {
+                    KeyCode::Enter => app.update(Action::SetupNext),
+                    KeyCode::Esc => app.update(Action::SetupBack),
+                    KeyCode::Char(c) => {
+                        let mut buf = st.key_buf.clone();
+                        buf.push(c);
+                        app.update(Action::SetupKeyInput(buf));
+                    }
+                    KeyCode::Backspace => {
+                        let mut buf = st.key_buf.clone();
+                        buf.pop();
+                        app.update(Action::SetupKeyInput(buf));
+                    }
+                    _ => {}
                 }
             }
-            _ => {}
         }
     }
 }
