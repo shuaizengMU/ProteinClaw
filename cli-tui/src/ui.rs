@@ -7,7 +7,7 @@ use ratatui::{
 };
 use tui_textarea::TextArea;
 
-use crate::app::{App, Screen, SetupState, SetupStep};
+use crate::app::{App, Screen, SetupState, SetupStep, WizardMode};
 use crate::registry::PROVIDERS;
 use crate::widgets::{self, LayoutMode};
 
@@ -125,12 +125,18 @@ fn draw_setup_provider(f: &mut Frame, area: Rect, st: &SetupState) {
         lines.push(Line::from(Span::styled(format!("{}{}", marker, p.name), style)));
     }
     lines.push(Line::raw(""));
-    lines.push(Line::from(vec![
+    let mut footer = vec![
         Span::styled("[↑↓]", Style::default().fg(Color::Cyan)),
         Span::raw(" select  "),
         Span::styled("[Enter]", Style::default().fg(Color::Cyan)),
         Span::raw(" confirm"),
-    ]));
+    ];
+    if st.mode == WizardMode::SwitchModel {
+        footer.push(Span::raw("  "));
+        footer.push(Span::styled("[Esc]", Style::default().fg(Color::Cyan)));
+        footer.push(Span::raw(" cancel"));
+    }
+    lines.push(Line::from(footer));
     if let Some(err) = &st.error {
         lines.push(Line::from(Span::styled(err.as_str(), Style::default().fg(Color::Red))));
     }
