@@ -8,7 +8,7 @@ mod ws;
 mod registry;
 
 use anyhow::Result;
-use app::{Action, App, Screen};
+use app::{Action, App, Screen, SetupState, SetupStep, WizardMode};
 use config::Config;
 use crossterm::{
     event::{
@@ -236,6 +236,16 @@ fn handle_chat_key(
                         let model = rest.trim().to_string();
                         if !model.is_empty() {
                             app.update(Action::CommandSetModel(model));
+                        } else {
+                            app.screen = Screen::Setup(SetupState {
+                                step: SetupStep::Provider,
+                                provider_idx: 0,
+                                model_idx: 0,
+                                key_buf: String::new(),
+                                error: None,
+                                mode: WizardMode::SwitchModel,
+                            });
+                            app.command_popup = None;
                         }
                     }
                     "/system" => {
