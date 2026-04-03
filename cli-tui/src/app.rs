@@ -59,6 +59,12 @@ pub enum SetupStep {
     ApiKey,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum WizardMode {
+    FirstRun,
+    SwitchModel,
+}
+
 #[derive(Debug, Clone)]
 pub struct SetupState {
     pub step: SetupStep,
@@ -66,6 +72,7 @@ pub struct SetupState {
     pub model_idx: usize,
     pub key_buf: String,
     pub error: Option<String>,
+    pub mode: WizardMode,
 }
 
 // ── Screen ───────────────────────────────────────────────────────────────────
@@ -133,6 +140,7 @@ impl App {
                 model_idx: 0,
                 key_buf: String::new(),
                 error: None,
+                mode: WizardMode::FirstRun,
             })
         } else {
             Screen::Chat
@@ -240,8 +248,14 @@ impl App {
                             }
                         }
                         SetupStep::Model => {
-                            // Ollama needs no key — skip to Chat
-                            if provider.env_var.is_empty() {
+                            let key_already_set = !provider.env_var.is_empty()
+                                && std::env::var(provider.env_var)
+                                    .map(|v| !v.is_empty())
+                                    .unwrap_or(false);
+                            let skip_key = provider.env_var.is_empty()
+                                || (st.mode == WizardMode::SwitchModel && key_already_set);
+
+                            if skip_key {
                                 let model = provider.models[st.model_idx].name.to_string();
                                 self.config.model = model;
                                 let _ = self.config.save();
@@ -273,9 +287,19 @@ impl App {
                 }
             }
             Action::SetupBack => {
+                let mode = if let Screen::Setup(ref st) = self.screen {
+                    st.mode.clone()
+                } else {
+                    return;
+                };
                 if let Screen::Setup(ref mut st) = self.screen {
                     match st.step {
-                        SetupStep::Provider => {} // no-op on first step
+                        SetupStep::Provider => {
+                            if mode == WizardMode::SwitchModel {
+                                self.screen = Screen::Chat;
+                            }
+                            // FirstRun: no-op
+                        }
                         SetupStep::Model => {
                             st.step = SetupStep::Provider;
                             st.error = None;
