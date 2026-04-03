@@ -53,17 +53,18 @@ impl CommandPopupState {
 // ── Setup wizard state ───────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, PartialEq)]
-#[allow(dead_code)]
-pub enum SetupField {
+pub enum SetupStep {
+    Provider,
     Model,
-    Done,
+    ApiKey,
 }
 
 #[derive(Debug, Clone)]
 pub struct SetupState {
-    #[allow(dead_code)]
-    pub field: SetupField,
-    pub model_buf: String,
+    pub step: SetupStep,
+    pub provider_idx: usize,
+    pub model_idx: usize,
+    pub key_buf: String,
     pub error: Option<String>,
 }
 
@@ -87,8 +88,11 @@ pub enum Action {
     ScrollToBottom,
     ToggleThinking { msg: usize, part: usize },
     ToggleTool { msg: usize, part: usize },
+    SetupUp,
+    SetupDown,
     SetupNext,
-    SetupModelInput(String),
+    SetupBack,
+    SetupKeyInput(String),
     Quit,
     Tick,
     PopupUp,
@@ -124,8 +128,10 @@ impl App {
         let needs_setup = !Config::has_api_key();
         let screen = if needs_setup {
             Screen::Setup(SetupState {
-                field: SetupField::Model,
-                model_buf: config.model.clone(),
+                step: SetupStep::Provider,
+                provider_idx: 0,
+                model_idx: 0,
+                key_buf: String::new(),
                 error: None,
             })
         } else {
@@ -191,23 +197,100 @@ impl App {
                 }
             }
 
-            Action::SetupModelInput(s) => {
+            Action::SetupUp => {
                 if let Screen::Setup(ref mut st) = self.screen {
-                    st.model_buf = s;
+                    match st.step {
+                        SetupStep::Provider => {
+                            st.provider_idx = st.provider_idx.saturating_sub(1);
+                        }
+                        SetupStep::Model => {
+                            st.model_idx = st.model_idx.saturating_sub(1);
+                        }
+                        SetupStep::ApiKey => {}
+                    }
+                    st.error = None;
+                }
+            }
+            Action::SetupDown => {
+                if let Screen::Setup(ref mut st) = self.screen {
+                    match st.step {
+                        SetupStep::Provider => {
+                            let max = crate::registry::PROVIDERS.len().saturating_sub(1);
+                            st.provider_idx = (st.provider_idx + 1).min(max);
+                        }
+                        SetupStep::Model => {
+                            let provider = &crate::registry::PROVIDERS[st.provider_idx];
+                            let max = provider.models.len().saturating_sub(1);
+                            st.model_idx = (st.model_idx + 1).min(max);
+                        }
+                        SetupStep::ApiKey => {}
+                    }
+                    st.error = None;
                 }
             }
             Action::SetupNext => {
                 if let Screen::Setup(ref st) = self.screen.clone() {
-                    let model = st.model_buf.trim().to_string();
-                    if model.is_empty() {
-                        if let Screen::Setup(ref mut st) = self.screen {
-                            st.error = Some("Model name cannot be empty.".into());
+                    let provider = &crate::registry::PROVIDERS[st.provider_idx];
+                    match st.step {
+                        SetupStep::Provider => {
+                            if let Screen::Setup(ref mut st) = self.screen {
+                                st.step = SetupStep::Model;
+                                st.model_idx = 0;
+                                st.error = None;
+                            }
                         }
-                        return;
+                        SetupStep::Model => {
+                            // Ollama needs no key — skip to Chat
+                            if provider.env_var.is_empty() {
+                                let model = provider.models[st.model_idx].name.to_string();
+                                self.config.model = model;
+                                let _ = self.config.save();
+                                self.screen = Screen::Chat;
+                            } else {
+                                if let Screen::Setup(ref mut st) = self.screen {
+                                    st.step = SetupStep::ApiKey;
+                                    st.key_buf.clear();
+                                    st.error = None;
+                                }
+                            }
+                        }
+                        SetupStep::ApiKey => {
+                            let key = st.key_buf.trim().to_string();
+                            if key.is_empty() {
+                                if let Screen::Setup(ref mut st) = self.screen {
+                                    st.error = Some("API key cannot be empty.".into());
+                                }
+                                return;
+                            }
+                            let model = provider.models[st.model_idx].name.to_string();
+                            let env_var = provider.env_var.to_string();
+                            self.config.model = model;
+                            std::env::set_var(&env_var, &key);
+                            let _ = self.config.save_with_key(&env_var, &key);
+                            self.screen = Screen::Chat;
+                        }
                     }
-                    self.config.model = model;
-                    let _ = self.config.save();
-                    self.screen = Screen::Chat;
+                }
+            }
+            Action::SetupBack => {
+                if let Screen::Setup(ref mut st) = self.screen {
+                    match st.step {
+                        SetupStep::Provider => {} // no-op on first step
+                        SetupStep::Model => {
+                            st.step = SetupStep::Provider;
+                            st.error = None;
+                        }
+                        SetupStep::ApiKey => {
+                            st.step = SetupStep::Model;
+                            st.error = None;
+                        }
+                    }
+                }
+            }
+            Action::SetupKeyInput(s) => {
+                if let Screen::Setup(ref mut st) = self.screen {
+                    st.key_buf = s;
+                    st.error = None;
                 }
             }
 
