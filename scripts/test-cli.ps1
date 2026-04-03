@@ -109,5 +109,6 @@ ok "All CLI smoke tests completed"
 sep
 Write-Host ""
 Write-Host "To launch the interactive TUI:"
-Write-Host "  uv run proteinclaw" -ForegroundColor White
+Write-Host "  scripts/tui.sh   (Linux/WSL)" -ForegroundColor White
+Write-Host "  scripts/tui.ps1  (Windows)"   -ForegroundColor White
 Write-Host ""
