@@ -5,6 +5,7 @@ mod server;
 mod ui;
 mod widgets;
 mod ws;
+mod registry;
 
 use anyhow::Result;
 use app::{Action, App, Screen};
