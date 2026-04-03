@@ -1,0 +1,116 @@
+<h2>TUI Layout: Current vs vtcode-style</h2>
+<p class="subtitle">Both use Rust + Ratatui. Which areas should we replicate from vtcode?</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Current ProteinClaw TUI</div>
+    <div class="mockup-body">
+      <div style="font-family:monospace;font-size:13px;background:#1a1a1a;color:#ccc;border:1px solid #444;border-radius:4px;overflow:hidden">
+        <!-- Status bar -->
+        <div style="background:#555;color:#fff;padding:2px 8px;display:flex;justify-content:space-between">
+          <span><b>ProteinClaw</b>  model: claude-3-5-sonnet-20241022</span>
+          <span style="color:#4caf50">● connected</span>
+        </div>
+        <!-- Messages area -->
+        <div style="border-left:1px solid #555;border-right:1px solid #555;border-top:1px solid #555;padding:8px 10px;min-height:200px;color:#ccc">
+          <div style="color:#aaa;margin-bottom:4px">  Welcome to ProteinClaw</div>
+          <div style="color:#666;margin-bottom:4px">  Ask anything about proteins, sequences, structures, or databases.</div>
+          <div style="color:#666">  Ctrl+C quit   Ctrl+O toggle thinking   ↑/↓ scroll</div>
+          <div style="margin-top:16px">
+            <span style="color:#4caf50"><b>&gt; </b></span><span>What is the structure of hemoglobin?</span>
+          </div>
+          <div style="margin-top:8px;color:#ccc">Hemoglobin is a tetrameric protein consisting of...</div>
+          <div style="margin-top:4px;color:#666">  ⏺  <b>search_pdb</b>  [enter to toggle]</div>
+        </div>
+        <!-- Input -->
+        <div style="border:1px solid #555;margin-top:0;padding:6px 8px;color:#888">
+          │ Type a message...                    │
+        </div>
+      </div>
+      <ul style="font-size:12px;color:#888;margin-top:8px">
+        <li>1-line status bar (DarkGray bg)</li>
+        <li>Messages with top/left/right borders</li>
+        <li>tui-textarea input at bottom</li>
+        <li>Fixed layout, no modes</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">vtcode-style TUI (target)</div>
+    <div class="mockup-body">
+      <div style="font-family:monospace;font-size:13px;background:#1a1a1a;color:#ccc;border:1px solid #444;border-radius:4px;overflow:hidden">
+        <!-- Header -->
+        <div style="border-bottom:1px solid #444;padding:3px 8px;display:flex;justify-content:space-between;color:#aaa">
+          <span><span style="color:#00b0aa">claude-sonnet-4</span> &nbsp;•&nbsp; <span style="color:#888">⎇ main</span> &nbsp;•&nbsp; <span style="color:#888">tools: all</span></span>
+          <span style="color:#888">↑ 1.2k ↓ 450 tok</span>
+        </div>
+        <!-- Transcript (Standard layout has borders + title) -->
+        <div style="border:1px solid #444;margin:4px;padding:8px;min-height:160px">
+          <div style="color:#aaa;font-size:11px;margin-bottom:8px">── Transcript ──</div>
+          <div>
+            <span style="color:#4caf50"><b>&gt; </b></span><span>What is the structure of hemoglobin?</span>
+          </div>
+          <div style="margin-top:8px;color:#ccc">Hemoglobin is a tetrameric protein...</div>
+          <div style="margin-top:4px">
+            <span style="color:#4caf50">⏺</span>  <b>search_pdb</b>
+            <span style="color:#666">  [enter to toggle]</span>
+          </div>
+        </div>
+        <!-- Input -->
+        <div style="border:1px solid #00b0aa;margin:4px;padding:5px 8px;color:#ccc">
+          │ <span style="background:#ccc;color:#1a1a1a">▌</span>
+        </div>
+        <!-- Footer -->
+        <div style="border-top:1px solid #444;padding:2px 8px;display:flex;justify-content:space-between;color:#666;font-size:11px">
+          <span style="color:#00b0aa">⎇ main</span>
+          <span>? help • / command • @ file</span>
+          <span>claude-sonnet-4</span>
+        </div>
+      </div>
+      <ul style="font-size:12px;color:#888;margin-top:8px">
+        <li>Header: model, git branch, tool policy, tokens</li>
+        <li>Transcript panel with titled border</li>
+        <li>Input with accent-colored border when active</li>
+        <li>Footer: git left, context hints center, model right</li>
+        <li>3 layout modes: Compact / Standard / Wide</li>
+        <li>Wide mode (+120 cols): adds sidebar for agents</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>Which vtcode features do you want? (select all that apply)</h3>
+  <p class="subtitle">We'll match the visual style exactly — just confirming the scope</p>
+  <div class="options" data-multiselect>
+    <div class="option" data-choice="header" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Header bar</h3>
+        <p>Model name, git branch, tool policy, token counts</p>
+      </div>
+    </div>
+    <div class="option" data-choice="footer" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Footer bar</h3>
+        <p>Git branch left · context-sensitive hints center · model right · spinner when processing</p>
+      </div>
+    </div>
+    <div class="option" data-choice="layout-modes" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>Adaptive layout modes</h3>
+        <p>Compact (&lt;80 cols), Standard (default), Wide (120+ cols with sidebar)</p>
+      </div>
+    </div>
+    <div class="option" data-choice="panels" onclick="toggleSelect(this)">
+      <div class="letter">D</div>
+      <div class="content">
+        <h3>Panel borders + active highlighting</h3>
+        <p>Titled panels, active panel has accent-colored border, inactive is dimmed</p>
+      </div>
+    </div>
+  </div>
+</div>

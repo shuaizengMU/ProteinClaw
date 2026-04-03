@@ -1,0 +1,100 @@
+<h2>命令提醒放在哪里？</h2>
+<p class="subtitle">选一个你觉得最自然的位置（可多选）</p>
+
+<div class="cards">
+
+  <!-- Option A: Footer hint line -->
+  <div class="card" data-choice="footer-expand" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:monospace;font-size:11px;background:#0d0d0d;color:#ccc;border:1px solid #333;border-radius:3px;overflow:hidden;line-height:1.6">
+        <div style="padding:4px 8px;color:#555">… transcript …</div>
+        <div style="padding:3px 8px;border-top:1px solid #222">│ <span style="background:#ccc;color:#0d0d0d">█</span></div>
+        <div style="border-top:1px solid #333;padding:2px 8px;font-size:10px;display:flex;justify-content:space-between">
+          <span style="color:#00b0aa">● connected</span>
+          <span style="color:#555">/model · /clear · /help · @ file</span>
+          <span style="color:#666">claude-sonnet-4</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Footer 命令速查</h3>
+      <p>Footer 中间区域直接列出常用命令，始终可见，占 1 行。<br/><b>适合</b>：常驻提醒，命令不多时最简洁</p>
+    </div>
+  </div>
+
+  <!-- Option B: / triggered inline popup -->
+  <div class="card" data-choice="slash-popup" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:monospace;font-size:11px;background:#0d0d0d;color:#ccc;border:1px solid #333;border-radius:3px;overflow:hidden;line-height:1.6;position:relative">
+        <div style="padding:4px 8px;color:#555">… transcript …</div>
+        <!-- popup floating above input -->
+        <div style="border:1px solid #00b0aa;background:#111;margin:0 4px;padding:4px 8px;font-size:10px">
+          <div style="color:#555;margin-bottom:2px">Commands</div>
+          <div><span style="color:#00b0aa">/model</span>  <span style="color:#777">切换模型</span></div>
+          <div><span style="color:#00b0aa">/clear</span>  <span style="color:#777">清空会话</span></div>
+          <div><span style="color:#00b0aa">/help</span>   <span style="color:#777">查看全部命令</span></div>
+          <div style="color:#444">──────────────────</div>
+          <div><span style="color:#00b0aa">/system</span> <span style="color:#777">设置 system prompt</span></div>
+        </div>
+        <div style="border:1px solid #00b0aa;margin:2px 4px 4px;padding:3px 8px">│ /<span style="background:#ccc;color:#0d0d0d">█</span></div>
+        <div style="border-top:1px solid #333;padding:2px 8px;font-size:10px;color:#555">↑↓ navigate · Enter select · Esc cancel</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — 输入 / 触发弹出菜单</h3>
+      <p>用户输入 <code>/</code> 时，输入框上方弹出命令列表，支持上下键选择、继续输入过滤。<br/><b>适合</b>：命令多、不想占常驻空间、类似 VS Code 命令面板体验</p>
+    </div>
+  </div>
+
+  <!-- Option C: ? key help modal -->
+  <div class="card" data-choice="help-modal" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:monospace;font-size:11px;background:#0d0d0d;color:#ccc;border:1px solid #333;border-radius:3px;overflow:hidden;line-height:1.6">
+        <!-- modal overlay -->
+        <div style="border:1px solid #00b0aa;background:#111;margin:4px;padding:8px 12px">
+          <div style="color:#00b0aa;font-weight:bold;margin-bottom:6px">Commands — ProteinClaw</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;font-size:10px">
+            <div><span style="color:#00b0aa">/model &lt;name&gt;</span>  切换模型</div>
+            <div><span style="color:#00b0aa">/clear</span>  清空会话</div>
+            <div><span style="color:#00b0aa">/system &lt;text&gt;</span>  设置提示词</div>
+            <div><span style="color:#00b0aa">/export</span>  导出会话</div>
+            <div><span style="color:#00b0aa">Ctrl+O</span>  展开/折叠 thinking</div>
+            <div><span style="color:#00b0aa">↑↓</span>  滚动</div>
+            <div><span style="color:#00b0aa">Ctrl+C</span>  退出</div>
+            <div><span style="color:#00b0aa">Esc</span>  关闭此窗口</div>
+          </div>
+        </div>
+        <div style="border-top:1px solid #222;padding:2px 8px;font-size:10px;color:#555">Press ? to open · Esc to close</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — <code>?</code> 键打开帮助 Modal</h3>
+      <p>按 <code>?</code> 弹出全屏帮助覆盖层，列出所有命令和快捷键。<br/><b>适合</b>：完整文档、不占常驻空间、类似 vim 的 <code>:help</code></p>
+    </div>
+  </div>
+
+  <!-- Option D: Sidebar section (wide mode) -->
+  <div class="card" data-choice="sidebar-cmds" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="font-family:monospace;font-size:11px;background:#0d0d0d;color:#ccc;border:1px solid #333;border-radius:3px;overflow:hidden;line-height:1.6;display:flex">
+        <div style="flex:1;padding:6px 8px;color:#555;border-right:1px solid #222">… transcript …</div>
+        <div style="width:130px;padding:4px 8px">
+          <div style="color:#555;font-size:10px;margin-bottom:4px">Tool Calls</div>
+          <div style="color:#4caf50;font-size:10px">⏺ search_pdb</div>
+          <div style="color:#333;font-size:10px;margin:4px 0">─────────</div>
+          <div style="color:#555;font-size:10px;margin-bottom:2px">Commands</div>
+          <div style="font-size:10px"><span style="color:#00b0aa">/model</span> <span style="color:#666">切换模型</span></div>
+          <div style="font-size:10px"><span style="color:#00b0aa">/clear</span> <span style="color:#666">清空</span></div>
+          <div style="font-size:10px"><span style="color:#00b0aa">/help</span>  <span style="color:#666">帮助</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>D — 侧边栏增加 Commands 区块（仅 Wide 模式）</h3>
+      <p>Wide 模式侧边栏下方加一个 Commands 速查区，Tool Calls 上方或下方。<br/><b>适合</b>：已有侧边栏时顺带展示，不需要额外交互</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:12px">可多选 — 比如 B+C 组合（/ 触发快速菜单 + ? 打开完整帮助）</p>

@@ -3,7 +3,7 @@ set -euo pipefail
 
 # ────────────────────────────────────────────
 # ProteinClaw — TUI launcher (Linux / WSL)
-# Runs the React/Ink terminal UI via Bun.
+# Builds and runs the Ratatui terminal UI.
 # Run from the project root.
 # ────────────────────────────────────────────
 
@@ -15,19 +15,16 @@ info() { echo -e "${BOLD}→${RESET} $*"; }
 # ── Prerequisite checks ─────────────────────
 info "Checking prerequisites..."
 
-command -v bun    >/dev/null 2>&1 || fail "bun not found. Install: curl -fsSL https://bun.sh/install | bash"
-command -v python3 >/dev/null 2>&1 || command -v python >/dev/null 2>&1 \
-    || fail "python not found. Make sure Python is installed and on PATH."
+command -v cargo >/dev/null 2>&1 || fail "cargo not found. Install: https://rustup.rs"
+command -v uv    >/dev/null 2>&1 || fail "uv not found. Install: curl -LsSf https://astral.sh/uv/install.sh | sh"
 
 ok "Prerequisites met"
 
-# ── Install TUI dependencies if needed ──────
-if [[ ! -d tui/node_modules ]]; then
-    info "Installing TUI dependencies..."
-    (cd tui && bun install --silent)
-    ok "Dependencies ready"
-fi
+# ── Build TUI ───────────────────────────────
+info "Building proteinclaw-tui..."
+cargo build -p proteinclaw-tui --release
+ok "Build complete"
 
 # ── Launch ───────────────────────────────────
 info "Starting ProteinClaw TUI..."
-exec bun run tui/src/main.tsx
+exec ./target/release/proteinclaw-tui

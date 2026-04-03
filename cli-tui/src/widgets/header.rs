@@ -73,7 +73,13 @@ fn shorten_path(path: &str) -> String {
         path.to_string()
     };
     if shortened.len() > 35 {
-        format!("…{}", &shortened[shortened.len().saturating_sub(32)..])
+        let char_count = shortened.chars().count();
+        let start = shortened
+            .char_indices()
+            .nth(char_count.saturating_sub(32))
+            .map(|(i, _)| i)
+            .unwrap_or(0);
+        format!("…{}", &shortened[start..])
     } else {
         shortened
     }

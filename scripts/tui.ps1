@@ -1,6 +1,6 @@
 # ────────────────────────────────────────────
 # ProteinClaw — TUI launcher (Windows)
-# Runs the React/Ink TUI via Bun.
+# Builds and runs the Ratatui terminal UI.
 # Run from the project root in PowerShell.
 # ────────────────────────────────────────────
 #Requires -Version 5.1
@@ -11,21 +11,22 @@ function ok($msg)   { Write-Host "[OK] $msg" -ForegroundColor Green }
 function fail($msg) { Write-Host "[FAIL] $msg" -ForegroundColor Red; exit 1 }
 function info($msg) { Write-Host "--> $msg" -ForegroundColor Cyan }
 
-# ── 1. Prerequisite checks ──────────────────
+# ── Prerequisite checks ─────────────────────
 info "Checking prerequisites..."
 
-try { $null = Get-Command bun -ErrorAction Stop }
-catch { fail "bun not found. Install: https://bun.sh" }
+try { $null = Get-Command cargo -ErrorAction Stop }
+catch { fail "cargo not found. Install: https://rustup.rs" }
 
-try { $null = Get-Command python -ErrorAction Stop }
-catch {
-    try { $null = Get-Command python3 -ErrorAction Stop }
-    catch { fail "python / python3 not found. Make sure Python is installed and on PATH." }
-}
+try { $null = Get-Command uv -ErrorAction Stop }
+catch { fail "uv not found. Install: winget install astral-sh.uv" }
 
 ok "Prerequisites met"
 
-# ── 2. Launch ────────────────────────────────
+# ── Build TUI ───────────────────────────────
+info "Building proteinclaw-tui..."
+cargo build -p proteinclaw-tui --release
+ok "Build complete"
+
+# ── Launch ───────────────────────────────────
 info "Starting ProteinClaw TUI..."
-Set-Location tui
-bun run src/main.tsx
+& .\target\release\proteinclaw-tui.exe

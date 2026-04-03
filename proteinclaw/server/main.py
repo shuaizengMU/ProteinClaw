@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from proteinclaw.server.tools import router as tools_router
 from proteinclaw.server.chat import router as chat_router
+from proteinclaw.core.config import load_user_config
+
+load_user_config()
 
 app = FastAPI(title="ProteinClaw", version="0.1.0")
 

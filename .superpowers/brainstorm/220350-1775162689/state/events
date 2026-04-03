@@ -1,0 +1,4 @@
+{"type":"click","text":"A\n      \n        Header bar\n        Model name, git branch, tool policy, token counts","choice":"header","id":null,"timestamp":1775163387618}
+{"type":"click","text":"B\n      \n        Footer bar\n        Git branch left · context-sensitive hints center · model right · spinner when processing","choice":"footer","id":null,"timestamp":1775163388084}
+{"type":"click","text":"C\n      \n        Adaptive layout modes\n        Compact (<80 cols), Standard (default), Wide (120+ cols with sidebar)","choice":"layout-modes","id":null,"timestamp":1775163395040}
+{"type":"click","text":"D\n      \n        Panel borders + active highlighting\n        Titled panels, active panel has accent-colored border, inactive is dimmed","choice":"panels","id":null,"timestamp":1775163397476}

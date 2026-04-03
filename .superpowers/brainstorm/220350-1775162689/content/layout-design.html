@@ -1,0 +1,115 @@
+<h2>Layout Design — vtcode-style ProteinClaw TUI</h2>
+<p class="subtitle">Three layout modes, widget-based architecture</p>
+
+<div class="section">
+  <h3>Standard Mode (80–119 columns) — default</h3>
+  <div class="mockup">
+    <div class="mockup-header">Terminal — Standard</div>
+    <div class="mockup-body">
+      <div style="font-family:monospace;font-size:12px;background:#0d0d0d;color:#ccc;border:1px solid #333;border-radius:4px;overflow:hidden;line-height:1.5">
+        <!-- Header -->
+        <div style="background:#111;border-bottom:1px solid #333;padding:3px 10px;display:flex;justify-content:space-between;align-items:center">
+          <span><span style="color:#00b0aa;font-weight:bold">ProteinClaw</span> <span style="color:#555">v0.2</span> &nbsp;<span style="color:#444">│</span>&nbsp; <span style="color:#777">~/projects/my-research</span> &nbsp;<span style="color:#444">│</span>&nbsp; <span style="color:#aaa">claude-sonnet-4</span></span>
+          <span><span style="color:#4caf50">● connected</span> &nbsp;<span style="color:#555">│</span>&nbsp; <span style="color:#777">↑1.2k ↓450 tok</span></span>
+        </div>
+        <!-- Transcript panel -->
+        <div style="border:1px solid #333;margin:4px;padding:6px 10px;min-height:180px;position:relative">
+          <div style="position:absolute;top:-9px;left:8px;background:#0d0d0d;padding:0 4px;font-size:11px;color:#555">Transcript</div>
+          <div style="margin-top:4px">
+            <span style="color:#4caf50;font-weight:bold">&gt; </span><span style="color:#eee">What is the structure of hemoglobin?</span>
+          </div>
+          <div style="margin-top:8px;color:#ccc">Hemoglobin is a tetrameric protein consisting of four subunits...</div>
+          <div style="margin-top:6px">
+            <span style="color:#4caf50">⏺</span>  <b>search_pdb</b>  <span style="color:#555">[enter to expand]</span>
+          </div>
+          <div style="margin-top:6px;color:#888">  └ query: "hemoglobin human"</div>
+          <div style="margin-top:6px;color:#ccc">The PDB contains 87 structures of human hemoglobin...</div>
+          <div style="color:#fff">█</div>
+        </div>
+        <!-- Input panel — active (accent border) -->
+        <div style="border:1px solid #00b0aa;margin:4px;padding:5px 10px;color:#ccc">
+          │ <span style="background:#ccc;color:#0d0d0d;padding:0 1px">█</span>
+        </div>
+        <!-- Footer -->
+        <div style="border-top:1px solid #333;padding:2px 10px;display:flex;justify-content:space-between;font-size:11px">
+          <span style="color:#00b0aa">● connected</span>
+          <span style="color:#555">? help • / command • @ file</span>
+          <span style="color:#666">claude-sonnet-4</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:20px">
+  <h3>Compact Mode (&lt;80 columns) — no borders, minimal chrome</h3>
+  <div class="mockup">
+    <div class="mockup-header">Terminal — Compact</div>
+    <div class="mockup-body">
+      <div style="font-family:monospace;font-size:12px;background:#0d0d0d;color:#ccc;border:1px solid #333;border-radius:4px;overflow:hidden;width:400px;line-height:1.5">
+        <div style="background:#111;padding:2px 6px;display:flex;justify-content:space-between;font-size:11px">
+          <span style="color:#00b0aa">ProteinClaw</span>
+          <span style="color:#4caf50">●</span>
+        </div>
+        <div style="padding:6px 8px;min-height:120px">
+          <span style="color:#4caf50">&gt; </span><span>What is hemoglobin?</span><br/>
+          <span style="color:#ccc">Hemoglobin is...</span><br/>
+          <span style="color:#4caf50">⏺</span> search_pdb<br/>
+          <span style="color:#fff">█</span>
+        </div>
+        <div style="padding:2px 8px;color:#888">│ <span style="background:#ccc;color:#0d0d0d">█</span></div>
+        <div style="padding:1px 8px;font-size:10px;color:#555">/ command • ctrl+c quit</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:20px">
+  <h3>Wide Mode (≥120 columns) — sidebar with tool call log</h3>
+  <div class="mockup">
+    <div class="mockup-header">Terminal — Wide</div>
+    <div class="mockup-body">
+      <div style="font-family:monospace;font-size:12px;background:#0d0d0d;color:#ccc;border:1px solid #333;border-radius:4px;overflow:hidden;line-height:1.5">
+        <!-- Header same as Standard -->
+        <div style="background:#111;border-bottom:1px solid #333;padding:3px 10px;display:flex;justify-content:space-between">
+          <span><span style="color:#00b0aa;font-weight:bold">ProteinClaw</span> <span style="color:#555">v0.2</span> &nbsp;│&nbsp; <span style="color:#777">~/projects</span> &nbsp;│&nbsp; <span style="color:#aaa">claude-sonnet-4</span></span>
+          <span><span style="color:#4caf50">● connected</span> &nbsp;│&nbsp; <span style="color:#777">↑1.2k ↓450 tok</span></span>
+        </div>
+        <!-- Main area: transcript + sidebar -->
+        <div style="display:flex">
+          <!-- Transcript + Input (left, ~70%) -->
+          <div style="flex:1">
+            <div style="border:1px solid #333;margin:4px 2px 2px 4px;padding:6px 10px;min-height:140px;position:relative">
+              <div style="position:absolute;top:-9px;left:8px;background:#0d0d0d;padding:0 4px;font-size:11px;color:#555">Transcript</div>
+              <div style="margin-top:4px"><span style="color:#4caf50">&gt; </span>What is hemoglobin?</div>
+              <div style="color:#ccc">Hemoglobin is a tetrameric protein...</div>
+              <div><span style="color:#4caf50">⏺</span> search_pdb</div>
+              <div style="color:#fff">█</div>
+            </div>
+            <div style="border:1px solid #00b0aa;margin:2px 2px 4px 4px;padding:5px 10px">│ <span style="background:#ccc;color:#0d0d0d">█</span></div>
+          </div>
+          <!-- Sidebar (right, ~30%) -->
+          <div style="width:180px;border:1px solid #333;margin:4px 4px 4px 2px;padding:4px 8px;min-height:160px;position:relative">
+            <div style="position:absolute;top:-9px;left:8px;background:#0d0d0d;padding:0 4px;font-size:11px;color:#555">Tool Calls</div>
+            <div style="margin-top:6px">
+              <div style="color:#4caf50">⏺ search_pdb</div>
+              <div style="color:#666;font-size:11px;padding-left:8px">query: "hemoglobin"</div>
+              <div style="color:#666;font-size:11px;padding-left:8px">→ 87 results</div>
+              <div style="margin-top:6px;color:#4caf50">⏺ fetch_structure</div>
+              <div style="color:#666;font-size:11px;padding-left:8px">pdb_id: 1HHO</div>
+              <div style="color:#888;font-size:11px;padding-left:8px">⟳ running...</div>
+            </div>
+          </div>
+        </div>
+        <!-- Footer -->
+        <div style="border-top:1px solid #333;padding:2px 10px;display:flex;justify-content:space-between;font-size:11px">
+          <span style="color:#00b0aa">● connected</span>
+          <span style="color:#555">? help • / command • @ file</span>
+          <span style="color:#666">claude-sonnet-4</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px">看起来符合预期吗？有需要调整的地方吗？</p>

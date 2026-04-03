@@ -29,13 +29,14 @@ fn venv_is_current(app_data_dir: &PathBuf, current_version: &str) -> bool {
     }
 }
 
-/// Recursively copy a file or directory to dst (using `cp -R` on Unix/macOS).
+/// Recursively copy a file or directory to dst.
 fn copy_path(src: &PathBuf, dst: &PathBuf) {
     if src.is_dir() {
-        Command::new("cp")
-            .args(["-R", src.to_str().unwrap_or_default(), dst.to_str().unwrap_or_default()])
-            .status()
-            .expect("cp -R failed");
+        std::fs::create_dir_all(dst).expect("failed to create dst dir");
+        for entry in std::fs::read_dir(src).expect("failed to read src dir") {
+            let entry = entry.expect("failed to read dir entry");
+            copy_path(&entry.path(), &dst.join(entry.file_name()));
+        }
     } else {
         std::fs::copy(src, dst).expect("cp file failed");
     }
