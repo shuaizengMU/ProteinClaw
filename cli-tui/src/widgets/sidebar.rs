@@ -29,7 +29,12 @@ pub fn draw(f: &mut Frame, area: Rect, app: &App) {
                     if let Some(obj) = args.as_object() {
                         if let Some((k, v)) = obj.iter().next() {
                             let val = v.as_str().unwrap_or(&v.to_string()).to_string();
-                            let val = if val.len() > 18 { format!("{}…", &val[..15]) } else { val };
+                            let val = if val.chars().count() > 18 {
+                                let end = val.char_indices().nth(15).map(|(i, _)| i).unwrap_or(val.len());
+                                format!("{}…", &val[..end])
+                            } else {
+                                val
+                            };
                             lines.push(Line::from(Span::styled(
                                 format!("  {}={}", k, val),
                                 Style::default().fg(Color::DarkGray),
@@ -40,7 +45,12 @@ pub fn draw(f: &mut Frame, area: Rect, app: &App) {
                     // Show result summary
                     if let Some(res) = result {
                         let summary = res.lines().next().unwrap_or("").trim();
-                        let summary = if summary.len() > 20 { format!("{}…", &summary[..17]) } else { summary.to_string() };
+                        let summary = if summary.chars().count() > 20 {
+                            let end = summary.char_indices().nth(17).map(|(i, _)| i).unwrap_or(summary.len());
+                            format!("{}…", &summary[..end])
+                        } else {
+                            summary.to_string()
+                        };
                         lines.push(Line::from(Span::styled(
                             format!("  → {}", summary),
                             Style::default().fg(Color::DarkGray),

@@ -155,7 +155,26 @@ fn handle_chat_key(
                 app.update(Action::PopupClose);
                 return;
             }
-            _ => {}
+            _ => {
+                // While popup is open forward key to textarea for filter input,
+                // but skip scroll handlers below.
+                textarea.input(key);
+                widgets::input::apply_style(textarea);
+                let first_line = textarea.lines().first().map(|s| s.as_str()).unwrap_or("").to_string();
+                if first_line.starts_with('/') {
+                    let filter = first_line[1..].to_string();
+                    if let Some(ref mut p) = app.command_popup {
+                        p.filter = filter;
+                        let max = crate::widgets::command_popup::filtered_commands(&p.filter)
+                            .len()
+                            .saturating_sub(1);
+                        p.selected = p.selected.min(max);
+                    }
+                } else {
+                    app.command_popup = None;
+                }
+                return;
+            }
         }
     }
 
