@@ -7,7 +7,7 @@ ProteinClaw accepts natural language queries, autonomously orchestrates protein 
 It runs on top of **ProteinBox**, a unified tool and database layer for protein science.
 
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
-![Tests](https://img.shields.io/badge/tests-24%20passed-brightgreen)
+![Tests](https://img.shields.io/badge/tests-73%20passed-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
@@ -18,36 +18,84 @@ It runs on top of **ProteinBox**, a unified tool and database layer for protein 
 
 ---
 
-## Quick Start
+## Quick Start — TUI
 
-**Prerequisites:** Python 3.11+, Node.js 20+
+The fastest way to run ProteinClaw is the terminal UI. No Node.js or frontend setup required.
 
+**Prerequisite:** [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python 3.11+ is bundled automatically)
+
+### Step 1 — Install
+
+**macOS / Linux:**
 ```bash
-# Clone and install backend
-git clone https://github.com/your-org/ProteinClaw.git
-cd ProteinClaw
-pip install -e ".[dev]"
-
-# Set API keys
-cp .env.example .env
-# Edit .env and fill in at least one key
-
-# Start backend
-uvicorn proteinclaw.main:app --reload --port 8000
-
-# In a separate terminal, start frontend
-cd frontend
-npm install
-npm run dev
+uv tool install git+https://github.com/shuaizengMU/ProteinClaw.git
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
+**Windows (PowerShell):**
+```powershell
+uv tool install git+https://github.com/shuaizengMU/ProteinClaw.git
+```
 
----
+> **Run from source instead:**
+> ```bash
+> git clone https://github.com/shuaizengMU/ProteinClaw.git
+> cd ProteinClaw
+> uv sync
+> ```
 
-## Usage
+### Step 2 — Launch the TUI
 
-Type your research question in plain English. ProteinClaw will decide which tools to call, run them in sequence, and explain the results.
+**macOS / Linux:**
+```bash
+proteinclaw
+```
+
+**Windows (PowerShell):**
+```powershell
+proteinclaw
+```
+
+**Run from source:**
+```bash
+uv run proteinclaw
+```
+
+### Step 3 — API key setup (first run only)
+
+On first launch, ProteinClaw opens a setup wizard. Enter your API key and choose a default model. Settings are saved to `~/.config/proteinclaw/config.toml` — you only need to do this once.
+
+You can also skip the wizard by setting an environment variable before launching:
+
+```bash
+# macOS / Linux
+export DEEPSEEK_API_KEY=sk-...
+proteinclaw
+
+# Windows PowerShell
+$env:DEEPSEEK_API_KEY = "sk-..."
+proteinclaw
+```
+
+### TUI commands
+
+Type these slash commands in the input box at the bottom of the screen:
+
+| Command | Effect |
+|---------|--------|
+| `/model <name>` | Switch model for this session |
+| `/tools` | List available tools |
+| `/clear` | Clear conversation history |
+| `/quit` | Exit |
+
+### Non-interactive (one-shot) mode
+
+```bash
+# Run a single query and print the result
+proteinclaw query "What is the UniProt accession P04637?"
+
+# Use a specific model
+proteinclaw query --model deepseek-chat "What does a kinase do?"
+```
 
 **Example queries:**
 
@@ -57,7 +105,25 @@ Type your research question in plain English. ProteinClaw will decide which tool
 | `Find proteins similar to this sequence: <FASTA>` | Submits a BLAST search and returns top hits with E-values and identity |
 | `Tell me about the function of TP53 and find its homologs` | Chains UniProt + BLAST automatically |
 
-**Switching models:** Use the dropdown in the top-right corner to choose your LLM. Your selection is remembered across sessions.
+---
+
+## Quick Start — Desktop App (Web UI)
+
+**Prerequisites:** Python 3.11+, Node.js 20+
+
+```bash
+git clone https://github.com/shuaizengMU/ProteinClaw.git
+cd ProteinClaw
+
+# Set API keys
+cp .env.example .env
+# Edit .env and fill in at least one key
+
+# Start backend + frontend together
+bash scripts/dev.sh   # macOS/Linux
+```
+
+Open [http://localhost:5173](http://localhost:5173).
 
 ---
 
@@ -78,7 +144,9 @@ You only need one key to get started.
 
 ## API Keys
 
-Copy `.env.example` to `.env` and fill in the keys you need:
+**CLI/TUI:** Run `proteinclaw` and complete the setup wizard. Keys are saved to `~/.config/proteinclaw/config.toml`.
+
+**Desktop / dev server:** Copy `.env.example` to `.env` and fill in the keys you need.
 
 | Variable | Where to get it | Required |
 |----------|----------------|----------|
