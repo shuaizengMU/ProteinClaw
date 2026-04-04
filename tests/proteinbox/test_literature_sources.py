@@ -130,3 +130,43 @@ def test_semantic_scholar_source():
     assert art.identifiers["s2id"] == "abc123"
     assert art.identifiers["arxiv_id"] == "2401.00001"
     assert "semantic_scholar" in art.sources
+
+
+from proteinbox.api_literature.sources.crossref import CrossRefSource
+
+CROSSREF_RESPONSE = {
+    "status": "ok",
+    "message": {
+        "items": [
+            {
+                "DOI": "10.1234/test",
+                "title": ["Protein structure prediction"],
+                "author": [
+                    {"given": "John", "family": "Smith"},
+                    {"given": "Jane", "family": "Doe"},
+                ],
+                "container-title": ["Science"],
+                "published-print": {"date-parts": [[2024]]},
+                "abstract": "<p>An abstract about proteins.</p>",
+                "is-referenced-by-count": 35,
+                "URL": "https://doi.org/10.1234/test",
+            }
+        ]
+    },
+}
+
+
+@respx.mock
+def test_crossref_source():
+    respx.get("https://api.crossref.org/works").mock(
+        return_value=httpx.Response(200, json=CROSSREF_RESPONSE)
+    )
+    src = CrossRefSource()
+    articles = src.search("protein structure", max_results=5)
+    assert len(articles) == 1
+    art = articles[0]
+    assert art.title == "Protein structure prediction"
+    assert art.doi == "10.1234/test"
+    assert art.citation_count == 35
+    assert art.authors == ["Smith J", "Doe J"]
+    assert "crossref" in art.sources
