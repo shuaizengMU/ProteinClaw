@@ -22,11 +22,16 @@ SUPPORTED_MODELS: dict[str, dict] = {
     # MiniMax
     "minimax-text-01":   {"provider": "openai",   "api_base": "https://api.minimax.chat/v1"},
     # OpenRouter
-    "openrouter/google/gemini-2.5-flash-preview-05-20": {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
-    "openrouter/deepseek/deepseek-chat-v3-0324":        {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
-    "openrouter/meta-llama/llama-4-maverick":            {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
-    "openrouter/qwen/qwen3-235b-a22b":                  {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
+    "openrouter/meta-llama/llama-3.3-70b-instruct:free": {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
+    "openrouter/qwen/qwen3.6-plus:free":                 {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
+    "openrouter/google/gemma-3-27b-it:free":             {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
+    "openrouter/qwen/qwen3-coder:free":                  {"provider": "openai", "api_base": "https://openrouter.ai/api/v1"},
     "openrouter/auto":   {"provider": "openai",   "api_base": "https://openrouter.ai/api/v1"},
+    # GitHub Copilot
+    "copilot/gpt-4o":            {"provider": "openai", "api_base": "https://api.githubcopilot.com"},
+    "copilot/claude-sonnet-4":   {"provider": "openai", "api_base": "https://api.githubcopilot.com"},
+    "copilot/gemini-2.5-pro":    {"provider": "openai", "api_base": "https://api.githubcopilot.com"},
+    "copilot/o3-mini":           {"provider": "openai", "api_base": "https://api.githubcopilot.com"},
     # Ollama (local)
     "ollama/llama4":     {"provider": "ollama",   "api_base": "http://localhost:11434"},
     "ollama/qwen3":      {"provider": "ollama",   "api_base": "http://localhost:11434"},
@@ -59,15 +64,17 @@ _PROVIDER_KEY_MAP: dict[str, str] = {
     "minimax":   "MINIMAX_API_KEY",
     "dashscope": "DASHSCOPE_API_KEY",
     "openrouter":"OPENROUTER_API_KEY",
+    "copilot":   "GITHUB_COPILOT_TOKEN",
 }
 
 
 def load_user_config() -> None:
-    """Read ~/.config/proteinclaw/config.toml and inject any missing env vars.
+    """Read ~/.config/proteinclaw/config.toml and sync env vars from it.
 
     Key names in the TOML file must match the uppercase env var aliases used by
-    Settings (e.g. ANTHROPIC_API_KEY). Environment variables already set take
-    priority and are never overwritten.
+    Settings (e.g. ANTHROPIC_API_KEY). Values from the config file always
+    overwrite the current env vars so that keys updated by the TUI after server
+    startup are picked up without a restart.
 
     Reinitialises the module-level ``settings`` singleton so that the newly
     injected env vars are picked up (pydantic_settings reads env vars only at
@@ -79,10 +86,10 @@ def load_user_config() -> None:
     with open(CONFIG_PATH, "rb") as f:
         data = tomllib.load(f)
     for key, value in data.get("keys", {}).items():
-        if value and key not in os.environ:
+        if value:
             os.environ[key] = value
     default_model = data.get("defaults", {}).get("model", "")
-    if default_model and "DEFAULT_MODEL" not in os.environ:
+    if default_model:
         os.environ["DEFAULT_MODEL"] = default_model
     settings = Settings()
 

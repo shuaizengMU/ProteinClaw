@@ -1,8 +1,40 @@
 from __future__ import annotations
 import json
+import os
+import time
 from typing import Any, AsyncGenerator, Generator
+import httpx
 import litellm
 from proteinclaw.core.config import SUPPORTED_MODELS
+
+
+# Cached Copilot session token (short-lived JWT).
+_copilot_session: dict[str, Any] = {"token": "", "expires_at": 0}
+
+
+def _get_copilot_session_token() -> str:
+    """Exchange the stored GitHub OAuth token for a fresh Copilot session token."""
+    oauth_token = os.environ.get("GITHUB_COPILOT_TOKEN", "")
+    if not oauth_token:
+        raise ValueError("GITHUB_COPILOT_TOKEN is not set")
+
+    # Reuse cached token if still valid (with 60s margin).
+    if _copilot_session["token"] and _copilot_session["expires_at"] > time.time() + 60:
+        return _copilot_session["token"]
+
+    resp = httpx.get(
+        "https://api.github.com/copilot_internal/v2/token",
+        headers={
+            "Authorization": f"token {oauth_token}",
+            "User-Agent": "ProteinClaw/1.0",
+            "Accept": "application/json",
+        },
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    _copilot_session["token"] = data["token"]
+    _copilot_session["expires_at"] = data.get("expires_at", time.time() + 600)
+    return _copilot_session["token"]
 
 
 def build_tools_schema(tools: dict) -> list[dict]:
@@ -21,8 +53,29 @@ def build_tools_schema(tools: dict) -> list[dict]:
 
 
 def _get_litellm_kwargs(model: str) -> dict[str, Any]:
+    # Reload config so that API keys saved after the server started are picked up.
+    from proteinclaw.core.config import load_user_config
+    load_user_config()
+
     cfg = SUPPORTED_MODELS.get(model, {})
     provider = cfg.get("provider", "")
+
+    # GitHub Copilot models: strip "copilot/" prefix, get a fresh session token,
+    # and route via the openai provider with custom api_base.
+    if model.startswith("copilot/"):
+        real_model = model[len("copilot/"):]
+        session_token = _get_copilot_session_token()
+        kwargs: dict[str, Any] = {
+            "model": f"openai/{real_model}",
+            "api_base": cfg.get("api_base", "https://api.githubcopilot.com"),
+            "api_key": session_token,
+            "extra_headers": {
+                "Copilot-Integration-Id": "vscode-chat",
+                "Editor-Version": "vscode/1.100.0",
+                "Editor-Plugin-Version": "copilot-chat/0.25.0",
+            },
+        }
+        return kwargs
 
     # litellm recognises OpenAI and Anthropic model names natively.
     # Other providers need a "provider/" prefix.
