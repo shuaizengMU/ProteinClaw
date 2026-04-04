@@ -201,3 +201,35 @@ def test_biorxiv_source():
     assert art.doi == "10.1101/2024.01.01.000001"
     assert art.year == "2024"
     assert "biorxiv" in art.sources
+
+
+from proteinbox.api_literature.sources.arxiv import ArxivSource
+
+ARXIV_RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:arxiv="http://arxiv.org/schemas/atom">
+  <entry>
+    <id>http://arxiv.org/abs/2401.00001v1</id>
+    <title>AlphaFold advances</title>
+    <summary>New developments in protein structure prediction.</summary>
+    <published>2024-01-01T00:00:00Z</published>
+    <author><name>Smith J</name></author>
+    <author><name>Lee K</name></author>
+    <arxiv:doi>10.1234/arxiv.test</arxiv:doi>
+  </entry>
+</feed>"""
+
+
+@respx.mock
+def test_arxiv_source():
+    respx.get("https://export.arxiv.org/api/query").mock(
+        return_value=httpx.Response(200, text=ARXIV_RESPONSE)
+    )
+    src = ArxivSource()
+    articles = src.search("alphafold protein", max_results=5)
+    assert len(articles) == 1
+    art = articles[0]
+    assert art.title == "AlphaFold advances"
+    assert art.identifiers["arxiv_id"] == "2401.00001"
+    assert art.year == "2024"
+    assert "arxiv" in art.sources
