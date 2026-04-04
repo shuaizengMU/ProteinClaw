@@ -55,3 +55,42 @@ def test_pubmed_source_no_results():
     )
     src = PubMedSource()
     assert src.search("xyznonexistent", 5) == []
+
+
+from proteinbox.api_literature.sources.europmc import EuroPMCSource
+
+EUROPMC_RESPONSE = {
+    "resultList": {
+        "result": [
+            {
+                "id": "12345678",
+                "title": "Protein folding review",
+                "authorString": "Smith J, Lee K, Wang L",
+                "journalTitle": "Cell",
+                "pubYear": "2024",
+                "doi": "10.1016/j.cell.2024.01.001",
+                "abstractText": "A comprehensive review.",
+                "pmid": "12345678",
+                "pmcid": "PMC9999999",
+                "citedByCount": 15,
+                "source": "MED",
+            }
+        ]
+    }
+}
+
+
+@respx.mock
+def test_europmc_source():
+    respx.get("https://www.ebi.ac.uk/europepmc/webservices/rest/search").mock(
+        return_value=httpx.Response(200, json=EUROPMC_RESPONSE)
+    )
+    src = EuroPMCSource()
+    articles = src.search("protein folding", max_results=5)
+    assert len(articles) == 1
+    art = articles[0]
+    assert art.title == "Protein folding review"
+    assert art.doi == "10.1016/j.cell.2024.01.001"
+    assert art.identifiers["pmcid"] == "PMC9999999"
+    assert art.citation_count == 15
+    assert "europmc" in art.sources
