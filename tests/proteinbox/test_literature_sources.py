@@ -170,3 +170,34 @@ def test_crossref_source():
     assert art.citation_count == 35
     assert art.authors == ["Smith J", "Doe J"]
     assert "crossref" in art.sources
+
+
+from proteinbox.api_literature.sources.biorxiv import BioRxivSource
+
+BIORXIV_RESPONSE = {
+    "collection": [
+        {
+            "biorxiv_doi": "10.1101/2024.01.01.000001",
+            "title": "Novel protein folding method",
+            "authors": "Smith, J.; Lee, K.",
+            "category": "bioinformatics",
+            "date": "2024-01-15",
+            "abstract": "We introduce a new method.",
+        }
+    ]
+}
+
+
+@respx.mock
+def test_biorxiv_source():
+    respx.get(url__startswith="https://api.biorxiv.org/details/biorxiv").mock(
+        return_value=httpx.Response(200, json=BIORXIV_RESPONSE)
+    )
+    src = BioRxivSource()
+    articles = src.search("protein folding", max_results=5)
+    assert len(articles) == 1
+    art = articles[0]
+    assert art.title == "Novel protein folding method"
+    assert art.doi == "10.1101/2024.01.01.000001"
+    assert art.year == "2024"
+    assert "biorxiv" in art.sources
