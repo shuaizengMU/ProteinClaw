@@ -16,19 +16,27 @@ pub fn draw(f: &mut Frame, area: Rect, app: &App) {
     for msg in app.messages.iter() {
         match msg {
             ChatMessage::User(text) => {
+                const USER_BG: Color = Color::Rgb(55, 55, 55);
                 all_lines.push(Line::raw(""));
                 all_lines.push(Line::from(vec![
-                    Span::styled("> ", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
-                    Span::styled(text.as_str(), Style::default().add_modifier(Modifier::BOLD)),
+                    Span::styled("> ", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD).bg(USER_BG)),
+                    Span::styled(text.as_str(), Style::default().add_modifier(Modifier::BOLD).bg(USER_BG)),
                 ]));
                 all_lines.push(Line::raw(""));
             }
 
-            ChatMessage::Assistant { parts, done } => {
+            ChatMessage::Assistant { parts, done, elapsed } => {
+                let mut first_text = true;
                 for (pi, part) in parts.iter().enumerate() {
                     match part {
                         AssistantPart::Text(text) => {
                             let mut md = render_markdown(text, width);
+                            if first_text {
+                                if let Some(first_line) = md.first_mut() {
+                                    first_line.spans.insert(0, Span::styled("● ", Style::default().fg(Color::Cyan)));
+                                }
+                                first_text = false;
+                            }
                             if !*done && pi == parts.len() - 1 {
                                 if let Some(last) = md.last_mut() {
                                     last.spans.push(Span::styled("█", Style::default().fg(Color::White)));
@@ -90,7 +98,27 @@ pub fn draw(f: &mut Frame, area: Rect, app: &App) {
                     }
                 }
                 if parts.is_empty() && !*done {
-                    all_lines.push(Line::from(Span::styled("█", Style::default().fg(Color::White))));
+                    const SPINNER: &[&str] = &["⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏"];
+                    let frame = (app.tick / 5) as usize % SPINNER.len();
+                    all_lines.push(Line::from(vec![
+                        Span::styled(SPINNER[frame], Style::default().fg(Color::Cyan)),
+                        Span::styled(" Thinking...", Style::default().fg(Color::DarkGray)),
+                    ]));
+                }
+                if *done {
+                    if let Some(secs) = elapsed {
+                        let m = secs / 60;
+                        let s = secs % 60;
+                        let duration = if m > 0 {
+                            format!("{}m {}s", m, s)
+                        } else {
+                            format!("{}s", s)
+                        };
+                        all_lines.push(Line::from(Span::styled(
+                            format!("✻ Cooked for {}", duration),
+                            Style::default().fg(Color::DarkGray),
+                        )));
+                    }
                 }
             }
 
@@ -107,19 +135,37 @@ pub fn draw(f: &mut Frame, area: Rect, app: &App) {
     }
 
     if app.messages.is_empty() {
-        all_lines.push(Line::raw(""));
-        all_lines.push(Line::from(Span::styled("  Welcome to ProteinClaw", Style::default().fg(Color::Rgb(0x00, 0xb0, 0xaa)).add_modifier(Modifier::BOLD))));
-        all_lines.push(Line::raw(""));
-        all_lines.push(Line::from(Span::styled("  Ask anything about proteins, sequences, structures, or databases.", Style::default().fg(Color::DarkGray))));
-        all_lines.push(Line::raw(""));
-        all_lines.push(Line::from(Span::styled("  Ctrl+C quit  •  Ctrl+O toggle thinking  •  ↑/↓ scroll  •  / commands", Style::default().fg(Color::DarkGray))));
+        super::welcome::draw(f, area);
+        return;
     }
 
     let inner_height = area.height.saturating_sub(2) as usize;
     let total = all_lines.len();
-    let max_offset = total.saturating_sub(inner_height);
+
+    // Each logical line may wrap into multiple visual rows. Compute the visual
+    // row count per line so that scroll_offset and max_offset operate in visual
+    // space, not logical-line space (which undershoots on long/wrapped content).
+    let vrows: Vec<usize> = all_lines.iter().map(|l| {
+        let w: usize = l.spans.iter().map(|s| s.content.chars().count()).sum();
+        if width == 0 || w == 0 { 1 } else { (w + width - 1) / width }
+    }).collect();
+    let total_visual: usize = vrows.iter().sum::<usize>().max(1);
+
+    let max_offset = total_visual.saturating_sub(inner_height);
     let offset = app.scroll_offset.min(max_offset);
-    let scroll_from_top = total.saturating_sub(inner_height + offset);
+
+    // Find the logical line whose visual top matches the scroll target.
+    let target_top_visual = total_visual.saturating_sub(inner_height + offset);
+    let scroll_from_top = {
+        let mut acc = 0usize;
+        let mut result = 0usize;
+        for (i, &r) in vrows.iter().enumerate() {
+            if acc >= target_top_visual { result = i; break; }
+            acc += r;
+            result = i + 1;
+        }
+        result.min(total)
+    };
 
     let block = match mode {
         LayoutMode::Compact => Block::default().borders(Borders::NONE),

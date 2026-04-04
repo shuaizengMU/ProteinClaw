@@ -4,6 +4,7 @@ pub mod header;
 pub mod input;
 pub mod sidebar;
 pub mod transcript;
+pub mod welcome;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum LayoutMode {
