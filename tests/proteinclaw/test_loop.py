@@ -1,6 +1,6 @@
 import json
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from proteinclaw.core.agent.loop import run
 from proteinclaw.core.agent.events import (
     ToolCallEvent, ObservationEvent, TokenEvent, DoneEvent, ErrorEvent
@@ -31,35 +31,31 @@ def patch_registry():
         yield
 
 
-def _make_tool_call_msg(tool_name: str, args: dict):
-    tc = MagicMock()
-    tc.id = "call_123"
-    tc.function.name = tool_name
-    tc.function.arguments = json.dumps(args)
-    msg = MagicMock()
-    msg.content = None
-    msg.tool_calls = [tc]
-    return msg
+# ── Async generator helpers ───────────────────────────────────────────────────
+
+async def _tool_call_gen(**kw):
+    yield ("tool_calls", [{"id": "call_123", "name": "uniprot", "arguments": json.dumps({"accession_id": "P04637"})}])
 
 
-def _make_final_msg(content: str):
-    msg = MagicMock()
-    msg.content = content
-    msg.tool_calls = None
-    return msg
+async def _final_answer_gen(**kw):
+    yield ("token", "P04637 is TP53 from Homo sapiens.")
 
+
+async def _always_tool_gen(**kw):
+    yield ("tool_calls", [{"id": "call_123", "name": "uniprot", "arguments": json.dumps({"accession_id": "P04637"})}])
+
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
 async def test_agent_calls_tool_then_answers():
     events = []
 
-    call_sequence = [
-        _make_tool_call_msg("uniprot", {"accession_id": "P04637"}),
-        _make_final_msg("P04637 is TP53 from Homo sapiens."),
-    ]
+    call_sequence = [_tool_call_gen, _final_answer_gen]
     call_iter = iter(call_sequence)
 
-    with patch("proteinclaw.core.agent.loop.call_llm", side_effect=lambda **kw: next(call_iter)):
+    with patch("proteinclaw.core.agent.loop.call_llm_async_stream",
+               side_effect=lambda **kw: next(call_iter)(**kw)):
         async for event in run(
             query="What is P04637?",
             history=[],
@@ -77,11 +73,9 @@ async def test_agent_calls_tool_then_answers():
 
 @pytest.mark.asyncio
 async def test_agent_respects_max_steps():
-    def always_tool(**kw):
-        return _make_tool_call_msg("uniprot", {"accession_id": "P04637"})
-
     events = []
-    with patch("proteinclaw.core.agent.loop.call_llm", side_effect=always_tool):
+    with patch("proteinclaw.core.agent.loop.call_llm_async_stream",
+               side_effect=lambda **kw: _always_tool_gen(**kw)):
         async for event in run(
             query="loop forever",
             history=[],

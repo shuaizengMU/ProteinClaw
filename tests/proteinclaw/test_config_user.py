@@ -51,13 +51,15 @@ def test_load_injects_missing_key(tmp_path, monkeypatch):
     assert os.environ.get("DEEPSEEK_API_KEY") == "ds-from-file"
 
 
-def test_load_env_takes_priority(tmp_path, monkeypatch):
+def test_load_config_overwrites_env(tmp_path, monkeypatch):
+    # Config file values always overwrite env vars so that keys updated by the
+    # TUI after server startup are picked up without a restart.
     config_file = tmp_path / "config.toml"
     config_file.write_text('[keys]\nDEEPSEEK_API_KEY = "ds-from-file"\n')
     monkeypatch.setenv("DEEPSEEK_API_KEY", "ds-from-env")
     with patch.object(config_mod, "CONFIG_PATH", config_file):
         load_user_config()
-    assert os.environ["DEEPSEEK_API_KEY"] == "ds-from-env"
+    assert os.environ["DEEPSEEK_API_KEY"] == "ds-from-file"
 
 
 def test_load_skips_empty_values(tmp_path, monkeypatch):
