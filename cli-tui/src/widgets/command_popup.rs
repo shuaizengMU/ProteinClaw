@@ -20,11 +20,13 @@ pub struct PopupEntry {
 }
 
 const COMMANDS: &[(&str, &str)] = &[
-    ("/model ", "切换模型"),
-    ("/clear", "清空会话历史"),
-    ("/system ", "设置 system prompt"),
-    ("/help", "显示全部命令"),
-    ("/export", "导出会话为 JSON"),
+    ("/model ", "Switch model"),
+    ("/clear", "Clear session history"),
+    ("/system ", "Set system prompt"),
+    ("/help", "Show all commands"),
+    ("/export", "Export session as JSON"),
+    ("/demo", "Show available use case examples"),
+    ("/copy", "Copy last response to clipboard"),
 ];
 
 /// Returns popup entries based on the current filter text (after the leading `/`).

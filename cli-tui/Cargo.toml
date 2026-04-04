@@ -20,3 +20,4 @@ toml = "0.8"
 tui-textarea = "0.7"
 pulldown-cmark = "0.12"
 dirs = "5"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }

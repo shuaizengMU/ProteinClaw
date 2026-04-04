@@ -25,19 +25,27 @@ pub fn draw(f: &mut Frame, area: Rect, app: &App, textarea_nonempty: bool) {
         ConnStatus::Disconnected => ("✗", Color::Red),
     };
 
-    let hints: &str = if is_processing {
+    let ctrl_c_pending = app.ctrl_c_at
+        .map(|t| t.elapsed().as_secs() < 2)
+        .unwrap_or(false);
+
+    let hints: &str = if ctrl_c_pending {
+        "Press Ctrl+C again to quit"
+    } else if is_processing {
         "ctrl+c stop"
     } else if textarea_nonempty {
-        "Enter 发送 • ↑ 历史 • Esc 取消"
+        "Enter send • ↑ history • Esc cancel"
     } else {
         "? help • / command"
     };
+
+    let hint_color = if ctrl_c_pending { Color::Yellow } else { Color::DarkGray };
 
     match mode {
         LayoutMode::Compact => {
             let line = Line::from(vec![
                 Span::styled(format!(" {} ", conn_dot), Style::default().fg(conn_color)),
-                Span::styled(hints, Style::default().fg(Color::DarkGray)),
+                Span::styled(hints, Style::default().fg(hint_color)),
             ]);
             f.render_widget(Paragraph::new(line), area);
         }
@@ -73,7 +81,7 @@ pub fn draw(f: &mut Frame, area: Rect, app: &App, textarea_nonempty: bool) {
             // Row 2: hints
             let line2 = Line::from(Span::styled(
                 format!(" {}", hints),
-                Style::default().fg(Color::DarkGray),
+                Style::default().fg(hint_color),
             ));
 
             f.render_widget(Paragraph::new(line1), rows[0]);

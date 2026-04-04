@@ -77,6 +77,7 @@ fn draw_setup(f: &mut Frame, st: &SetupState) {
             (n + 8).min(area.height)
         }
         SetupStep::ApiKey => 12u16.min(area.height),
+        SetupStep::GitHubLogin { .. } => 14u16.min(area.height),
     };
     let popup_w: u16 = 50.min(area.width);
     let vpad = area.height.saturating_sub(popup_h) / 2;
@@ -89,6 +90,7 @@ fn draw_setup(f: &mut Frame, st: &SetupState) {
         SetupStep::Provider => " Setup — 1/3 Provider ",
         SetupStep::Model    => " Setup — 2/3 Model ",
         SetupStep::ApiKey   => " Setup — 3/3 API Key ",
+        SetupStep::GitHubLogin { .. } => " Setup — 3/3 GitHub Login ",
     };
     let block = Block::default()
         .title(title)
@@ -107,6 +109,9 @@ fn draw_setup(f: &mut Frame, st: &SetupState) {
         SetupStep::Provider => draw_setup_provider(f, inner, st),
         SetupStep::Model    => draw_setup_model(f, inner, st),
         SetupStep::ApiKey   => draw_setup_api_key(f, inner, st),
+        SetupStep::GitHubLogin { ref user_code, ref verification_uri, ref status } => {
+            draw_setup_github_login(f, inner, st, user_code, verification_uri, status);
+        }
     }
 }
 
@@ -220,6 +225,65 @@ fn draw_setup_api_key(f: &mut Frame, area: Rect, st: &SetupState) {
             Span::raw(" back"),
         ]),
     ];
+    if let Some(err) = &st.error {
+        lines.push(Line::from(Span::styled(err.as_str(), Style::default().fg(Color::Red))));
+    }
+    f.render_widget(Paragraph::new(lines).wrap(Wrap { trim: false }), area);
+}
+
+fn draw_setup_github_login(
+    f: &mut Frame,
+    area: Rect,
+    st: &SetupState,
+    user_code: &str,
+    verification_uri: &str,
+    status: &str,
+) {
+    let provider = &PROVIDERS[st.provider_idx];
+    let model = &provider.models[st.model_idx];
+
+    let mut lines: Vec<Line> = vec![
+        Line::from(vec![
+            Span::raw("Provider: "),
+            Span::styled(provider.name, Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+        ]),
+        Line::from(vec![
+            Span::raw("Model:    "),
+            Span::styled(model.name, Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+        ]),
+        Line::raw(""),
+    ];
+
+    if user_code.is_empty() {
+        lines.push(Line::from(Span::styled(status, Style::default().fg(Color::Yellow))));
+    } else {
+        lines.push(Line::from(Span::styled(
+            "1. Open in browser:",
+            Style::default().fg(Color::Yellow),
+        )));
+        lines.push(Line::from(Span::styled(
+            format!("   {}", verification_uri),
+            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+        )));
+        lines.push(Line::raw(""));
+        lines.push(Line::from(Span::styled(
+            "2. Enter this code:",
+            Style::default().fg(Color::Yellow),
+        )));
+        lines.push(Line::from(Span::styled(
+            format!("   {}", user_code),
+            Style::default().fg(Color::White).add_modifier(Modifier::BOLD),
+        )));
+        lines.push(Line::raw(""));
+        lines.push(Line::from(Span::styled(status, Style::default().fg(Color::DarkGray))));
+    }
+
+    lines.push(Line::raw(""));
+    lines.push(Line::from(vec![
+        Span::styled("[Esc]", Style::default().fg(Color::Cyan)),
+        Span::raw(" cancel"),
+    ]));
+
     if let Some(err) = &st.error {
         lines.push(Line::from(Span::styled(err.as_str(), Style::default().fg(Color::Red))));
     }

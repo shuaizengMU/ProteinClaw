@@ -54,13 +54,23 @@ pub static PROVIDERS: &[Provider] = &[
     Provider {
         name: "OpenRouter",
         models: &[
-            ModelEntry { name: "openrouter/google/gemini-2.5-flash-preview-05-20", tag: "★free" },
-            ModelEntry { name: "openrouter/deepseek/deepseek-chat-v3-0324", tag: "★free" },
-            ModelEntry { name: "openrouter/meta-llama/llama-4-maverick", tag: "★free" },
-            ModelEntry { name: "openrouter/qwen/qwen3-235b-a22b", tag: "★free" },
+            ModelEntry { name: "openrouter/meta-llama/llama-3.3-70b-instruct:free", tag: "★free" },
+            ModelEntry { name: "openrouter/qwen/qwen3.6-plus:free", tag: "★free" },
+            ModelEntry { name: "openrouter/google/gemma-3-27b-it:free", tag: "★free" },
+            ModelEntry { name: "openrouter/qwen/qwen3-coder:free", tag: "★free" },
             ModelEntry { name: "openrouter/auto", tag: "" },
         ],
         env_var: "OPENROUTER_API_KEY",
+    },
+    Provider {
+        name: "GitHub Copilot",
+        models: &[
+            ModelEntry { name: "copilot/gpt-4o", tag: "" },
+            ModelEntry { name: "copilot/claude-sonnet-4", tag: "" },
+            ModelEntry { name: "copilot/gemini-2.5-pro", tag: "" },
+            ModelEntry { name: "copilot/o3-mini", tag: "" },
+        ],
+        env_var: "GITHUB_COPILOT_TOKEN",
     },
     Provider {
         name: "Ollama (local)",

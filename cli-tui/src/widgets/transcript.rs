@@ -3,14 +3,13 @@ use ratatui::{
     layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, Paragraph, Wrap},
+    widgets::{Paragraph, Wrap},
 };
 use crate::app::{App, AssistantPart, ChatMessage};
-use super::LayoutMode;
+
 
 pub fn draw(f: &mut Frame, area: Rect, app: &App) {
-    let mode = LayoutMode::from_width(area.width);
-    let width = area.width.saturating_sub(2) as usize;
+    let width = area.width as usize;
     let mut all_lines: Vec<Line> = Vec::new();
 
     for msg in app.messages.iter() {
@@ -125,10 +124,19 @@ pub fn draw(f: &mut Frame, area: Rect, app: &App) {
             ChatMessage::Error(msg) => {
                 all_lines.push(Line::raw(""));
                 all_lines.push(Line::from(Span::styled("✗ Error", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))));
-                all_lines.push(Line::from(vec![
-                    Span::raw("  "),
-                    Span::styled(msg.as_str(), Style::default().fg(Color::Red)),
-                ]));
+                for line in msg.lines() {
+                    all_lines.push(Line::from(vec![
+                        Span::raw("  "),
+                        Span::styled(line.to_string(), Style::default().fg(Color::Red)),
+                    ]));
+                }
+                if app.auth_error {
+                    all_lines.push(Line::raw(""));
+                    all_lines.push(Line::from(Span::styled(
+                        "  Press Ctrl+R to update API key, or /model to switch model.",
+                        Style::default().fg(Color::Yellow),
+                    )));
+                }
                 all_lines.push(Line::raw(""));
             }
         }
@@ -139,12 +147,9 @@ pub fn draw(f: &mut Frame, area: Rect, app: &App) {
         return;
     }
 
-    let inner_height = area.height.saturating_sub(2) as usize;
-    let total = all_lines.len();
+    let inner_height = area.height as usize;
 
-    // Each logical line may wrap into multiple visual rows. Compute the visual
-    // row count per line so that scroll_offset and max_offset operate in visual
-    // space, not logical-line space (which undershoots on long/wrapped content).
+    // Compute visual row count per logical line (how many rows after wrapping).
     let vrows: Vec<usize> = all_lines.iter().map(|l| {
         let w: usize = l.spans.iter().map(|s| s.content.chars().count()).sum();
         if width == 0 || w == 0 { 1 } else { (w + width - 1) / width }
@@ -154,31 +159,13 @@ pub fn draw(f: &mut Frame, area: Rect, app: &App) {
     let max_offset = total_visual.saturating_sub(inner_height);
     let offset = app.scroll_offset.min(max_offset);
 
-    // Find the logical line whose visual top matches the scroll target.
-    let target_top_visual = total_visual.saturating_sub(inner_height + offset);
-    let scroll_from_top = {
-        let mut acc = 0usize;
-        let mut result = 0usize;
-        for (i, &r) in vrows.iter().enumerate() {
-            if acc >= target_top_visual { result = i; break; }
-            acc += r;
-            result = i + 1;
-        }
-        result.min(total)
-    };
-
-    let block = match mode {
-        LayoutMode::Compact => Block::default().borders(Borders::NONE),
-        _ => Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::DarkGray))
-            .title(Span::styled(" Transcript ", Style::default().fg(Color::DarkGray))),
-    };
+    // offset=0 means "show the very bottom". Convert to a top-based visual row
+    // scroll position that Paragraph::scroll() expects.
+    let scroll_from_top_visual = total_visual.saturating_sub(inner_height + offset);
 
     let para = Paragraph::new(Text::from(all_lines))
-        .block(block)
         .wrap(Wrap { trim: false })
-        .scroll((scroll_from_top as u16, 0));
+        .scroll((scroll_from_top_visual as u16, 0));
 
     f.render_widget(para, area);
 }

@@ -1,5 +1,6 @@
 mod app;
 mod config;
+mod copilot_auth;
 mod events;
 mod server;
 mod ui;
@@ -38,6 +39,9 @@ async fn main() -> Result<()> {
     let (cmd_tx, cmd_rx) = mpsc::unbounded_channel::<WsCmd>();
     tokio::spawn(ws::run(config.server_port, event_tx, cmd_rx));
 
+    // ── Action channel (for background tasks to send actions to the main loop) ─
+    let (action_tx, mut action_rx) = mpsc::unbounded_channel::<Action>();
+
     // ── App state ────────────────────────────────────────────────────────────
     let mut app = App::new(config);
 
@@ -73,25 +77,91 @@ async fn main() -> Result<()> {
             }
         }
 
+        // Drain actions from background tasks
+        while let Ok(action) = action_rx.try_recv() {
+            app.update(action);
+        }
+
+        // Kick off GitHub Copilot device-flow when we enter the login screen
+        if let Screen::Setup(ref st) = app.screen {
+            if let app::SetupStep::GitHubLogin { ref user_code, .. } = st.step {
+                if user_code.is_empty() && !app.github_auth_running {
+                    app.github_auth_running = true;
+                    let tx = action_tx.clone();
+                    tokio::spawn(async move {
+                        match copilot_auth::request_device_code().await {
+                            Ok(dc) => {
+                                let device_code = dc.device_code.clone();
+                                let interval = dc.interval;
+                                let _ = tx.send(Action::GitHubDeviceCode {
+                                    user_code: dc.user_code,
+                                    verification_uri: dc.verification_uri,
+                                });
+                                // Poll for OAuth token — save it directly;
+                                // the Python backend exchanges it for a session token on each request.
+                                match copilot_auth::poll_for_token(&device_code, interval).await {
+                                    Ok(oauth_token) => {
+                                        let _ = tx.send(Action::GitHubLoginDone(oauth_token));
+                                    }
+                                    Err(e) => {
+                                        let _ = tx.send(Action::GitHubLoginError(e.to_string()));
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                let _ = tx.send(Action::GitHubLoginError(e.to_string()));
+                            }
+                        }
+                    });
+                }
+            }
+        }
+        // Reset the flag when we leave the GitHub login screen
+        if !matches!(&app.screen, Screen::Setup(st) if matches!(st.step, app::SetupStep::GitHubLogin { .. }))
+        {
+            app.github_auth_running = false;
+        }
+
         app.update(Action::Tick);
 
         // Poll keyboard / terminal events
         if event::poll(tick)? {
-            if let CEvent::Key(key) = event::read()? {
-                // Only process key-press events (ignore key-release on Windows)
-                if key.kind != KeyEventKind::Press {
-                    continue;
-                }
+            match event::read()? {
+                CEvent::Key(key) => {
+                    // Only process key-press events (ignore key-release on Windows)
+                    if key.kind != KeyEventKind::Press {
+                        continue;
+                    }
 
-                // Quit
-                if key.modifiers == KeyModifiers::CONTROL && key.code == KeyCode::Char('c') {
-                    app.update(Action::Quit);
-                }
+                    // Ctrl+C: first press = cancel/clear, second press within 2s = quit
+                    if key.modifiers == KeyModifiers::CONTROL && key.code == KeyCode::Char('c') {
+                        let now = std::time::Instant::now();
+                        if let Some(prev) = app.ctrl_c_at {
+                            if now.duration_since(prev).as_secs() < 2 {
+                                app.update(Action::Quit);
+                                continue;
+                            }
+                        }
+                        // First press: record time, clear input
+                        app.ctrl_c_at = Some(now);
+                        textarea = TextArea::default();
+                        textarea.set_placeholder_text(
+                            "Message ProteinClaw…  (Enter to send, Shift+Enter for newline)",
+                        );
+                        widgets::input::apply_style(&mut textarea);
+                        app.command_popup = None;
+                        continue;
+                    }
 
-                match &app.screen {
-                    Screen::Chat => handle_chat_key(key, &mut app, &mut textarea, &cmd_tx),
-                    Screen::Setup(_) => handle_setup_key(key, &mut app),
+                    // Any other key resets the Ctrl+C state
+                    app.ctrl_c_at = None;
+
+                    match &app.screen {
+                        Screen::Chat => handle_chat_key(key, &mut app, &mut textarea, &cmd_tx),
+                        Screen::Setup(_) => handle_setup_key(key, &mut app),
+                    }
                 }
+                _ => {}
             }
         }
 
@@ -195,6 +265,12 @@ fn handle_chat_key(
             app.update(Action::ScrollDown);
             return;
         }
+        (KeyModifiers::CONTROL, KeyCode::Char('r')) => {
+            if app.auth_error {
+                app.update(Action::OpenApiKeySetup);
+            }
+            return;
+        }
         (KeyModifiers::CONTROL, KeyCode::Char('o')) => {
             let parts = app.collapsible_parts();
             if let Some((mi, pi)) = parts.last().copied() {
@@ -234,6 +310,8 @@ fn handle_chat_key(
                     "/clear"  => { app.update(Action::CommandClear); }
                     "/help"   => { app.update(Action::CommandHelp); }
                     "/export" => { app.update(Action::CommandExport); }
+                    "/demo"   => { app.update(Action::CommandDemo); }
+                    "/copy"   => { app.update(Action::CommandCopy); }
                     "/model"  => {
                         let model = rest.trim().to_string();
                         if !model.is_empty() {
@@ -324,6 +402,12 @@ fn handle_setup_key(key: event::KeyEvent, app: &mut App) {
                         buf.pop();
                         app.update(Action::SetupKeyInput(buf));
                     }
+                    _ => {}
+                }
+            }
+            app::SetupStep::GitHubLogin { .. } => {
+                match key.code {
+                    KeyCode::Esc => app.update(Action::SetupBack),
                     _ => {}
                 }
             }

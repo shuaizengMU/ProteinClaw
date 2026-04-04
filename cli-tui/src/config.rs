@@ -122,6 +122,7 @@ impl Config {
             "GEMINI_API_KEY",
             "DASHSCOPE_API_KEY",
             "OPENROUTER_API_KEY",
+            "GITHUB_COPILOT_TOKEN",
         ];
         keys.iter()
             .any(|k| std::env::var(k).map(|v| !v.is_empty()).unwrap_or(false))
