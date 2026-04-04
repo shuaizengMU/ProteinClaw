@@ -31,11 +31,26 @@ def register_tool(cls: type[ProteinTool]) -> type[ProteinTool]:
 
 
 def discover_tools() -> dict[str, ProteinTool]:
-    """Import all modules in proteinbox/tools/ to trigger @register_tool decorators."""
+    """Import all modules in proteinbox/tools/ and proteinbox/api_tools/ to trigger @register_tool decorators."""
     import pkgutil
     import importlib
-    import proteinbox.tools as pkg
-    for _, module_name, _ in pkgutil.iter_modules(pkg.__path__):
+    import proteinbox.tools as tools_pkg
+    for _, module_name, _ in pkgutil.iter_modules(tools_pkg.__path__):
         if module_name != "registry":
             importlib.import_module(f"proteinbox.tools.{module_name}")
+
+    try:
+        import proteinbox.api_tools as api_pkg
+        for _, module_name, _ in pkgutil.iter_modules(api_pkg.__path__):
+            importlib.import_module(f"proteinbox.api_tools.{module_name}")
+    except ImportError:
+        pass
+
+    try:
+        import proteinbox.api_literature as lit_pkg
+        for _, module_name, _ in pkgutil.iter_modules(lit_pkg.__path__):
+            importlib.import_module(f"proteinbox.api_literature.{module_name}")
+    except ImportError:
+        pass
+
     return TOOL_REGISTRY

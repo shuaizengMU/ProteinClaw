@@ -94,3 +94,10 @@ def test_literature_tool_source_failure_is_graceful():
     assert result.success is True
     assert len(result.data["articles"]) == 1
     assert "pubmed" in result.data["articles"][0]["sources"]
+
+
+def test_literature_tool_in_registry():
+    from proteinbox.tools.registry import discover_tools
+    tools = discover_tools()
+    assert "literature" in tools
+    assert tools["literature"].name == "literature"
