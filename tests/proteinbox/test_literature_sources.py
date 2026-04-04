@@ -94,3 +94,39 @@ def test_europmc_source():
     assert art.identifiers["pmcid"] == "PMC9999999"
     assert art.citation_count == 15
     assert "europmc" in art.sources
+
+
+from proteinbox.api_literature.sources.semantic_scholar import SemanticScholarSource
+
+S2_RESPONSE = {
+    "total": 1,
+    "data": [
+        {
+            "paperId": "abc123",
+            "title": "Deep learning for proteins",
+            "authors": [{"name": "Smith J"}, {"name": "Lee K"}],
+            "venue": "NeurIPS",
+            "year": 2024,
+            "externalIds": {"DOI": "10.5555/test", "PubMed": "99999", "ArXiv": "2401.00001"},
+            "abstract": "We present a deep learning approach.",
+            "citationCount": 100,
+            "url": "https://www.semanticscholar.org/paper/abc123",
+        }
+    ],
+}
+
+
+@respx.mock
+def test_semantic_scholar_source():
+    respx.get("https://api.semanticscholar.org/graph/v1/paper/search").mock(
+        return_value=httpx.Response(200, json=S2_RESPONSE)
+    )
+    src = SemanticScholarSource()
+    articles = src.search("deep learning proteins", max_results=5)
+    assert len(articles) == 1
+    art = articles[0]
+    assert art.title == "Deep learning for proteins"
+    assert art.citation_count == 100
+    assert art.identifiers["s2id"] == "abc123"
+    assert art.identifiers["arxiv_id"] == "2401.00001"
+    assert "semantic_scholar" in art.sources
