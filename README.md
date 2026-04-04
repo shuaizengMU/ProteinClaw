@@ -107,6 +107,29 @@ proteinclaw query --model deepseek-chat "What does a kinase do?"
 
 ---
 
+## Developing the Rust TUI
+
+Use hot-reload mode to auto-restart the TUI on every file save — no manual exit/restart needed.
+
+**macOS / Linux:**
+```bash
+bash scripts/cli-tui-dev.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+.\scripts\cli-tui-dev.ps1
+```
+
+Or run directly (requires `cargo-watch` installed):
+```bash
+cargo watch -s "reset" -x "run -p cli-tui"
+```
+
+`cargo-watch` is installed automatically by the script if not present. The terminal is reset between restarts so there are no raw-mode leftovers.
+
+---
+
 ## Quick Start — Desktop App (Web UI)
 
 **Prerequisites:** Python 3.11+, Node.js 20+

@@ -1,6 +1,7 @@
 use crate::config::Config;
 use crate::events::WsEvent;
 use serde_json::Value;
+use std::time::Instant;
 
 // ── Message model ────────────────────────────────────────────────────────────
 
@@ -23,7 +24,7 @@ pub enum AssistantPart {
 #[derive(Debug, Clone)]
 pub enum ChatMessage {
     User(String),
-    Assistant { parts: Vec<AssistantPart>, done: bool },
+    Assistant { parts: Vec<AssistantPart>, done: bool, elapsed: Option<u64> },
     Error(String),
 }
 
@@ -107,6 +108,8 @@ pub enum Action {
     PopupClose,
     CommandClear,
     CommandSetModel(String),
+    /// User picked a model from the popup dropdown (provider_idx, model_idx).
+    SelectModel { provider_idx: usize, model_idx: usize },
     CommandSetSystem(String),
     CommandHelp,
     CommandExport,
@@ -128,6 +131,8 @@ pub struct App {
     pub command_popup: Option<CommandPopupState>,
     /// Chat history in the wire format the Python backend expects.
     pub history: Vec<Value>,
+    /// Start time of the current in-flight request, for elapsed timing.
+    pub pending_start: Option<Instant>,
 }
 
 impl App {
@@ -159,6 +164,7 @@ impl App {
             tick: 0,
             command_popup: None,
             history: Vec::new(),
+            pending_start: None,
         }
     }
 
@@ -176,7 +182,9 @@ impl App {
                 self.messages.push(ChatMessage::Assistant {
                     parts: Vec::new(),
                     done: false,
+                    elapsed: None,
                 });
+                self.pending_start = Some(Instant::now());
                 self.scroll_offset = 0; // auto-scroll to bottom
             }
 
@@ -347,12 +355,38 @@ impl App {
                 let _ = self.config.save();
                 self.command_popup = None;
             }
+            Action::SelectModel { provider_idx, model_idx } => {
+                let provider = &crate::registry::PROVIDERS[provider_idx];
+                let model = provider.models[model_idx].name.to_string();
+                let has_key = provider.env_var.is_empty()
+                    || std::env::var(provider.env_var)
+                        .map(|v| !v.is_empty())
+                        .unwrap_or(false);
+
+                self.command_popup = None;
+                if has_key {
+                    // API key already present — just switch model
+                    self.config.model = model;
+                    let _ = self.config.save();
+                } else {
+                    // Need API key — open setup wizard at ApiKey step
+                    self.screen = Screen::Setup(SetupState {
+                        step: SetupStep::ApiKey,
+                        provider_idx,
+                        model_idx,
+                        key_buf: String::new(),
+                        error: None,
+                        mode: WizardMode::SwitchModel,
+                    });
+                }
+            }
             Action::CommandSetSystem(_s) => {
                 self.messages.push(ChatMessage::Assistant {
                     parts: vec![AssistantPart::Text(
                         "System prompt support is not yet implemented.".to_string(),
                     )],
                     done: true,
+                    elapsed: None,
                 });
                 self.command_popup = None;
             }
@@ -369,6 +403,7 @@ impl App {
                         .to_string(),
                     )],
                     done: true,
+                    elapsed: None,
                 });
                 self.command_popup = None;
             }
@@ -385,6 +420,7 @@ impl App {
                     Ok(()) => self.messages.push(ChatMessage::Assistant {
                         parts: vec![AssistantPart::Text(format!("Session exported to `{}`", filename))],
                         done: true,
+                        elapsed: None,
                     }),
                     Err(e) => self.messages.push(ChatMessage::Error(format!("Export failed: {}", e))),
                 }
@@ -454,8 +490,11 @@ impl App {
             }
 
             WsEvent::Done => {
-                if let Some(ChatMessage::Assistant { parts, done }) = last {
+                if let Some(ChatMessage::Assistant { parts, done, elapsed }) = last {
                     *done = true;
+                    if let Some(start) = self.pending_start.take() {
+                        *elapsed = Some(start.elapsed().as_secs());
+                    }
                     // Build assistant history entry from text parts
                     let text: String = parts
                         .iter()

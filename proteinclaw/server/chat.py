@@ -64,8 +64,11 @@ async def websocket_chat(websocket: WebSocket):
             if model not in SUPPORTED_MODELS:
                 model = settings.default_model
 
-            async for event in run(query=message, history=history, model=model):
-                await websocket.send_json(event.to_dict())
+            try:
+                async for event in run(query=message, history=history, model=model):
+                    await websocket.send_json(event.to_dict())
+            except Exception as e:
+                await websocket.send_json({"type": "error", "message": str(e)})
 
     except WebSocketDisconnect:
         pass

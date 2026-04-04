@@ -12,7 +12,7 @@ use app::{Action, App, Screen, SetupState, SetupStep, WizardMode};
 use config::Config;
 use crossterm::{
     event::{
-        self, DisableMouseCapture, EnableMouseCapture, Event as CEvent, KeyCode, KeyEventKind,
+        self, Event as CEvent, KeyCode, KeyEventKind,
         KeyModifiers,
     },
     execute,
@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
     // ── Terminal ─────────────────────────────────────────────────────────────
     enable_raw_mode()?;
     let mut stdout = std::io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
@@ -102,11 +102,7 @@ async fn main() -> Result<()> {
 
     // ── Restore terminal ─────────────────────────────────────────────────────
     disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
+    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
     terminal.show_cursor()?;
 
     Ok(())
@@ -120,7 +116,7 @@ fn handle_chat_key(
     textarea: &mut TextArea,
     cmd_tx: &mpsc::UnboundedSender<WsCmd>,
 ) {
-    use crate::widgets::command_popup::filtered_commands;
+    use crate::widgets::command_popup::filtered_entries;
 
     // ── Command popup navigation ─────────────────────────────────────────────
     if app.command_popup.is_some() {
@@ -138,22 +134,32 @@ fn handle_chat_key(
                 return;
             }
             (KeyModifiers::NONE, KeyCode::Enter) => {
-                // Fill selected command into textarea
                 if let Some(ref popup) = app.command_popup {
-                    let cmds = filtered_commands(&popup.filter);
-                    let idx = popup.selected.min(cmds.len().saturating_sub(1));
-                    if let Some((cmd, _)) = cmds.get(idx) {
-                        *textarea = TextArea::default();
-                        textarea.set_placeholder_text(
-                            "Message ProteinClaw…  (Enter to send, Shift+Enter for newline)",
-                        );
-                        widgets::input::apply_style(textarea);
-                        for ch in cmd.chars() {
-                            textarea.insert_char(ch);
+                    let entries = filtered_entries(&popup.filter);
+                    let idx = popup.selected.min(entries.len().saturating_sub(1));
+                    if let Some(entry) = entries.get(idx) {
+                        if let Some((pi, mi)) = entry.model {
+                            // Model entry — select model (checks API key internally)
+                            *textarea = TextArea::default();
+                            textarea.set_placeholder_text(
+                                "Message ProteinClaw…  (Enter to send, Shift+Enter for newline)",
+                            );
+                            widgets::input::apply_style(textarea);
+                            app.update(Action::SelectModel { provider_idx: pi, model_idx: mi });
+                        } else {
+                            // Command entry — fill into textarea
+                            *textarea = TextArea::default();
+                            textarea.set_placeholder_text(
+                                "Message ProteinClaw…  (Enter to send, Shift+Enter for newline)",
+                            );
+                            widgets::input::apply_style(textarea);
+                            for ch in entry.display.chars() {
+                                textarea.insert_char(ch);
+                            }
+                            app.update(Action::PopupClose);
                         }
                     }
                 }
-                app.update(Action::PopupClose);
                 return;
             }
             _ => {
@@ -166,7 +172,7 @@ fn handle_chat_key(
                     let filter = first_line[1..].to_string();
                     if let Some(ref mut p) = app.command_popup {
                         p.filter = filter;
-                        let max = crate::widgets::command_popup::filtered_commands(&p.filter)
+                        let max = crate::widgets::command_popup::filtered_entries(&p.filter)
                             .len()
                             .saturating_sub(1);
                         p.selected = p.selected.min(max);
@@ -179,18 +185,14 @@ fn handle_chat_key(
         }
     }
 
-    // ── Scroll (vim-style + arrows) ──────────────────────────────────────────
+    // ── Scroll (arrows only — letter keys must reach the textarea) ──────────
     match (key.modifiers, key.code) {
-        (KeyModifiers::NONE, KeyCode::Up) | (KeyModifiers::NONE, KeyCode::Char('k')) => {
+        (KeyModifiers::NONE, KeyCode::Up) => {
             app.update(Action::ScrollUp);
             return;
         }
-        (KeyModifiers::NONE, KeyCode::Down) | (KeyModifiers::NONE, KeyCode::Char('j')) => {
+        (KeyModifiers::NONE, KeyCode::Down) => {
             app.update(Action::ScrollDown);
-            return;
-        }
-        (KeyModifiers::NONE, KeyCode::Char('g')) => {
-            app.update(Action::ScrollToBottom);
             return;
         }
         (KeyModifiers::CONTROL, KeyCode::Char('o')) => {
@@ -285,7 +287,7 @@ fn handle_chat_key(
             }
             Some(ref mut p) => {
                 p.filter = filter;
-                let max = crate::widgets::command_popup::filtered_commands(&p.filter)
+                let max = crate::widgets::command_popup::filtered_entries(&p.filter)
                     .len()
                     .saturating_sub(1);
                 p.selected = p.selected.min(max);
