@@ -1,10 +1,6 @@
 # ProteinClaw
 
-**An AI agent for protein bioinformatics — describe your research goal in plain English, get results.**
-
-ProteinClaw accepts natural language queries, autonomously orchestrates protein analysis tools (UniProt, BLAST, and more), and streams a synthesized answer back to you. No scripting, no manual data wrangling between tools.
-
-It runs on top of **ProteinBox**, a unified tool and database layer for protein science.
+The AI agent for protein bioinformatics. Describe your research goal in plain English — ProteinClaw figures out which tools to call, runs them, and streams a synthesized answer back to you.
 
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![Tests](https://img.shields.io/badge/tests-73%20passed-brightgreen)
@@ -12,59 +8,105 @@ It runs on top of **ProteinBox**, a unified tool and database layer for protein 
 
 ---
 
-## Demo
+## Why ProteinClaw?
 
-> Screenshot coming soon. See [Quick Start](#quick-start) to run it yourself.
+Protein research spans dozens of databases — UniProt, BLAST, ClinVar, gnomAD, GTEx, cBioPortal, and more. Moving data between them manually is slow, error-prone, and hard to reproduce.
+
+ProteinClaw replaces that pipeline with a single conversational interface backed by a ReAct agent loop. You describe what you want; the agent decides which tools to call, calls them in sequence, and synthesizes the results into a coherent answer.
+
+- **No scripting.** Natural language in, structured results out.
+- **Multi-tool reasoning.** The agent chains tools automatically when your question requires it.
+- **Streaming output.** See tool calls, intermediate observations, and the final answer as they happen.
+- **Your LLM.** Works with OpenAI, Anthropic, DeepSeek, MiniMax, or a local Ollama model.
 
 ---
 
-## Quick Start — TUI
+## What's Included
 
-The fastest way to run ProteinClaw is the terminal UI. No Node.js or frontend setup required.
+### The Agent Core
 
-**Prerequisite:** [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python 3.11+ is bundled automatically)
+A ReAct loop (`proteinclaw/core/agent/`) that drives all three interfaces:
 
-### Step 1 — Install
+| Component | What it does |
+|-----------|--------------|
+| `loop.py` | Thought → Tool Call → Observation cycle, up to 10 steps |
+| `llm.py` | LiteLLM-based multi-model router with async streaming |
+| `prompt.py` | System prompt builder — injects available tools at runtime |
+| `events.py` | Typed event stream: `ToolCallEvent`, `ObservationEvent`, `TokenEvent`, `DoneEvent`, `ErrorEvent` |
 
-**macOS / Linux:**
-```bash
-uv tool install git+https://github.com/shuaizengMU/ProteinClaw.git
+### Three Interfaces
+
+| Interface | How to launch | Best for |
+|-----------|--------------|----------|
+| **Terminal UI** | `proteinclaw` | Interactive multi-turn research sessions |
+| **One-shot CLI** | `proteinclaw query "..."` | Scripting, pipelines, quick lookups |
+| **Desktop App** | Tauri `.dmg` / `.exe` | Non-technical users, GUI workflow |
+
+### ProteinBox — the Tool Layer
+
+All database integrations live in `proteinbox/api_tools/`. Each tool is independently testable and auto-discovered by the agent at startup. See [Supported Tools](#supported-tools) for the full list.
+
+---
+
+## Usage Examples
+
+**Interactive TUI — multi-turn session:**
+```
+proteinclaw
+
+> What is P04637?
+  [tool: uniprot] P04637
+  TP53_HUMAN is a tumor suppressor protein (393 aa) involved in cell cycle
+  regulation, apoptosis, and DNA repair. It is mutated in ~50% of human cancers.
+
+> Find proteins similar to its DNA-binding domain
+  [tool: blast] VVRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGQMNRRPILTIITLEDSSGKLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPVHGQWLDSPRGQSTK
+  Top hits: TP63_HUMAN (92% identity), TP73_HUMAN (88% identity), ...
 ```
 
-**Windows (PowerShell):**
-```powershell
-uv tool install git+https://github.com/shuaizengMU/ProteinClaw.git
+**One-shot mode:**
+```bash
+proteinclaw query "What clinical variants are reported for BRCA1?"
+proteinclaw query --model gpt-4o "Summarize the GTEx expression profile of TP53"
+proteinclaw query "Is rs1801133 a pathogenic variant?"
 ```
 
-> **Run from source instead:**
-> ```bash
-> git clone https://github.com/shuaizengMU/ProteinClaw.git
-> cd ProteinClaw
-> uv sync
-> ```
+**Example queries and what happens:**
 
-### Step 2 — Launch the TUI
+| Query | Tools invoked |
+|-------|--------------|
+| `What is P04637?` | UniProt → returns annotation, GO terms, sequence length |
+| `Find homologs of this sequence: <FASTA>` | BLAST → top hits with E-values and identity |
+| `What variants are reported for BRCA1?` | ClinVar + gnomAD → clinical significance, allele frequencies |
+| `Where is TP53 expressed?` | GTEx → tissue expression profile |
+| `What pathways does EGFR participate in?` | WikiPathways → pathway list with descriptions |
+| `Tell me about TP53 mutations in lung cancer` | cBioPortal + UniProt → mutation landscape + protein context |
 
-**macOS / Linux:**
+**TUI slash commands:**
+
+| Command | Effect |
+|---------|--------|
+| `/model <name>` | Switch LLM model for this session |
+| `/tools` | List all registered tools |
+| `/clear` | Clear conversation history |
+| `/quit` | Exit |
+
+---
+
+## Installation
+
+### Option 1 — Install with uv (Recommended)
+
+**Prerequisite:** [uv](https://docs.astral.sh/uv/getting-started/installation/) — Python 3.11+ is bundled automatically.
+
 ```bash
+uv tool install git+https://github.com/shuaizengMU/ProteinClaw.git
 proteinclaw
 ```
 
-**Windows (PowerShell):**
-```powershell
-proteinclaw
-```
+On first launch, a setup wizard prompts for your API key and default model. Settings are saved to `~/.config/proteinclaw/config.toml`.
 
-**Run from source:**
-```bash
-uv run proteinclaw
-```
-
-### Step 3 — API key setup (first run only)
-
-On first launch, ProteinClaw opens a setup wizard. Enter your API key and choose a default model. Settings are saved to `~/.config/proteinclaw/config.toml` — you only need to do this once.
-
-You can also skip the wizard by setting an environment variable before launching:
+You can also set keys via environment variables instead:
 
 ```bash
 # macOS / Linux
@@ -76,142 +118,81 @@ $env:DEEPSEEK_API_KEY = "sk-..."
 proteinclaw
 ```
 
-### TUI commands
-
-Type these slash commands in the input box at the bottom of the screen:
-
-| Command | Effect |
-|---------|--------|
-| `/model <name>` | Switch model for this session |
-| `/tools` | List available tools |
-| `/clear` | Clear conversation history |
-| `/quit` | Exit |
-
-### Non-interactive (one-shot) mode
-
-```bash
-# Run a single query and print the result
-proteinclaw query "What is the UniProt accession P04637?"
-
-# Use a specific model
-proteinclaw query --model deepseek-chat "What does a kinase do?"
-```
-
-**Example queries:**
-
-| Query | What happens |
-|-------|-------------|
-| `What is P04637?` | Fetches UniProt annotation for TP53 — function, GO terms, organism, sequence length |
-| `Find proteins similar to this sequence: <FASTA>` | Submits a BLAST search and returns top hits with E-values and identity |
-| `Tell me about the function of TP53 and find its homologs` | Chains UniProt + BLAST automatically |
-
----
-
-## Developing the Rust TUI
-
-Use hot-reload mode to auto-restart the TUI on every file save — no manual exit/restart needed.
-
-**macOS / Linux:**
-```bash
-bash scripts/cli-tui-dev.sh
-```
-
-**Windows (PowerShell):**
-```powershell
-.\scripts\cli-tui-dev.ps1
-```
-
-Or run directly (requires `cargo-watch` installed):
-```bash
-cargo watch -s "reset" -x "run -p cli-tui"
-```
-
-`cargo-watch` is installed automatically by the script if not present. The terminal is reset between restarts so there are no raw-mode leftovers.
-
----
-
-## Quick Start — Desktop App (Web UI)
-
-**Prerequisites:** Python 3.11+, Node.js 20+
+### Option 2 — Run from source
 
 ```bash
 git clone https://github.com/shuaizengMU/ProteinClaw.git
 cd ProteinClaw
-
-# Set API keys
-cp .env.example .env
-# Edit .env and fill in at least one key
-
-# Start backend + frontend together
-bash scripts/dev.sh   # macOS/Linux
+uv sync
+uv run proteinclaw
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
+### Option 3 — Desktop App
 
----
+Download the installer for your platform from the [Releases](https://github.com/shuaizengMU/ProteinClaw/releases) page.
 
-## Supported Models
+| Platform | Format |
+|----------|--------|
+| macOS | `.dmg` (~20 MB download; ~500 MB installed) |
+| Windows | `.exe` NSIS installer (~15 MB download) |
 
-| Model | Provider | API Key Required |
-|-------|----------|-----------------|
-| `gpt-4o` | OpenAI | `OPENAI_API_KEY` |
-| `claude-opus-4-5` | Anthropic | `ANTHROPIC_API_KEY` |
-| `deepseek-chat` | DeepSeek | `DEEPSEEK_API_KEY` |
-| `deepseek-reasoner` | DeepSeek | `DEEPSEEK_API_KEY` |
-| `minimax-text-01` | MiniMax | `MINIMAX_API_KEY` |
-| `ollama/llama3` | Ollama (local) | None — run Ollama locally |
+Python and all dependencies are downloaded automatically on first launch. No Python installation required.
+
+### API Keys
 
 You only need one key to get started.
 
----
-
-## API Keys
-
-**CLI/TUI:** Run `proteinclaw` and complete the setup wizard. Keys are saved to `~/.config/proteinclaw/config.toml`.
-
-**Desktop / dev server:** Copy `.env.example` to `.env` and fill in the keys you need.
-
-| Variable | Where to get it | Required |
-|----------|----------------|----------|
-| `OPENAI_API_KEY` | [platform.openai.com](https://platform.openai.com) | If using GPT-4o |
-| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) | If using Claude |
-| `DEEPSEEK_API_KEY` | [platform.deepseek.com](https://platform.deepseek.com) | If using DeepSeek |
-| `MINIMAX_API_KEY` | [api.minimax.chat](https://api.minimax.chat) | If using MiniMax |
-| `NCBI_API_KEY` | [ncbi.nlm.nih.gov/account](https://www.ncbi.nlm.nih.gov/account/) | Optional — increases BLAST rate limit |
+| Variable | Provider | Required |
+|----------|----------|----------|
+| `OPENAI_API_KEY` | OpenAI | If using GPT-4o |
+| `ANTHROPIC_API_KEY` | Anthropic | If using Claude |
+| `DEEPSEEK_API_KEY` | DeepSeek | If using DeepSeek |
+| `MINIMAX_API_KEY` | MiniMax | If using MiniMax |
+| `NCBI_API_KEY` | NCBI | Optional — raises BLAST rate limit |
 
 ---
 
-## Building the Desktop App
+## Supported Tools
 
-Run the build script for your platform from the **project root**. The script checks prerequisites, downloads the bundled `uv` binary, builds the frontend, and produces an installable package.
+35 tools across 9 categories. **API** = calls an external database. **Local** = runs entirely on-device, no network required.
 
-**macOS:**
-```bash
-bash scripts/build-mac.sh
-```
-
-**Windows (PowerShell):**
-```powershell
-.\scripts\build-windows.ps1
-```
-
-Output artifact locations:
-- macOS: `src-tauri/target/release/bundle/dmg/*.dmg`
-- Windows: `src-tauri/target/release/bundle/nsis/*.exe`
-
-**Prerequisites:** Rust (`rustup`), Node.js 20+, `cargo install tauri-cli`
-
----
-
-## Architecture
-
-ProteinClaw consists of two layers: **ProteinBox** (tool registry — UniProt, BLAST, and future tools) and the **ProteinClaw agent** (a ReAct loop backed by LiteLLM for multi-model routing). The agent receives your query, decides which tools to call, runs them via a FastAPI backend, and streams results to a React frontend over WebSocket. See [`docs/superpowers/specs/2026-03-24-proteinclaw-design.md`](docs/superpowers/specs/2026-03-24-proteinclaw-design.md) for the full design.
-
----
-
-## Contributing
-
-Contributions are welcome — new tools, database integrations, and bug fixes especially. Please open an issue first to discuss what you'd like to add.
+| Category | Tool | Type | Database / Source | What it fetches |
+|----------|------|------|-------------------|-----------------|
+| **Protein Annotation** | `uniprot` | API | UniProt | Name, function, genes, organism, sequence length, GO terms |
+| | `interpro` | API | InterPro (EBI) | Domain/family annotations from Pfam, PROSITE, CDD with coordinates |
+| | `panther` | API | PANTHER | Family/subfamily classification, protein class, GO slim |
+| | `gene_ontology` | API | QuickGO (EBI) | GO annotations by molecular function, biological process, cellular component |
+| | `phosphosite` | API | UniProt PTM | Post-translational modifications (phosphorylation, ubiquitination, acetylation) with positions |
+| | `expasy_protparam` | Local | — | MW, pI, GRAVY, instability index, signal peptide and TM helix prediction |
+| | `sequence_analysis` | Local | — | MW, isoelectric point, GRAVY, amino acid composition, extinction coefficients |
+| **Protein Structure** | `alphafold` | API | AlphaFold DB (EBI) | Predicted structure, pLDDT confidence score, sequence coverage, model version |
+| | `pdb` | API | RCSB Protein Data Bank | Structure metadata: method, resolution, organism, deposit date, chains, ligands |
+| | `cath` | API | CATH Structural DB | Domain classification: Class, Architecture, Topology, Homology hierarchy |
+| **Sequence & Motifs** | `blast` | API | NCBI BLAST | Sequence similarity against NR database; E-values, percent identity |
+| | `elm` | Local | — | Short linear motif predictions: binding sites, modification sites, degradation signals |
+| | `disprot` | API | DisProt | Experimentally validated intrinsically disordered regions with coordinates and evidence |
+| | `mobidb` | API | MobiDB | Disorder consensus regions, curated disorder annotations |
+| **Variants & Clinical** | `clinvar` | API | ClinVar (NCBI) | Clinical significance by gene; pathogenic/benign calls, associated conditions |
+| | `dbsnp` | API | dbSNP (NCBI) | SNP details by rsID: position, alleles, clinical significance, minor allele frequency |
+| | `gnomad` | API | gnomAD (Broad) | Gene constraint metrics: pLI, LOEUF, missense constraint |
+| | `uniprot_variants` | API | EBI Proteins API | Known protein variants with clinical significance, consequence type, position |
+| | `gwas_catalog` | API | GWAS Catalog (EBI) | GWAS associations by gene: traits, SNP rsIDs, p-values, risk alleles |
+| **Gene & Genomics** | `ensembl` | API | Ensembl REST API | Gene/transcript IDs, genomic coordinates, biotype, orthologs, cross-references |
+| | `ncbi_gene` | API | NCBI Gene (Entrez) | Gene ID, aliases, organism, chromosome location, summary |
+| | `kegg` | API | KEGG REST API | KEGG pathway IDs and names for a gene |
+| **Pathways & Interactions** | `reactome` | API | Reactome | Biological pathways with names, species, diagram availability, sub-pathways |
+| | `wikipathways` | API | WikiPathways | Pathways by gene/term: IDs, names, species, revision dates |
+| | `string` | API | STRING Database | Protein-protein interactions: top partners with combined and interaction scores |
+| | `intact` | API | IntAct (EBI) | Curated binary protein interactions with detection methods, MI scores |
+| **Disease & Drug** | `opentargets` | API | Open Targets Platform | Target-disease associations with evidence scores, known drugs, tractability |
+| | `chembl` | API | ChEMBL (EBI) | Drug-target interactions: approved drugs and clinical candidates with mechanisms |
+| | `disgenet` | API | DisGeNET + NCBI | Disease-gene associations with scores; NCBI fallback for Mendelian disease entries |
+| | `omim` | API | OMIM (via NCBI) | Genetic disease associations via NCBI Gene → OMIM linkage |
+| | `cbioportal` | API | cBioPortal | Cancer genomics: gene type, cytoband, mutation landscape across 535+ cancer studies |
+| **Expression** | `gtex` | API | GTEx Portal | Tissue-specific gene expression (median TPM) across human tissues |
+| | `protein_atlas` | API | Human Protein Atlas | Tissue expression, IHC detection, subcellular localization, cancer specificity |
+| **Literature** | `pubmed` | API | PubMed (NCBI eUtils) | Article titles, authors, journal, year, abstract snippets |
+| | `literature` | API | PubMed · Europe PMC · Semantic Scholar · CrossRef · bioRxiv · arXiv | Searches 6 sources in parallel, deduplicates by DOI, merges results with citation counts |
 
 ---
 
