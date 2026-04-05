@@ -14,7 +14,11 @@ dependencies = [
     "pydantic>=2.7",
     "pydantic-settings>=2.2",
     "python-dotenv>=1.0",
+    "typer>=0.9",
 ]
+
+[project.scripts]
+proteinclaw = "proteinclaw.cli.app:main"
 
 [project.urls]
 Homepage = "https://github.com/EvoScientist/ProteinClaw"
