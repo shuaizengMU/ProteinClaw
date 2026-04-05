@@ -27,7 +27,8 @@ class HumanProteinAtlasTool(ProteinTool):
 
         try:
             resp = httpx.get(
-                f"https://www.proteinatlas.org/{gene}.json",
+                f"https://www.proteinatlas.org/search/{gene}",
+                params={"format": "json"},
                 timeout=30,
                 follow_redirects=True,
             )
@@ -37,9 +38,20 @@ class HumanProteinAtlasTool(ProteinTool):
                     error=f"Human Protein Atlas returned {resp.status_code} for {gene}",
                 )
 
-            raw = resp.json()
-            if isinstance(raw, list):
-                raw = raw[0] if raw else {}
+            results = resp.json()
+            if not results:
+                return ToolResult(
+                    success=False,
+                    error=f"Human Protein Atlas returned no results for {gene}",
+                )
+
+            # Find exact gene match
+            raw = next((r for r in results if isinstance(r, dict) and r.get("Gene", "").upper() == gene), None)
+            if raw is None:
+                return ToolResult(
+                    success=False,
+                    error=f"Human Protein Atlas returned results but no exact match for '{gene}'",
+                )
 
             gene_name = raw.get("Gene", gene)
             gene_desc = raw.get("Gene description", "")

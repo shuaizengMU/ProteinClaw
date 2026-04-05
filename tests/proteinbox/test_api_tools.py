@@ -485,3 +485,82 @@ def test_gwas_catalog_uses_geneName_param():
     GWASCatalogTool().run(gene="TP53")
     assert called_with["params"].get("geneName") == "TP53"
     assert "gene" not in called_with["params"]
+
+
+# ── Protein Atlas ─────────────────────────────────────────────────────────────
+
+from proteinbox.api_tools.protein_atlas import HumanProteinAtlasTool
+
+PA_BASE = "https://www.proteinatlas.org/search/TP53"
+
+MOCK_PA_RESPONSE = [
+    {
+        "Gene": "TP53",
+        "Gene description": "Tumor protein p53",
+        "Protein class": ["Cancer-related genes", "Transcription factors"],
+        "Subcellular location": ["Nucleus", "Cytoplasm"],
+        "RNA tissue specificity": "Low tissue specificity",
+        "RNA tissue distribution": "Detected in all",
+        "Tissue expression cluster": ["Cluster 1"],
+        "RNA cancer specificity": "Not detected",
+        "Prognostic - favorable": ["Breast cancer"],
+    }
+]
+
+
+@respx.mock
+def test_protein_atlas_success():
+    respx.get(PA_BASE).mock(return_value=httpx.Response(200, json=MOCK_PA_RESPONSE))
+    result = HumanProteinAtlasTool().run(gene="TP53")
+    assert result.success is True
+    assert result.data["gene"] == "TP53"
+    assert result.data["description"] == "Tumor protein p53"
+    assert "Nucleus" in result.data["subcellular_localization"]
+    assert result.data["cancer_specificity"] == "Not detected"
+    assert result.data["prognostic_favorable"] == ["Breast cancer"]
+
+
+@respx.mock
+def test_protein_atlas_no_columns_param():
+    """Verify the tool sends format=json and no columns= or search= parameter."""
+    called_with = {}
+
+    def capture(request):
+        called_with["params"] = dict(request.url.params)
+        return httpx.Response(200, json=MOCK_PA_RESPONSE)
+
+    respx.get(PA_BASE).mock(side_effect=capture)
+    HumanProteinAtlasTool().run(gene="TP53")
+    assert called_with["params"].get("format") == "json"
+    assert "search" not in called_with["params"]
+    assert "columns" not in called_with["params"]
+
+
+@respx.mock
+def test_protein_atlas_exact_gene_match():
+    """Returns the TP53 entry even when the response contains multiple genes."""
+    multi = [
+        {"Gene": "TP53BP1", "Gene description": "TP53 binding protein 1",
+         "Protein class": [], "Subcellular location": [], "RNA tissue specificity": "",
+         "RNA tissue distribution": "", "Tissue expression cluster": [],
+         "RNA cancer specificity": "", "Prognostic - favorable": []},
+        {"Gene": "TP53", "Gene description": "Tumor protein p53",
+         "Protein class": ["Cancer-related genes"], "Subcellular location": ["Nucleus"],
+         "RNA tissue specificity": "Low tissue specificity",
+         "RNA tissue distribution": "Detected in all", "Tissue expression cluster": [],
+         "RNA cancer specificity": "", "Prognostic - favorable": []},
+    ]
+    respx.get(PA_BASE).mock(return_value=httpx.Response(200, json=multi))
+    result = HumanProteinAtlasTool().run(gene="TP53")
+    assert result.success is True
+    assert result.data["gene"] == "TP53"
+    assert result.data["description"] == "Tumor protein p53"
+
+
+@respx.mock
+def test_protein_atlas_not_found():
+    respx.get("https://www.proteinatlas.org/search/FAKEGENE").mock(
+        return_value=httpx.Response(200, json=[])
+    )
+    result = HumanProteinAtlasTool().run(gene="FAKEGENE")
+    assert result.success is False
