@@ -12,10 +12,8 @@ impl Drop for ServerHandle {
 }
 
 pub fn spawn(port: u16) -> Result<ServerHandle> {
-    let child = Command::new("python3")
+    let child = Command::new("uvicorn")
         .args([
-            "-m",
-            "uvicorn",
             "proteinclaw.server.main:app",
             "--host",
             "127.0.0.1",
