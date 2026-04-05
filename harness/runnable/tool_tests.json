@@ -1,0 +1,112 @@
+{
+  "uniprot": {
+    "accession_id": "P04637"
+  },
+  "blast": {
+    "sequence": "MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPS",
+    "max_hits": 2,
+    "_slow": true
+  },
+  "alphafold": {
+    "uniprot_id": "P04637"
+  },
+  "interpro": {
+    "uniprot_id": "P04637"
+  },
+  "kegg": {
+    "query": "hsa:7157"
+  },
+  "pdb": {
+    "pdb_id": "1TUP"
+  },
+  "pubmed": {
+    "query": "p53 apoptosis",
+    "max_results": 2
+  },
+  "sequence_analysis": {
+    "sequence": "MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSH"
+  },
+  "string": {
+    "protein_name": "TP53",
+    "limit": 5
+  },
+  "ncbi_gene": {
+    "query": "TP53"
+  },
+  "clinvar": {
+    "gene": "BRCA1"
+  },
+  "reactome": {
+    "query": "P04637"
+  },
+  "ensembl": {
+    "symbol": "TP53"
+  },
+  "disgenet": {
+    "query": "TP53"
+  },
+  "chembl": {
+    "query": "EGFR"
+  },
+  "omim": {
+    "gene": "BRCA1"
+  },
+  "phosphosite": {
+    "accession_id": "P04637"
+  },
+  "expasy_protparam": {
+    "sequence": "MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSH"
+  },
+  "gene_ontology": {
+    "accession": "P04637"
+  },
+  "panther": {
+    "gene": "TP53"
+  },
+  "opentargets": {
+    "gene": "EGFR"
+  },
+  "protein_atlas": {
+    "gene": "TP53"
+  },
+  "intact": {
+    "accession": "P04637"
+  },
+  "cath": {
+    "accession": "P04637"
+  },
+  "gwas_catalog": {
+    "gene": "BRCA1"
+  },
+  "elm": {
+    "sequence": "P04637"
+  },
+  "literature": {
+    "query": "p53 apoptosis",
+    "max_results": 2
+  },
+  "dbsnp": {
+    "rsid": "rs7412"
+  },
+  "gnomad": {
+    "gene": "TP53"
+  },
+  "gtex": {
+    "gene": "TP53"
+  },
+  "mobidb": {
+    "accession": "P04637"
+  },
+  "disprot": {
+    "accession": "P04637"
+  },
+  "wikipathways": {
+    "query": "TP53"
+  },
+  "cbioportal": {
+    "gene": "TP53"
+  },
+  "uniprot_variants": {
+    "accession": "P04637"
+  }
+}
