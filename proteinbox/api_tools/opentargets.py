@@ -48,19 +48,18 @@ class OpenTargetsTool(ProteinTool):
             ensembl_id = hits[0]["id"]
             target_name = hits[0].get("name", gene)
 
-            # Step 2: Get disease associations + known drugs
+            # Step 2: Get disease associations + drugs
             assoc_query = {
                 "query": """
                 query TargetAssoc($id: String!) {
                     target(ensemblId: $id) {
                         approvedName
                         approvedSymbol
-                        knownDrugs(size: 10) {
+                        drugAndClinicalCandidates {
+                            count
                             rows {
                                 drug { name }
-                                phase
-                                mechanismOfAction
-                                disease { name }
+                                maxClinicalStage
                             }
                         }
                         associatedDiseases(page: {size: 15, index: 0}) {
@@ -68,7 +67,7 @@ class OpenTargetsTool(ProteinTool):
                                 disease { id name }
                                 score
                                 datasourceScores {
-                                    componentId: id
+                                    id
                                     score
                                 }
                             }
@@ -90,7 +89,7 @@ class OpenTargetsTool(ProteinTool):
             for row in assoc_rows:
                 disease = row.get("disease", {})
                 ds_scores = {
-                    s.get("componentId", ""): round(s.get("score", 0), 3)
+                    s.get("id", ""): round(s.get("score", 0), 3)
                     for s in row.get("datasourceScores", [])
                 }
                 associations.append({
@@ -100,14 +99,12 @@ class OpenTargetsTool(ProteinTool):
                     "datatype_scores": ds_scores,
                 })
 
-            drug_rows = target.get("knownDrugs", {}).get("rows", [])
+            drug_rows = target.get("drugAndClinicalCandidates", {}).get("rows", [])
             drugs = []
             for d in drug_rows:
                 drugs.append({
                     "drug_name": d.get("drug", {}).get("name", ""),
-                    "phase": d.get("phase", ""),
-                    "mechanism": d.get("mechanismOfAction", ""),
-                    "indication": d.get("disease", {}).get("name", ""),
+                    "phase": d.get("maxClinicalStage", ""),
                 })
 
             data = {

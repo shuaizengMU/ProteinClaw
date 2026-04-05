@@ -29,15 +29,14 @@ class ELMTool(ProteinTool):
             is_accession = len(seq_input) <= 20 and seq_input.replace("_", "").isalnum()
 
             if is_accession:
-                url = f"http://elm.eu.org/api/search/{seq_input}.json"
+                query = seq_input
             else:
-                seq = "".join(c for c in seq_input.upper() if c.isalpha())
-                url = f"http://elm.eu.org/api/search/{seq}.json"
+                query = "".join(c for c in seq_input.upper() if c.isalpha())
 
             resp = httpx.get(
-                url,
+                "http://elm.eu.org/instances.gff",
+                params={"q": query},
                 headers={
-                    "Accept": "application/json",
                     "User-Agent": "ProteinClaw/1.0 (bioinformatics tool)",
                 },
                 timeout=30,
@@ -54,24 +53,32 @@ class ELMTool(ProteinTool):
                     ),
                 )
 
-            data = resp.json()
-            instances = data if isinstance(data, list) else data.get("instances", data.get("matches", []))
-
+            # Parse GFF3 format: seqid source type start end score strand phase attributes
             motifs = []
             class_counts: dict[str, int] = {}
-            for inst in (instances if isinstance(instances, list) else [])[:30]:
-                elm_id = inst.get("elm_identifier", inst.get("motif_name", ""))
+            for line in resp.text.splitlines():
+                if line.startswith("#") or not line.strip():
+                    continue
+                if line.startswith(">"):
+                    break  # FASTA section starts
+                parts = line.split("\t")
+                if len(parts) < 9:
+                    continue
+                attrs = parts[8]
+                elm_id = ""
+                for attr in attrs.split(";"):
+                    if attr.startswith("ID="):
+                        elm_id = attr[3:]
+                        break
+
                 motif_class = elm_id.split("_")[0] if "_" in elm_id else elm_id[:3]
                 class_counts[motif_class] = class_counts.get(motif_class, 0) + 1
 
                 motifs.append({
                     "elm_identifier": elm_id,
                     "motif_class": motif_class,
-                    "start": inst.get("start", inst.get("start_position", "")),
-                    "end": inst.get("end", inst.get("end_position", "")),
-                    "sequence_match": inst.get("sequence", inst.get("match", "")),
-                    "description": inst.get("description", inst.get("functional_site_description", "")),
-                    "regex": inst.get("regex", inst.get("pattern", "")),
+                    "start": parts[3],
+                    "end": parts[4],
                 })
 
             class_labels = {

@@ -1,3 +1,4 @@
+import time
 import httpx
 from proteinbox.tools.registry import ProteinTool, ToolResult, register_tool
 
@@ -51,6 +52,8 @@ class ClinVarTool(ProteinTool):
             if not ids:
                 return ToolResult(success=False, error=f"No ClinVar entries found for gene {gene}")
 
+            # NCBI rate-limits to ~3 req/s without an API key; pause to avoid 429
+            time.sleep(0.4)
             summary_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
             resp = httpx.get(summary_url, params={
                 "db": "clinvar", "id": ",".join(ids[:10]), "retmode": "json",
