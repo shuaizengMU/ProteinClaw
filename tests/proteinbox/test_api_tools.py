@@ -423,3 +423,65 @@ def test_reactome_not_found():
     )
     result = ReactomeTool().run(query="XXXX")
     assert result.success is False
+
+
+# ── GWAS Catalog ──────────────────────────────────────────────────────────────
+
+from proteinbox.api_tools.gwas_catalog import GWASCatalogTool
+
+GWAS_BASE = "https://www.ebi.ac.uk/gwas/rest/api"
+
+MOCK_GWAS_RESPONSE = {
+    "_embedded": {
+        "associations": [
+            {
+                "efoTraits": [{"trait": "Breast cancer"}],
+                "loci": [{"strongestRiskAlleles": [{"riskAlleleName": "rs12345-A"}]}],
+                "pvalueMantissa": 1,
+                "pvalueExponent": -10,
+                "riskFrequency": "0.25",
+                "orPerCopyNum": 1.3,
+                "studyAccession": "GCST000123",
+            }
+        ]
+    }
+}
+
+
+@respx.mock
+def test_gwas_catalog_success():
+    respx.get(f"{GWAS_BASE}/associations/search/findByGene").mock(
+        return_value=httpx.Response(200, json=MOCK_GWAS_RESPONSE)
+    )
+    result = GWASCatalogTool().run(gene="BRCA1")
+    assert result.success is True
+    assert result.data["total"] == 1
+    assert result.data["associations"][0]["traits"] == ["Breast cancer"]
+    assert result.data["associations"][0]["snps"] == ["rs12345-A"]
+    assert result.data["associations"][0]["p_value"] == "1e-10"
+
+
+@respx.mock
+def test_gwas_catalog_no_results():
+    respx.get(f"{GWAS_BASE}/associations/search/findByGene").mock(
+        return_value=httpx.Response(200, json={"_embedded": {"associations": []}})
+    )
+    result = GWASCatalogTool().run(gene="FAKEGENE")
+    assert result.success is True
+    assert result.data["total"] == 0
+    assert result.data["associations"] == []
+
+
+@respx.mock
+def test_gwas_catalog_uses_geneName_param():
+    """Verify the tool sends geneName=, not gene=, so the endpoint actually filters."""
+    called_with = {}
+
+    def capture(request):
+        called_with["params"] = dict(request.url.params)
+        return httpx.Response(200, json={"_embedded": {"associations": []}})
+
+    respx.get(f"{GWAS_BASE}/associations/search/findByGene").mock(side_effect=capture)
+    GWASCatalogTool().run(gene="TP53")
+    assert called_with["params"].get("geneName") == "TP53"
+    assert "gene" not in called_with["params"]
