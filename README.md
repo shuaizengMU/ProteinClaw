@@ -203,46 +203,16 @@ The script will:
 
 On first launch, a setup wizard prompts for your API key and default model. Settings are saved to `~/.config/proteinclaw/config.toml`.
 
-You can also set keys via environment variables instead:
-
-```bash
-# macOS / Linux
-export DEEPSEEK_API_KEY=sk-...
-proteinclaw-tui
-
-# Windows PowerShell
-$env:DEEPSEEK_API_KEY = "sk-..."
-proteinclaw-tui
-```
-
-### Option 2 — Install Python package only (no TUI)
-
-**Prerequisite:** [uv](https://docs.astral.sh/uv/getting-started/installation/) — Python 3.11+ is bundled automatically.
-
-```bash
-uv tool install git+https://github.com/shuaizengMU/ProteinClaw.git
-proteinclaw
-```
-
-### Option 3 — Run from source
+### Option 2 — Run from source
 
 ```bash
 git clone https://github.com/shuaizengMU/ProteinClaw.git
 cd ProteinClaw
 uv sync
-uv run proteinclaw
+bash scripts/build-tui.sh
+cp target/release/proteinclaw-tui ~/.local/bin/
+proteinclaw-tui
 ```
-
-### Option 4 — Desktop App
-
-Download the installer for your platform from the [Releases](https://github.com/shuaizengMU/ProteinClaw/releases) page.
-
-| Platform | Format |
-|----------|--------|
-| macOS | `.dmg` (~20 MB download; ~500 MB installed) |
-| Windows | `.exe` NSIS installer (~15 MB download) |
-
-Python and all dependencies are downloaded automatically on first launch. No Python installation required.
 
 ### API Keys
 
