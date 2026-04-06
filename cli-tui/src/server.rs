@@ -12,15 +12,16 @@ impl Drop for ServerHandle {
 }
 
 pub fn spawn(port: u16) -> Result<ServerHandle> {
-    let child = Command::new("uvicorn")
+    // Use `proteinclaw server` (installed by uv tool install) rather than
+    // `uvicorn` directly — uv tool install only exposes the package's own
+    // entry-point scripts, not dependency binaries like uvicorn.
+    let child = Command::new("proteinclaw")
         .args([
-            "proteinclaw.server.main:app",
+            "server",
             "--host",
             "127.0.0.1",
             "--port",
             &port.to_string(),
-            "--log-level",
-            "error",
         ])
         .stdout(Stdio::null())
         .stderr(Stdio::null())
