@@ -80,15 +80,10 @@ if curl -fsSL --output "$TMP" "$LATEST_URL" 2>/dev/null; then
   ok "Downloaded ${BIN_NAME} → ${INSTALL_DIR}/${BIN_NAME}"
 else
   rm -f "$TMP"
-  fail "Could not download ${BIN_NAME} for ${PLATFORM}-${ARCH_LABEL}.
-
-  Check that a release exists at:
-    https://github.com/${REPO}/releases/latest
-
-  Or build from source:
-    git clone https://github.com/${REPO}.git
-    cd ProteinClaw
-    bash scripts/build-tui.sh"
+  warn "${BIN_NAME} binary not available for ${PLATFORM}-${ARCH_LABEL} yet."
+  warn "You can still use: proteinclaw server / proteinclaw query"
+  warn "To build the TUI from source:"
+  warn "  git clone https://github.com/${REPO}.git && cd ProteinClaw && bash scripts/build-tui.sh"
 fi
 
 # ── 5. Add ~/.local/bin to PATH if needed ────────────────────────────────────
