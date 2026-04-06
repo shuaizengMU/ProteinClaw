@@ -19,6 +19,7 @@ ProteinClaw replaces that pipeline with a single conversational interface backed
 - **Multi-tool reasoning.** The agent chains tools automatically when your question requires it.
 - **Streaming output.** See tool calls, intermediate observations, and the final answer as they happen.
 - **Your LLM.** Works with OpenAI, Anthropic, DeepSeek, MiniMax, or a local Ollama model.
+- **Your data stays on your machine.** ProteinClaw runs entirely on your own computer. Your queries, results, and API keys never pass through any third-party server — nothing is collected, logged, or shared. Use a local Ollama model and no data leaves your machine at all.
 
 ---
 
