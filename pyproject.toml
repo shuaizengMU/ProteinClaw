@@ -16,6 +16,9 @@ dependencies = [
     "python-dotenv>=1.0",
 ]
 
+[project.scripts]
+proteinclaw = "proteinclaw.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/EvoScientist/ProteinClaw"
 Repository = "https://github.com/EvoScientist/ProteinClaw"
