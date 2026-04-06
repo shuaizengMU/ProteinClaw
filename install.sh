@@ -73,15 +73,16 @@ info "Downloading ${BIN_NAME} (${PLATFORM}-${ARCH_LABEL})..."
 
 mkdir -p "$INSTALL_DIR"
 TMP=$(mktemp)
+TUI_INSTALLED=false
 
 if curl -fsSL --output "$TMP" "$LATEST_URL" 2>/dev/null; then
   chmod +x "$TMP"
   mv "$TMP" "${INSTALL_DIR}/${BIN_NAME}"
   ok "Downloaded ${BIN_NAME} → ${INSTALL_DIR}/${BIN_NAME}"
+  TUI_INSTALLED=true
 else
   rm -f "$TMP"
-  warn "${BIN_NAME} binary not available for ${PLATFORM}-${ARCH_LABEL} yet."
-  warn "You can still use: proteinclaw server / proteinclaw query"
+  warn "${BIN_NAME} binary not yet available for ${PLATFORM}-${ARCH_LABEL}."
   warn "To build the TUI from source:"
   warn "  git clone https://github.com/${REPO}.git && cd ProteinClaw && bash scripts/build-tui.sh"
 fi
@@ -113,7 +114,12 @@ echo ""
 echo -e "${BOLD}──────────────────────────────────────────${RESET}"
 echo -e "${GREEN}${BOLD}ProteinClaw installed successfully!${RESET}"
 echo ""
-echo "  Run:  proteinclaw-tui"
+if [[ "$TUI_INSTALLED" == "true" ]]; then
+  echo "  Run:  proteinclaw-tui"
+else
+  echo "  Run:  proteinclaw server    # start the backend"
+  echo "        proteinclaw query \"<question>\""
+fi
 echo ""
 echo "  On first launch, a setup wizard will prompt for your API key."
 echo -e "${BOLD}──────────────────────────────────────────${RESET}"
