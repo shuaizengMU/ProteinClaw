@@ -67,7 +67,7 @@ ok "Python backend installed"
 
 # ── 4. Download proteinclaw-tui binary ───────────────────────────────────────
 ASSET="${BIN_NAME}-${PLATFORM}-${ARCH_LABEL}"
-LATEST_URL="https://github.com/${REPO}/releases/latest/download/${ASSET}"
+LATEST_URL="https://github.com/${REPO}/releases/download/v0.1.0-beta/${ASSET}"
 
 info "Downloading ${BIN_NAME} (${PLATFORM}-${ARCH_LABEL})..."
 

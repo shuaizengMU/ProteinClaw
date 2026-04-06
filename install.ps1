@@ -48,7 +48,7 @@ ok "Python backend installed"
 
 # ── 3. Download proteinclaw-tui binary ───────────────────────────────────────
 $ASSET   = "$BIN_NAME-windows-x86_64.exe"
-$URL     = "https://github.com/$REPO/releases/latest/download/$ASSET"
+$URL     = "https://github.com/$REPO/releases/download/v0.1.0-beta/$ASSET"
 $DEST    = Join-Path $INSTALL_DIR "$BIN_NAME.exe"
 
 info "Downloading $BIN_NAME (windows-x86_64)..."
