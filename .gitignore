@@ -11,3 +11,7 @@ src-tauri/.DS_Store
 .DS_Store
 target/*
 .githubkey
+.github/
+.claude/
+.superpowers/
+docs/superpowers/
