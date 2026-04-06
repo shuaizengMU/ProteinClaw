@@ -2,7 +2,7 @@
 
 The AI agent for protein bioinformatics. Describe your research goal in plain English — ProteinClaw figures out which tools to call, runs them, and streams a synthesized answer back to you.
 
-![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![Python](https://img.shields.io/badge/python-3.13%2B-blue)
 ![Tests](https://img.shields.io/badge/tests-73%20passed-brightgreen)
 ![Tools](https://img.shields.io/badge/tools-53-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
