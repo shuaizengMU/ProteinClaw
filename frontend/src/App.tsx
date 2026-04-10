@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { ChatWindow } from "./components/ChatWindow";
 import { useChat } from "./hooks/useChat";
@@ -19,25 +19,17 @@ export default function App() {
     appendMessage,
   } = useProjects();
 
-  // Track which project is expanded in the sidebar
-  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(
-    null
-  );
-
-  function handleCreateProject(name: string): string {
-    const id = createProject(name);
-    setExpandedProjectId(id); // auto-expand new project
-    return id;
+  function handleNewChat() {
+    let projectId: string;
+    if (projects.length === 0) {
+      projectId = createProject("My Chats");
+    } else {
+      projectId = projects[0].id;
+    }
+    const convId = createConversation(projectId, model);
+    selectConversation(projectId, convId);
   }
 
-  function handleToggleProject(projectId: string) {
-    setExpandedProjectId((prev) => (prev === projectId ? null : projectId));
-  }
-
-  // Persists each logical message to the active conversation.
-  // Memoized so useChat's onMessageRef always holds the latest version
-  // without triggering WS reconnects. Stale-conversation safety comes from
-  // useChat closing the WS on conversationId change, not from this guard.
   const handleMessage = useCallback(
     (msg: Message) => {
       if (activeConversationId) {
@@ -52,9 +44,6 @@ export default function App() {
     handleMessage
   );
 
-  // Merge persisted messages with the live streaming assistant message.
-  // React 19 batches the appendMessage(assistantMsg) + setStreamingAssistant(null)
-  // calls that fire together on WS done, so there is no duplicate or flash.
   const displayMessages: Message[] = [
     ...(activeConversation?.messages ?? []),
     ...(streamingAssistant ? [streamingAssistant] : []),
@@ -65,12 +54,8 @@ export default function App() {
       <Sidebar
         projects={projects}
         activeConversationId={activeConversationId}
-        expandedProjectId={expandedProjectId}
-        model={model}
         onSelectConversation={selectConversation}
-        onCreateProject={handleCreateProject}
-        onCreateConversation={createConversation}
-        onToggleProject={handleToggleProject}
+        onNewChat={handleNewChat}
       />
       <ChatWindow
         key={activeConversationId ?? "empty"}

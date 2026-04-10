@@ -1,7 +1,17 @@
 import { useState, useRef, useEffect } from "react";
+import { Plus, Mic, Share2, ChevronDown } from "lucide-react";
 import type { Message } from "../types";
 import { MessageBubble } from "./MessageBubble";
-import { ModelSelector } from "./ModelSelector";
+import { ClaudeLogo } from "./ClaudeLogo";
+
+const MODELS = [
+  "claude-opus-4-5",
+  "claude-sonnet-4-6",
+  "gpt-4o",
+  "deepseek-chat",
+  "deepseek-reasoner",
+  "ollama/llama3",
+];
 
 interface Props {
   messages: Message[];
@@ -26,8 +36,9 @@ export function ChatWindow({
     return (
       <div className="chat-window chat-window--empty">
         <div className="empty-state">
-          <h2>No conversation selected</h2>
-          <p>Create a project in the sidebar, then start a new chat.</p>
+          <ClaudeLogo size={40} />
+          <h2>How can I help you?</h2>
+          <p>Create a new chat from the sidebar.</p>
         </div>
       </div>
     );
@@ -35,26 +46,27 @@ export function ChatWindow({
 
   return (
     <div className="chat-window">
-      <TopBar title={title} model={model} onModelChange={onModelChange} />
+      <TopBar title={title} />
       <MessageList messages={messages} loading={loading} />
-      <InputArea onSend={onSend} loading={loading} />
+      <InputArea onSend={onSend} loading={loading} model={model} onModelChange={onModelChange} />
     </div>
   );
 }
 
-function TopBar({
-  title,
-  model,
-  onModelChange,
-}: {
-  title: string;
-  model: string;
-  onModelChange: (m: string) => void;
-}) {
+function TopBar({ title }: { title: string }) {
   return (
     <div className="top-bar">
-      <span className="top-bar__title">{title || "New Chat"}</span>
-      <ModelSelector value={model} onChange={onModelChange} />
+      <div className="top-bar__title-group">
+        <span className="top-bar__conv-title">{title || "New Chat"}</span>
+        <ChevronDown size={14} strokeWidth={1.8} className="top-bar__chevron" />
+      </div>
+      <div className="top-bar__tabs">
+        <button className="top-bar__tab top-bar__tab--active">Chat</button>
+        <button className="top-bar__tab">Code</button>
+      </div>
+      <button className="top-bar__action">
+        <Share2 size={15} strokeWidth={1.8} />
+      </button>
     </div>
   );
 }
@@ -89,7 +101,12 @@ function MessageList({
         <MessageBubble key={i} message={msg} />
       ))}
       {loading && (
-        <div className="thinking-indicator">ProteinClaw is thinking…</div>
+        <div className="msg-assistant-wrap">
+          <div className="msg-assistant-logo">
+            <ClaudeLogo size={20} />
+          </div>
+          <div className="thinking-indicator">Thinking…</div>
+        </div>
       )}
     </div>
   );
@@ -98,9 +115,13 @@ function MessageList({
 function InputArea({
   onSend,
   loading,
+  model,
+  onModelChange,
 }: {
   onSend: (text: string) => void;
   loading: boolean;
+  model: string;
+  onModelChange: (m: string) => void;
 }) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -109,7 +130,7 @@ function InputArea({
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 150) + "px";
+    el.style.height = Math.min(el.scrollHeight, 160) + "px";
   }
 
   function submit() {
@@ -126,28 +147,47 @@ function InputArea({
     }
   }
 
+  const displayModel = model.split("/").pop() ?? model;
+
   return (
-    <div className="input-area">
-      <textarea
-        ref={textareaRef}
-        className="input-area__textarea"
-        value={input}
-        onChange={(e) => {
-          setInput(e.target.value);
-          adjustHeight();
-        }}
-        onKeyDown={handleKeyDown}
-        placeholder="Ask about a protein, e.g. 'What is P04637?'"
-        disabled={loading}
-        rows={1}
-      />
-      <button
-        className="input-area__submit"
-        onClick={submit}
-        disabled={loading || !input.trim()}
-      >
-        {loading ? "…" : "Send"}
-      </button>
+    <div className="input-area-wrap">
+      <div className="input-card">
+        <textarea
+          ref={textareaRef}
+          className="input-card__textarea"
+          value={input}
+          onChange={(e) => { setInput(e.target.value); adjustHeight(); }}
+          onKeyDown={handleKeyDown}
+          placeholder="Reply..."
+          disabled={loading}
+          rows={1}
+        />
+        <div className="input-card__toolbar">
+          <button className="input-card__icon-btn" title="Attach">
+            <Plus size={16} strokeWidth={2} />
+          </button>
+          <div className="input-card__toolbar-right">
+            <select
+              className="input-card__model-select"
+              value={model}
+              onChange={(e) => onModelChange(e.target.value)}
+            >
+              {MODELS.map((m) => (
+                <option key={m} value={m}>{m.split("/").pop()}</option>
+              ))}
+            </select>
+            <button
+              className="input-card__icon-btn"
+              title="Voice input"
+            >
+              <Mic size={16} strokeWidth={1.8} />
+            </button>
+          </div>
+        </div>
+      </div>
+      <p className="input-disclaimer">
+        ProteinClaw can make mistakes. Please double-check responses.
+      </p>
     </div>
   );
 }

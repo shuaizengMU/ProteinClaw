@@ -1,91 +1,97 @@
-import { useState, useEffect, useRef } from "react";
+import {
+  Plus,
+  Search,
+  Settings2,
+  MessageSquare,
+  FolderOpen,
+  Box,
+  ChevronDown,
+} from "lucide-react";
 import type { Project } from "../types";
-import { ProjectItem } from "./ProjectItem";
 
 interface Props {
   projects: Project[];
   activeConversationId: string | null;
-  expandedProjectId: string | null;
-  model: string;
   onSelectConversation: (projectId: string, conversationId: string) => void;
-  onCreateProject: (name: string) => string;
-  onCreateConversation: (projectId: string, model: string) => string;
-  onToggleProject: (projectId: string) => void;
+  onNewChat: () => void;
 }
 
 export function Sidebar({
   projects,
   activeConversationId,
-  expandedProjectId,
-  model,
   onSelectConversation,
-  onCreateProject,
-  onCreateConversation,
-  onToggleProject,
+  onNewChat,
 }: Props) {
-  const [newProjectMode, setNewProjectMode] = useState(false);
-  const [newProjectName, setNewProjectName] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (newProjectMode) inputRef.current?.focus();
-  }, [newProjectMode]);
-
-  function handleCreateProject(e: React.FormEvent) {
-    e.preventDefault();
-    const name = newProjectName.trim();
-    if (!name) return;
-    onCreateProject(name);
-    setNewProjectName("");
-    setNewProjectMode(false);
-  }
-
-  function handleInputBlur() {
-    setNewProjectMode(false);
-    setNewProjectName("");
-  }
+  const recents = projects
+    .flatMap((p) => p.conversations.map((c) => ({ ...c, projectId: p.id })))
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 30);
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-header">
-        {newProjectMode ? (
-          <form onSubmit={handleCreateProject} className="inline-input-form">
-            <input
-              ref={inputRef}
-              className="inline-input"
-              value={newProjectName}
-              onChange={(e) => setNewProjectName(e.target.value)}
-              onBlur={handleInputBlur}
-              placeholder="Project name"
-            />
-          </form>
-        ) : (
-          <button
-            className="new-project-btn"
-            onClick={() => setNewProjectMode(true)}
-          >
-            + New Project
-          </button>
-        )}
+      {/* Top nav */}
+      <div className="sidebar-nav">
+        <button className="sidebar-nav-item sidebar-nav-item--primary" onClick={onNewChat}>
+          <Plus size={16} strokeWidth={2} />
+          <span>New chat</span>
+        </button>
+        <button className="sidebar-nav-item">
+          <Search size={15} strokeWidth={1.8} />
+          <span>Search</span>
+        </button>
+        <button className="sidebar-nav-item">
+          <Settings2 size={15} strokeWidth={1.8} />
+          <span>Customize</span>
+        </button>
       </div>
 
-      <div className="project-list">
-        {projects.map((project) => (
-          <ProjectItem
-            key={project.id}
-            project={project}
-            isExpanded={expandedProjectId === project.id}
-            activeConversationId={activeConversationId}
-            onToggle={() => onToggleProject(project.id)}
-            onSelectConversation={(convId) =>
-              onSelectConversation(project.id, convId)
-            }
-            onNewChat={() => {
-              const id = onCreateConversation(project.id, model);
-              onSelectConversation(project.id, id);
-            }}
-          />
-        ))}
+      {/* Section links */}
+      <div className="sidebar-sections">
+        <button className="sidebar-section-item">
+          <MessageSquare size={15} strokeWidth={1.8} />
+          <span>Chats</span>
+        </button>
+        <button className="sidebar-section-item">
+          <FolderOpen size={15} strokeWidth={1.8} />
+          <span>Projects</span>
+        </button>
+        <button className="sidebar-section-item">
+          <Box size={15} strokeWidth={1.8} />
+          <span>Artifacts</span>
+        </button>
+      </div>
+
+      {/* Recents */}
+      <div className="sidebar-recents">
+        <div className="sidebar-recents-label">Recents</div>
+        <div className="sidebar-recents-list">
+          {recents.length === 0 && (
+            <div className="sidebar-empty">No conversations yet</div>
+          )}
+          {recents.map((item) => (
+            <button
+              key={item.id}
+              className={`sidebar-conv-item${item.id === activeConversationId ? " active" : ""}`}
+              onClick={() => onSelectConversation(item.projectId, item.id)}
+              title={item.title}
+            >
+              <span className="sidebar-conv-title">{item.title}</span>
+              {item.id === activeConversationId && (
+                <span className="sidebar-conv-more">···</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* User profile */}
+      <div className="sidebar-user">
+        <div className="sidebar-user-avatar">P</div>
+        <div className="sidebar-user-info">
+          <span className="sidebar-user-name">ProteinClaw</span>
+          <span className="sidebar-user-plan">Pro plan</span>
+        </div>
+        <ChevronDown size={14} strokeWidth={1.8} className="sidebar-user-chevron" />
       </div>
     </aside>
   );
