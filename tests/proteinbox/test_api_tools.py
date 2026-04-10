@@ -564,3 +564,250 @@ def test_protein_atlas_not_found():
     )
     result = HumanProteinAtlasTool().run(gene="FAKEGENE")
     assert result.success is False
+
+
+# ── Ensembl Plants ────────────────────────────────────────────────────────────
+
+from proteinbox.api_tools.ensembl_plants import EnsemblPlantsTool, ENSEMBL_REST
+
+
+@respx.mock
+def test_ensembl_plants_by_locus():
+    gene_payload = {
+        "id": "AT1G62630",
+        "display_name": "AT1G62630",
+        "description": "disease resistance protein (CC-NBS-LRR class)",
+        "biotype": "protein_coding",
+        "species": "arabidopsis_thaliana",
+        "assembly_name": "TAIR10",
+        "seq_region_name": "1",
+        "start": 23200000,
+        "end": 23205000,
+        "strand": 1,
+        "Transcript": [
+            {
+                "id": "AT1G62630.1",
+                "biotype": "protein_coding",
+                "is_canonical": 1,
+                "length": 2700,
+                "Translation": {"id": "AT1G62630.1.p"},
+            },
+            {
+                "id": "AT1G62630.2",
+                "biotype": "protein_coding",
+                "is_canonical": 0,
+                "length": 2100,
+                "Translation": {"id": "AT1G62630.2.p"},
+            },
+        ],
+    }
+    seq_payload = {"id": "AT1G62630.1.p", "seq": "MGISFSIPFDPCVNKVSQWLDMKGSYTHNLEKNLVALETT"}
+
+    respx.get(f"{ENSEMBL_REST}/lookup/id/AT1G62630").mock(
+        return_value=httpx.Response(200, json=gene_payload)
+    )
+    respx.get(f"{ENSEMBL_REST}/sequence/id/AT1G62630.1.p").mock(
+        return_value=httpx.Response(200, json=seq_payload)
+    )
+
+    result = EnsemblPlantsTool().run(locus_id="AT1G62630")
+    assert result.success is True
+    assert result.data["gene_id"] == "AT1G62630"
+    assert result.data["canonical_transcript_id"] == "AT1G62630.1"
+    assert result.data["protein_id"] == "AT1G62630.1.p"
+    assert result.data["protein_length"] == 40
+    assert result.data["protein_sequence"].startswith("MGISFSIPFDPC")
+    assert result.data["fasta"].startswith(">")
+    assert len(result.data["transcripts"]) == 2
+
+
+@respx.mock
+def test_ensembl_plants_by_symbol():
+    gene_payload = {
+        "id": "AT3G52430",
+        "display_name": "PAD4",
+        "species": "arabidopsis_thaliana",
+        "assembly_name": "TAIR10",
+        "seq_region_name": "3",
+        "start": 1,
+        "end": 2,
+        "strand": 1,
+        "Transcript": [
+            {
+                "id": "AT3G52430.1",
+                "is_canonical": 1,
+                "Translation": {"id": "AT3G52430.1.p"},
+            }
+        ],
+    }
+    respx.get(f"{ENSEMBL_REST}/lookup/symbol/arabidopsis_thaliana/PAD4").mock(
+        return_value=httpx.Response(200, json=gene_payload)
+    )
+    respx.get(f"{ENSEMBL_REST}/sequence/id/AT3G52430.1.p").mock(
+        return_value=httpx.Response(200, json={"seq": "MKQVELLA"})
+    )
+    result = EnsemblPlantsTool().run(symbol="PAD4")
+    assert result.success is True
+    assert result.data["display_name"] == "PAD4"
+    assert result.data["protein_sequence"] == "MKQVELLA"
+
+
+@respx.mock
+def test_ensembl_plants_not_found():
+    respx.get(f"{ENSEMBL_REST}/lookup/id/AT9G99999").mock(
+        return_value=httpx.Response(404, json={"error": "not found"})
+    )
+    result = EnsemblPlantsTool().run(locus_id="AT9G99999")
+    assert result.success is False
+
+
+def test_ensembl_plants_requires_input():
+    result = EnsemblPlantsTool().run()
+    assert result.success is False
+
+
+# ── EBI BLAST ─────────────────────────────────────────────────────────────────
+
+from proteinbox.api_tools.ebi_blast import EBIBlastTool, EBI_BLAST_BASE
+
+
+@respx.mock
+def test_ebi_blast_success(monkeypatch):
+    monkeypatch.setattr("time.sleep", lambda *_: None)
+
+    respx.post(f"{EBI_BLAST_BASE}/run").mock(
+        return_value=httpx.Response(200, text="ncbiblast-R20260410-JOB42")
+    )
+    respx.get(f"{EBI_BLAST_BASE}/status/ncbiblast-R20260410-JOB42").mock(
+        return_value=httpx.Response(200, text="FINISHED")
+    )
+    respx.get(f"{EBI_BLAST_BASE}/result/ncbiblast-R20260410-JOB42/json").mock(
+        return_value=httpx.Response(200, json={
+            "hits": [
+                {
+                    "hit_acc": "P04637",
+                    "hit_desc": "Cellular tumor antigen p53 OS=Homo sapiens",
+                    "hit_len": 393,
+                    "hit_hsps": [
+                        {
+                            "hsp_align_len": 40,
+                            "hsp_identity": 38,
+                            "hsp_expect": "1e-20",
+                            "hsp_bit_score": 85.2,
+                            "hsp_qseq": "MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPS",
+                            "hsp_hseq": "MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPS",
+                            "hsp_mseq": "|||||||||||||||||||||||||||||||||||||",
+                        }
+                    ],
+                },
+                {
+                    "hit_acc": "P02340",
+                    "hit_desc": "Cellular tumor antigen p53 OS=Mus musculus",
+                    "hit_len": 390,
+                    "hit_hsps": [
+                        {
+                            "hsp_align_len": 40,
+                            "hsp_identity": 30,
+                            "hsp_expect": "1e-15",
+                            "hsp_bit_score": 70.1,
+                            "hsp_qseq": "MEEPQSDPSVEP",
+                            "hsp_hseq": "MEEPPSDPSVEP",
+                            "hsp_mseq": "|||| |||||||",
+                        }
+                    ],
+                },
+            ]
+        })
+    )
+
+    result = EBIBlastTool().run(
+        sequence="MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPS",
+        program="blastp",
+        database="uniprotkb",
+        max_hits=5,
+        poll_interval=0.01,
+    )
+    assert result.success is True
+    assert result.data["job_id"] == "ncbiblast-R20260410-JOB42"
+    assert len(result.data["hits"]) == 2
+    assert result.data["hits"][0]["hit_id"] == "P04637"
+    assert result.data["hits"][0]["identity_pct"] == 95.0
+    assert result.data["hits"][0]["hit_seq"].startswith("MEEPQSDPSV")
+
+
+@respx.mock
+def test_ebi_blast_status_error(monkeypatch):
+    monkeypatch.setattr("time.sleep", lambda *_: None)
+    respx.post(f"{EBI_BLAST_BASE}/run").mock(
+        return_value=httpx.Response(200, text="ncbiblast-JOB99")
+    )
+    respx.get(f"{EBI_BLAST_BASE}/status/ncbiblast-JOB99").mock(
+        return_value=httpx.Response(200, text="ERROR")
+    )
+    result = EBIBlastTool().run(sequence="MEEPQ", poll_interval=0.01)
+    assert result.success is False
+    assert "ERROR" in (result.error or "")
+
+
+def test_ebi_blast_unknown_program():
+    result = EBIBlastTool().run(sequence="MEEPQ", program="blastz")
+    assert result.success is False
+
+
+# ── Clustal Omega ─────────────────────────────────────────────────────────────
+
+from proteinbox.api_tools.clustal_omega import ClustalOmegaTool, CLUSTALO_BASE
+
+
+_CLUSTAL_RESULT = """CLUSTAL O(1.2.4) multiple sequence alignment
+
+
+Col0            MGISFSIPFDPCVNKVSQWLDMKGSYTHNLEKNLVALETT     40
+Rld2            MGISFSIPFDPCVNKVSQWLDMKGSYTHNLEKNLVALETT     40
+                ****************************************
+
+Col0            MEELKAKRDDLLRRLKRE     58
+Rld2            MEELKAKRDDLLRRLKRE     58
+                ******************
+"""
+
+
+@respx.mock
+def test_clustal_omega_success(monkeypatch):
+    monkeypatch.setattr("time.sleep", lambda *_: None)
+    respx.post(f"{CLUSTALO_BASE}/run").mock(
+        return_value=httpx.Response(200, text="clustalo-R20260410-JOB7")
+    )
+    respx.get(f"{CLUSTALO_BASE}/status/clustalo-R20260410-JOB7").mock(
+        return_value=httpx.Response(200, text="FINISHED")
+    )
+    respx.get(f"{CLUSTALO_BASE}/result/clustalo-R20260410-JOB7/aln-clustal_num").mock(
+        return_value=httpx.Response(200, text=_CLUSTAL_RESULT)
+    )
+    fasta = ">Col0\nMGISFSIPFDPCVNKVSQWLDMKGSYTHNLEKNLVALETTMEELKAKRDDLLRRLKRE\n>Rld2\nMGISFSIPFDPCVNKVSQWLDMKGSYTHNLEKNLVALETTMEELKAKRDDLLRRLKRE\n"
+    result = ClustalOmegaTool().run(sequences=fasta, poll_interval=0.01)
+    assert result.success is True
+    assert result.data["num_sequences"] == 2
+    assert result.data["alignment_length"] == 58
+    assert result.data["conserved_columns"] == 58
+    assert result.data["aligned"]["Col0"].startswith("MGISFSIPFDPC")
+    assert "Rld2" in result.data["aligned"]
+
+
+def test_clustal_omega_requires_multi_fasta():
+    result = ClustalOmegaTool().run(sequences=">only_one\nMEEPQ")
+    assert result.success is False
+
+
+@respx.mock
+def test_clustal_omega_timeout(monkeypatch):
+    monkeypatch.setattr("time.sleep", lambda *_: None)
+    respx.post(f"{CLUSTALO_BASE}/run").mock(
+        return_value=httpx.Response(200, text="clustalo-JOB8")
+    )
+    respx.get(f"{CLUSTALO_BASE}/status/clustalo-JOB8").mock(
+        return_value=httpx.Response(200, text="RUNNING")
+    )
+    fasta = ">a\nMEEPQ\n>b\nMEEPQ\n"
+    result = ClustalOmegaTool().run(sequences=fasta, timeout=0, poll_interval=0.01)
+    assert result.success is False

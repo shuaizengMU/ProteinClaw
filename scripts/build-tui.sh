@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eu
 
 # ────────────────────────────────────────────
 # ProteinClaw — build the Rust TUI (cli-tui)

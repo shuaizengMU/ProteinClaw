@@ -1,0 +1,5 @@
+# Ensure shell scripts always use LF, even on Windows checkouts
+*.sh    text eol=lf
+
+# Normalize all text files; let binary files be
+*       text=auto

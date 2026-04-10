@@ -108,5 +108,19 @@
   },
   "uniprot_variants": {
     "accession": "P04637"
+  },
+  "ensembl_plants": {
+    "locus_id": "AT1G62630"
+  },
+  "ebi_blast": {
+    "sequence": "MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPS",
+    "program": "blastp",
+    "database": "uniprotkb_swissprot",
+    "max_hits": 2,
+    "_slow": true
+  },
+  "clustal_omega": {
+    "sequences": ">a\nMEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPS\n>b\nMEEPQSDPSVDPPLSQETFSDLWKLLPENNVLSPLPS\n",
+    "_slow": true
   }
 }

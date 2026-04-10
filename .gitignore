@@ -15,3 +15,6 @@ target/*
 .claude/
 .superpowers/
 docs/superpowers/
+
+# Runtime logs (must be ignored so cargo-watch does not re-trigger on writes)
+*.log
