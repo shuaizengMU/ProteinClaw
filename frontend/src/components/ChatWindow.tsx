@@ -490,11 +490,14 @@ function InputArea({
                 const configKey = MODEL_CONFIG_KEYS[newModel];
                 const isConfigured = localStorage.getItem(configKey);
 
+                console.log("Model selected:", newModel, "Config key:", configKey, "Is configured:", !!isConfigured);
+
                 // Always change the model
                 onModelChange(newModel);
 
                 // If not configured, show config dialog
                 if (!isConfigured) {
+                  console.log("Showing config dialog for:", newModel);
                   setSelectedModel(newModel);
                   setConfigValue("");
                   setShowModelConfig(true);
