@@ -1,16 +1,16 @@
 /* ── Design tokens ───────────────────────────────────────── */
 :root {
-  --bg:           #f5f4f0;   /* chat area warm off-white */
-  --sidebar-bg:   #f5f4f0;   /* sidebar slightly darker */
+  --bg:           #f3f3f3;   /* chat area cool gray */
+  --sidebar-bg:   #f3f3f3;   /* sidebar cool gray */
   --surface:      #ffffff;   /* cards & input box */
-  --border:       #e2e0dc;   /* subtle separators */
-  --border-light: #eceae6;
-  --text:         #6b6870;   /* secondary / muted */
-  --text-h:       #1c1b1a;   /* primary headings & content */
-  --text-xs:      #9b9896;   /* timestamps, labels */
-  --accent:       #aa3bff;
-  --accent-bg:    rgba(170,59,255,0.08);
-  --claude:       #da7756;   /* Claude logo color */
+  --border:       #d9d9d9;   /* cool gray separators */
+  --border-light: #e8e8e8;
+  --text:         #666666;   /* secondary / muted */
+  --text-h:       #1a1a1a;   /* primary headings & content */
+  --text-xs:      #999999;   /* timestamps, labels */
+  --accent:       #0066cc;   /* technical blue */
+  --accent-bg:    rgba(0,102,204,0.08);
+  --claude:       #da7756;   /* Claude logo color (kept for brand recognition) */
   --status-success: #16a34a;
   --status-error:   #dc2626;
   --shadow-sm:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
@@ -28,16 +28,16 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg:           #1a1917;
-    --sidebar-bg:   #1a1917;
-    --surface:      #242320;
-    --border:       #2e2d2a;
-    --border-light: #272624;
-    --text:         #8b8985;
-    --text-h:       #f0ede8;
-    --text-xs:      #5e5c5a;
-    --accent:       #c084fc;
-    --accent-bg:    rgba(192,132,252,0.10);
+    --bg:           #1a1a1a;   /* cool dark */
+    --sidebar-bg:   #1a1a1a;   /* cool dark */
+    --surface:      #262626;   /* cool dark surface */
+    --border:       #333333;   /* cool gray border */
+    --border-light: #2d2d2d;
+    --text:         #b3b3b3;   /* secondary text light gray */
+    --text-h:       #e8e8e8;   /* primary text light gray */
+    --text-xs:      #808080;   /* muted text medium gray */
+    --accent:       #4a9eff;   /* lighter blue for dark mode */
+    --accent-bg:    rgba(74,158,255,0.12);
     --status-success: #22c55e;
     --status-error:   #ef4444;
     --shadow-sm:    0 1px 3px rgba(0,0,0,0.4);
