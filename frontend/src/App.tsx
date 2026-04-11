@@ -19,10 +19,10 @@ export default function App() {
 
   // Debug: log the backend port on mount
   useEffect(() => {
-    const port = (window as any).__BACKEND_PORT__;
-    const debugMode = (window as any).__DEBUG_MODE__;
-    console.log('[ProteinClaw] Backend port:', port || 'NOT SET, using default 8000');
-    console.log('[ProteinClaw] Debug mode:', debugMode);
+    if (import.meta.env.DEV) {
+      const port = (window as any).__BACKEND_PORT__;
+      console.log('[ProteinClaw] Backend port:', port || 'NOT SET, using default 8000');
+    }
 
     // Handle Cmd+Shift+I to log backend logs
     const handleKeyDown = (e: KeyboardEvent) => {
