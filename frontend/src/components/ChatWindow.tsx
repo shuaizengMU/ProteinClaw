@@ -64,7 +64,7 @@ function TopBar({ title }: { title: string }) {
         <button className="top-bar__tab top-bar__tab--active">Chat</button>
         <button className="top-bar__tab">Code</button>
       </div>
-      <button className="top-bar__action">
+      <button className="top-bar__action" aria-label="Share conversation">
         <Share2 size={15} strokeWidth={1.8} />
       </button>
     </div>
@@ -163,14 +163,16 @@ function InputArea({
           placeholder="Reply..."
           disabled={loading}
           rows={1}
+          aria-label="Message input"
         />
         <div className="input-card__toolbar">
-          <button className="input-card__icon-btn" title="Attach">
+          <button className="input-card__icon-btn" title="Attach" aria-label="Attach file or image">
             <Plus size={16} strokeWidth={2} />
           </button>
           <div className="input-card__toolbar-right">
             <select
               className="input-card__model-select"
+              aria-label="Select AI model"
               value={model}
               onChange={(e) => onModelChange(e.target.value)}
             >
@@ -182,6 +184,7 @@ function InputArea({
               <button
                 className="input-card__send-btn"
                 title="Send"
+                aria-label="Send message"
                 onClick={submit}
                 disabled={loading}
               >
@@ -191,6 +194,7 @@ function InputArea({
               <button
                 className="input-card__icon-btn"
                 title="Voice input"
+                aria-label="Send voice message"
               >
                 <Mic size={16} strokeWidth={1.8} />
               </button>

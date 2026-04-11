@@ -111,11 +111,11 @@ export function Sidebar({
           <Plus size={16} strokeWidth={2} />
           <span>New chat</span>
         </button>
-        <button className="sidebar-nav-item">
+        <button className="sidebar-nav-item" aria-label="Search conversations">
           <Search size={15} strokeWidth={1.8} />
           <span>Search</span>
         </button>
-        <button className="sidebar-nav-item">
+        <button className="sidebar-nav-item" aria-label="View plugins">
           <Puzzle size={15} strokeWidth={1.8} />
           <span>Plugins</span>
         </button>
@@ -129,14 +129,15 @@ export function Sidebar({
             <button
               className="sidebar-threads-btn"
               title={allCollapsed ? "Expand all" : "Collapse all"}
+              aria-label={allCollapsed ? "Expand all sessions" : "Collapse all sessions"}
               onClick={handleCollapseAll}
             >
               <ChevronsUpDown size={13} strokeWidth={1.8} />
             </button>
-            <button className="sidebar-threads-btn" title="Filter">
+            <button className="sidebar-threads-btn" title="Filter" aria-label="Filter sessions">
               <ListFilter size={13} strokeWidth={1.8} />
             </button>
-            <button className="sidebar-threads-btn" title="New project">
+            <button className="sidebar-threads-btn" title="New project" aria-label="Create new project">
               <FolderPlus size={13} strokeWidth={1.8} />
             </button>
           </div>
@@ -182,6 +183,7 @@ export function Sidebar({
                       <button
                         className="sidebar-project-action-btn"
                         title="New chat"
+                        aria-label={`Create new chat in ${project.name}`}
                         onClick={() => onNewChat()}
                       >
                         <PencilLine size={14} strokeWidth={1.8} />
@@ -190,6 +192,8 @@ export function Sidebar({
                         <button
                           className="sidebar-project-action-btn"
                           title="More options"
+                          aria-label={`Options for ${project.name}`}
+                          aria-expanded={lockedProject === project.id}
                           onClick={() => {
                             if (lockedProject === project.id) {
                               setLockedProject(null);
@@ -255,7 +259,7 @@ export function Sidebar({
 
       {/* Footer */}
       <div className="sidebar-footer">
-        <button className="sidebar-nav-item">
+        <button className="sidebar-nav-item" aria-label="Open settings">
           <Settings size={15} strokeWidth={1.8} />
           <span>Settings</span>
         </button>

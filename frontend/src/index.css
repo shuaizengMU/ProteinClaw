@@ -811,6 +811,26 @@ body { margin: 0; overflow: hidden; }
   line-height: 1.4;
 }
 
+/* ── Focus indicators (keyboard navigation) ──────────────── */
+button:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Internal outline for smaller buttons */
+.sidebar-nav-item:focus-visible,
+.sidebar-threads-btn:focus-visible,
+.top-bar__action:focus-visible,
+.input-card__icon-btn:focus-visible,
+.msg-reaction-btn:focus-visible,
+.sidebar-project-action-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
 /* ── Scrollbars ──────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

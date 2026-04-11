@@ -44,16 +44,16 @@ export function MessageBubble({ message }: Props) {
         </div>
         {message.content && (
           <div className="msg-reactions">
-            <button className="msg-reaction-btn" onClick={handleCopy} title="Copy">
+            <button className="msg-reaction-btn" onClick={handleCopy} title="Copy" aria-label={copied ? "Copied" : "Copy response"}>
               {copied ? <Check size={14} strokeWidth={2} /> : <Copy size={14} strokeWidth={1.8} />}
             </button>
-            <button className="msg-reaction-btn" title="Good response">
+            <button className="msg-reaction-btn" title="Good response" aria-label="Mark as helpful">
               <ThumbsUp size={14} strokeWidth={1.8} />
             </button>
-            <button className="msg-reaction-btn" title="Bad response">
+            <button className="msg-reaction-btn" title="Bad response" aria-label="Mark as unhelpful">
               <ThumbsDown size={14} strokeWidth={1.8} />
             </button>
-            <button className="msg-reaction-btn" title="Retry">
+            <button className="msg-reaction-btn" title="Retry" aria-label="Regenerate response">
               <RotateCcw size={14} strokeWidth={1.8} />
             </button>
           </div>
