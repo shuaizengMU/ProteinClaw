@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Mic, Share2, ChevronDown } from "lucide-react";
+import { Plus, Mic, Share2, ChevronDown, ArrowUp } from "lucide-react";
 import type { Message } from "../types";
 import { MessageBubble } from "./MessageBubble";
 import { ClaudeLogo } from "./ClaudeLogo";
@@ -97,17 +97,19 @@ function MessageList({
 
   return (
     <div className="message-list" ref={listRef} onScroll={handleScroll}>
-      {messages.map((msg, i) => (
-        <MessageBubble key={i} message={msg} />
-      ))}
-      {loading && (
-        <div className="msg-assistant-wrap">
-          <div className="msg-assistant-logo">
-            <ClaudeLogo size={20} />
+      <div className="message-list__inner">
+        {messages.map((msg, i) => (
+          <MessageBubble key={i} message={msg} />
+        ))}
+        {loading && (
+          <div className="msg-assistant-wrap">
+            <div className="msg-assistant-logo">
+              <ClaudeLogo size={20} />
+            </div>
+            <div className="thinking-indicator">Thinking…</div>
           </div>
-          <div className="thinking-indicator">Thinking…</div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
@@ -176,12 +178,23 @@ function InputArea({
                 <option key={m} value={m}>{m.split("/").pop()}</option>
               ))}
             </select>
-            <button
-              className="input-card__icon-btn"
-              title="Voice input"
-            >
-              <Mic size={16} strokeWidth={1.8} />
-            </button>
+            {input.trim() ? (
+              <button
+                className="input-card__send-btn"
+                title="Send"
+                onClick={submit}
+                disabled={loading}
+              >
+                <ArrowUp size={16} strokeWidth={2.5} />
+              </button>
+            ) : (
+              <button
+                className="input-card__icon-btn"
+                title="Voice input"
+              >
+                <Mic size={16} strokeWidth={1.8} />
+              </button>
+            )}
           </div>
         </div>
       </div>
