@@ -13,6 +13,15 @@ const MODELS = [
   "ollama/llama3",
 ];
 
+const MODEL_CONFIG_KEYS: Record<string, string> = {
+  "claude-opus-4-5": "ANTHROPIC_API_KEY",
+  "claude-sonnet-4-6": "ANTHROPIC_API_KEY",
+  "gpt-4o": "OPENAI_API_KEY",
+  "deepseek-chat": "DEEPSEEK_API_KEY",
+  "deepseek-reasoner": "DEEPSEEK_API_KEY",
+  "ollama/llama3": "OLLAMA_BASE_URL",
+};
+
 interface Props {
   messages: Message[];
   loading: boolean;
@@ -45,6 +54,9 @@ export function ChatWindow({
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [renameInput, setRenameInput] = useState(title);
   const [isRenaming, setIsRenaming] = useState(false);
+  const [showModelConfig, setShowModelConfig] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [configValue, setConfigValue] = useState("");
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -241,6 +253,110 @@ export function ChatWindow({
           </div>
         </>
       )}
+
+      {/* Model Config Dialog */}
+      {showModelConfig && selectedModel && (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 999,
+            }}
+            onClick={() => setShowModelConfig(false)}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              padding: '20px',
+              zIndex: 1000,
+              minWidth: '400px',
+            }}
+          >
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontFamily: 'var(--display)' }}>
+              Configure {selectedModel.split("/").pop()}
+            </h3>
+            <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text)', lineHeight: '1.5' }}>
+              Please provide the required configuration for this model:
+            </p>
+            <input
+              type="password"
+              placeholder={MODEL_CONFIG_KEYS[selectedModel] || "Configuration value"}
+              value={configValue}
+              onChange={(e) => setConfigValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && configValue.trim()) {
+                  localStorage.setItem(MODEL_CONFIG_KEYS[selectedModel], configValue);
+                  onModelChange(selectedModel);
+                  setShowModelConfig(false);
+                }
+              }}
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                marginBottom: '12px',
+                border: '1px solid var(--border)',
+                borderRadius: '4px',
+                fontSize: '14px',
+                fontFamily: 'var(--sans)',
+                backgroundColor: 'var(--bg)',
+                color: 'var(--text-h)',
+                boxSizing: 'border-box',
+              }}
+            />
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowModelConfig(false)}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid var(--border)',
+                  borderRadius: '4px',
+                  backgroundColor: 'var(--bg)',
+                  color: 'var(--text-h)',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontFamily: 'var(--sans)',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (configValue.trim()) {
+                    localStorage.setItem(MODEL_CONFIG_KEYS[selectedModel], configValue);
+                    onModelChange(selectedModel);
+                    setShowModelConfig(false);
+                  }
+                }}
+                disabled={!configValue.trim()}
+                style={{
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  backgroundColor: configValue.trim() ? 'var(--accent)' : 'var(--border)',
+                  color: '#fff',
+                  cursor: configValue.trim() ? 'pointer' : 'not-allowed',
+                  fontSize: '14px',
+                  fontFamily: 'var(--sans)',
+                }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -369,7 +485,19 @@ function InputArea({
               className="input-card__model-select"
               aria-label="Select AI model"
               value={model}
-              onChange={(e) => onModelChange(e.target.value)}
+              onChange={(e) => {
+                const newModel = e.target.value;
+                const configKey = MODEL_CONFIG_KEYS[newModel];
+                const isConfigured = localStorage.getItem(configKey);
+
+                if (!isConfigured) {
+                  setSelectedModel(newModel);
+                  setConfigValue("");
+                  setShowModelConfig(true);
+                } else {
+                  onModelChange(newModel);
+                }
+              }}
             >
               {MODELS.map((m) => (
                 <option key={m} value={m}>{m.split("/").pop()}</option>
