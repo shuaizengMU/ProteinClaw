@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { ChatWindow } from "./components/ChatWindow";
+import { ApiKeysPanel } from "./components/ApiKeysPanel";
 import { useChat } from "./hooks/useChat";
 import { useProjects } from "./hooks/useProjects";
 import { useStoredModel } from "./hooks/useStoredModel";
@@ -14,6 +15,26 @@ export default function App() {
     return (saved as 'light' | 'dark' | 'system') || 'system';
   });
   const [pendingProjectId, setPendingProjectId] = useState<string | null>(null);
+  const [showApiKeys, setShowApiKeys] = useState(false);
+
+  // Debug: log the backend port on mount
+  useEffect(() => {
+    const port = (window as any).__BACKEND_PORT__;
+    const debugMode = (window as any).__DEBUG_MODE__;
+    console.log('[ProteinClaw] Backend port:', port || 'NOT SET, using default 8000');
+    console.log('[ProteinClaw] Debug mode:', debugMode);
+
+    // Handle Cmd+Shift+I to log backend logs
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.code === 'KeyI') {
+        e.preventDefault();
+        console.log('[ProteinClaw] Cmd+Shift+I pressed - Check backend.log at ~/Library/Application Support/com.proteinclaw.app/backend.log');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Apply theme to document
   useEffect(() => {
@@ -100,7 +121,11 @@ export default function App() {
         isOpen={sidebarOpen}
         theme={theme}
         onThemeChange={setTheme}
+        onOpenApiKeys={() => setShowApiKeys(true)}
       />
+      {showApiKeys && (
+        <ApiKeysPanel onClose={() => setShowApiKeys(false)} />
+      )}
       <ChatWindow
         key={activeConversationId ?? "empty"}
         messages={displayMessages}
