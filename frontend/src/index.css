@@ -11,6 +11,8 @@
   --accent:       #aa3bff;
   --accent-bg:    rgba(170,59,255,0.08);
   --claude:       #da7756;   /* Claude logo color */
+  --status-success: #16a34a;
+  --status-error:   #dc2626;
   --shadow-sm:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -36,6 +38,8 @@
     --text-xs:      #5e5c5a;
     --accent:       #c084fc;
     --accent-bg:    rgba(192,132,252,0.10);
+    --status-success: #22c55e;
+    --status-error:   #ef4444;
     --shadow-sm:    0 1px 3px rgba(0,0,0,0.4);
   }
 }
@@ -312,8 +316,8 @@ body { margin: 0; overflow: hidden; }
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: #34302b;
-  border: 1px solid var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 160px;
@@ -343,7 +347,7 @@ body { margin: 0; overflow: hidden; }
 }
 
 .sidebar-menu-item--danger {
-  color: #dc2626;
+  color: var(--status-error);
 }
 
 .sidebar-menu-item--danger:hover {
@@ -767,8 +771,8 @@ body { margin: 0; overflow: hidden; }
   letter-spacing: 0.06em;
 }
 
-.tool-call-status--ok { color: #16a34a; }
-.tool-call-status--err { color: #dc2626; }
+.tool-call-status--ok { color: var(--status-success); }
+.tool-call-status--err { color: var(--status-error); }
 
 /* ── Input area ──────────────────────────────────────────── */
 .input-area-wrap {
