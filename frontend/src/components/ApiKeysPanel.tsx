@@ -21,6 +21,11 @@ interface Props {
 export function ApiKeysPanel({ onClose }: Props) {
   const [editing, setEditing] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [savedKeys, setSavedKeys] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      PROVIDERS.map(({ storageKey }) => [storageKey, localStorage.getItem(storageKey) ?? ""])
+    )
+  );
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -32,7 +37,7 @@ export function ApiKeysPanel({ onClose }: Props) {
 
   function handleFocus(storageKey: string) {
     setEditing(storageKey);
-    setEditValue(localStorage.getItem(storageKey) ?? "");
+    setEditValue(savedKeys[storageKey] ?? "");
   }
 
   function handleBlur(storageKey: string) {
@@ -42,6 +47,7 @@ export function ApiKeysPanel({ onClose }: Props) {
     } else {
       localStorage.removeItem(storageKey);
     }
+    setSavedKeys((prev) => ({ ...prev, [storageKey]: trimmed }));
     setEditing(null);
     setEditValue("");
   }
@@ -61,15 +67,20 @@ export function ApiKeysPanel({ onClose }: Props) {
 
       <div className="api-keys-panel-body">
         {PROVIDERS.map(({ label, storageKey }) => {
-          const saved = localStorage.getItem(storageKey) ?? "";
           const isEditing = editing === storageKey;
           return (
             <div key={storageKey} className="api-keys-provider">
-              <label className="api-keys-provider-label">{label}</label>
+              <label
+                className="api-keys-provider-label"
+                htmlFor={`api-key-input-${storageKey}`}
+              >
+                {label}
+              </label>
               <input
+                id={`api-key-input-${storageKey}`}
                 className="api-keys-provider-input"
                 type="text"
-                value={isEditing ? editValue : maskKey(saved)}
+                value={isEditing ? editValue : maskKey(savedKeys[storageKey] ?? "")}
                 placeholder="点击输入..."
                 readOnly={!isEditing}
                 onFocus={() => handleFocus(storageKey)}
