@@ -12,9 +12,7 @@ import {
   FolderOpen,
   MoreVertical,
   Folder,
-  Code,
   PencilLine,
-  Archive,
   Trash2,
   Sun,
   Moon,
@@ -57,7 +55,6 @@ interface Props {
   onSelectConversation: (projectId: string, conversationId: string) => void;
   onNewChat: () => void;
   isOpen?: boolean;
-  onToggle?: () => void;
   theme?: 'light' | 'dark' | 'system';
   onThemeChange?: (theme: 'light' | 'dark' | 'system') => void;
 }

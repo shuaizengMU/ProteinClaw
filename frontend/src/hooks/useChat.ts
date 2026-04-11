@@ -5,7 +5,7 @@ declare global {
 }
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import type { Message, WsEvent, SendPayload } from "../types";
+import type { Message, WsEvent } from "../types";
 
 const port = window.__BACKEND_PORT__ ?? 8000;
 const WS_URL = `ws://localhost:${port}/ws/chat`;
