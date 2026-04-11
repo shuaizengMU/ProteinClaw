@@ -289,7 +289,13 @@ export function Sidebar({
               >
                 <Palette size={13} strokeWidth={1.8} />
                 <span>Appearance</span>
-                <span style={{ marginLeft: 'auto' }}>{showAppearance ? '▼' : '▶'}</span>
+                <span style={{ marginLeft: 'auto' }}>
+                  {showAppearance ? (
+                    <ChevronDown size={13} strokeWidth={1.8} />
+                  ) : (
+                    <ChevronRight size={13} strokeWidth={1.8} />
+                  )}
+                </span>
               </button>
               {showAppearance && (
                 <>
