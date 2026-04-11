@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Plus,
   Search,
@@ -95,6 +95,21 @@ export function Sidebar({
   const [lockedProject, setLockedProject] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showAppearance, setShowAppearance] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  // Close settings menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+        setShowSettings(false);
+      }
+    }
+
+    if (showSettings) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showSettings]);
 
   function toggleProject(id: string) {
     setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -272,7 +287,7 @@ export function Sidebar({
 
       {/* Footer */}
       <div className="sidebar-footer">
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative' }} ref={settingsRef}>
           <button
             className="sidebar-nav-item"
             aria-label="Open settings"
@@ -310,8 +325,6 @@ export function Sidebar({
                   className="sidebar-menu-item"
                   onClick={() => {
                     onThemeChange?.('light');
-                    setShowSettings(false);
-                    setShowAppearance(false);
                   }}
                   style={{ paddingLeft: '28px' }}
                 >
@@ -323,8 +336,6 @@ export function Sidebar({
                   className="sidebar-menu-item"
                   onClick={() => {
                     onThemeChange?.('dark');
-                    setShowSettings(false);
-                    setShowAppearance(false);
                   }}
                   style={{ paddingLeft: '28px' }}
                 >
@@ -336,8 +347,6 @@ export function Sidebar({
                   className="sidebar-menu-item"
                   onClick={() => {
                     onThemeChange?.('system');
-                    setShowSettings(false);
-                    setShowAppearance(false);
                   }}
                   style={{ paddingLeft: '28px' }}
                 >
