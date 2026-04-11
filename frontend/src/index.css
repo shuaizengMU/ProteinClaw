@@ -129,7 +129,7 @@ body { margin: 0; overflow: hidden; }
   padding: 10px 10px;
   background: none;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
   font-family: var(--sans);
@@ -184,7 +184,7 @@ body { margin: 0; overflow: hidden; }
   height: 40px;
   background: none;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
   color: var(--text-h);
   transition: background 120ms, color 120ms;
@@ -227,7 +227,7 @@ body { margin: 0; overflow: hidden; }
   padding: 5px 8px;
   background: none;
   border: none;
-  border-radius: 7px;
+  border-radius: 4px;
   cursor: pointer;
   font-family: var(--sans);
   transition: background 120ms;
@@ -296,7 +296,7 @@ body { margin: 0; overflow: hidden; }
   height: 24px;
   background: none;
   border: none;
-  border-radius: 5px;
+  border-radius: 3px;
   cursor: pointer;
   color: var(--text-h);
   transition: background 120ms, color 120ms;
@@ -318,7 +318,7 @@ body { margin: 0; overflow: hidden; }
   margin-top: 4px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 160px;
   z-index: 1000;
@@ -367,7 +367,7 @@ body { margin: 0; overflow: hidden; }
   gap: 4px;
   background: none;
   border: none;
-  border-radius: 7px;
+  border-radius: 4px;
   cursor: pointer;
   text-align: left;
   font-family: var(--sans);
@@ -417,7 +417,7 @@ body { margin: 0; overflow: hidden; }
   color: var(--text);
   text-align: left;
   font-family: var(--sans);
-  border-radius: 7px;
+  border-radius: 4px;
   transition: color 120ms;
 }
 
@@ -445,7 +445,7 @@ body { margin: 0; overflow: hidden; }
     height: 44px;
     background: none;
     border: none;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     color: var(--text);
     flex-shrink: 0;
@@ -539,7 +539,7 @@ body { margin: 0; overflow: hidden; }
   gap: 2px;
   margin-left: auto;
   background: var(--border-light);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 3px;
 }
 
@@ -549,7 +549,7 @@ body { margin: 0; overflow: hidden; }
   font-family: var(--sans);
   font-weight: 500;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   background: none;
   color: var(--text);
@@ -570,7 +570,7 @@ body { margin: 0; overflow: hidden; }
   height: 44px;
   background: none;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   color: var(--text);
   flex-shrink: 0;
@@ -702,7 +702,7 @@ body { margin: 0; overflow: hidden; }
   height: 40px;
   background: none;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   color: var(--text-xs);
   transition: background 120ms, color 120ms;
@@ -724,7 +724,7 @@ body { margin: 0; overflow: hidden; }
 /* ── Tool call card ──────────────────────────────────────── */
 .tool-call-card {
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 6px;
   margin: 6px 0;
   font-size: 13px;
   background: var(--surface);
@@ -792,7 +792,7 @@ body { margin: 0; overflow: hidden; }
 .input-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 8px;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
@@ -839,7 +839,7 @@ body { margin: 0; overflow: hidden; }
   height: 44px;
   background: none;
   border: none;
-  border-radius: 7px;
+  border-radius: 4px;
   cursor: pointer;
   color: var(--text);
   transition: background 120ms, color 120ms;
