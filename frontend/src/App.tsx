@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { ChatWindow } from "./components/ChatWindow";
 import { useChat } from "./hooks/useChat";
@@ -8,6 +8,18 @@ import type { Message } from "./types";
 
 export default function App() {
   const [model, setModel] = useStoredModel();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Close sidebar on larger screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const {
     projects,
@@ -54,8 +66,16 @@ export default function App() {
       <Sidebar
         projects={projects}
         activeConversationId={activeConversationId}
-        onSelectConversation={selectConversation}
-        onNewChat={handleNewChat}
+        onSelectConversation={(projectId, convId) => {
+          selectConversation(projectId, convId);
+          setSidebarOpen(false); // Close sidebar after selecting
+        }}
+        onNewChat={() => {
+          handleNewChat();
+          setSidebarOpen(false);
+        }}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
       <ChatWindow
         key={activeConversationId ?? "empty"}
@@ -65,6 +85,7 @@ export default function App() {
         model={model}
         onModelChange={setModel}
         hasConversation={activeConversationId !== null}
+        onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
         onSend={(text) => {
           const history = (activeConversation?.messages ?? []).map((m) => ({
             role: m.role,

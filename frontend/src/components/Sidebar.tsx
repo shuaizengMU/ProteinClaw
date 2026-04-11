@@ -52,6 +52,8 @@ interface Props {
   activeConversationId: string | null;
   onSelectConversation: (projectId: string, conversationId: string) => void;
   onNewChat: () => void;
+  isOpen?: boolean;
+  onToggle?: () => void;
 }
 
 function relativeTime(ts: number): string {
@@ -75,6 +77,8 @@ export function Sidebar({
   activeConversationId,
   onSelectConversation,
   onNewChat,
+  isOpen = false,
+  onToggle,
 }: Props) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [allCollapsed, setAllCollapsed] = useState(false);
@@ -101,7 +105,7 @@ export function Sidebar({
   const activeProjects = projects.filter((p) => p.conversations.length > 0);
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${isOpen ? " open" : ""}`}>
       {/* Top nav */}
       <div className="sidebar-nav">
         <button

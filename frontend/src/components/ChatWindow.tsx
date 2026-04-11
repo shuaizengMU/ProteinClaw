@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Mic, Share2, ChevronDown, ArrowUp } from "lucide-react";
+import { Plus, Mic, Share2, ChevronDown, ArrowUp, Menu } from "lucide-react";
 import type { Message } from "../types";
 import { MessageBubble } from "./MessageBubble";
 import { ClaudeLogo } from "./ClaudeLogo";
@@ -21,6 +21,7 @@ interface Props {
   onModelChange: (m: string) => void;
   onSend: (text: string) => void;
   hasConversation: boolean;
+  onMenuToggle?: () => void;
 }
 
 export function ChatWindow({
@@ -31,6 +32,7 @@ export function ChatWindow({
   onModelChange,
   onSend,
   hasConversation,
+  onMenuToggle,
 }: Props) {
   if (!hasConversation) {
     return (
@@ -46,16 +48,19 @@ export function ChatWindow({
 
   return (
     <div className="chat-window">
-      <TopBar title={title} />
+      <TopBar title={title} onMenuToggle={onMenuToggle} />
       <MessageList messages={messages} loading={loading} />
       <InputArea onSend={onSend} loading={loading} model={model} onModelChange={onModelChange} />
     </div>
   );
 }
 
-function TopBar({ title }: { title: string }) {
+function TopBar({ title, onMenuToggle }: { title: string; onMenuToggle?: () => void }) {
   return (
     <div className="top-bar">
+      <button className="mobile-menu-btn" onClick={onMenuToggle} aria-label="Toggle sidebar">
+        <Menu size={20} strokeWidth={1.8} />
+      </button>
       <div className="top-bar__title-group">
         <span className="top-bar__conv-title">{title || "New Chat"}</span>
         <ChevronDown size={14} strokeWidth={1.8} className="top-bar__chevron" />
