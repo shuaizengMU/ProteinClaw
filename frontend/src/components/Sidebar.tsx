@@ -16,6 +16,10 @@ import {
   PencilLine,
   Archive,
   Trash2,
+  Sun,
+  Moon,
+  Laptop,
+  Palette,
 } from "lucide-react";
 import type { Project } from "../types";
 
@@ -282,9 +286,9 @@ export function Sidebar({
               <button
                 className="sidebar-menu-item"
                 onClick={() => setShowAppearance(!showAppearance)}
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
-                <span>🎨 Appearance</span>
+                <Palette size={13} strokeWidth={1.8} />
+                <span>Appearance</span>
                 <span style={{ marginLeft: 'auto' }}>{showAppearance ? '▼' : '▶'}</span>
               </button>
               {showAppearance && (
@@ -296,9 +300,10 @@ export function Sidebar({
                       setShowSettings(false);
                       setShowAppearance(false);
                     }}
-                    style={{ paddingLeft: '24px', fontSize: '13px' }}
+                    style={{ paddingLeft: '28px' }}
                   >
-                    <span>☀️ Light</span>
+                    <Sun size={13} strokeWidth={1.8} />
+                    <span>Light</span>
                     {theme === 'light' && <span style={{ marginLeft: 'auto' }}>✓</span>}
                   </button>
                   <button
@@ -308,9 +313,10 @@ export function Sidebar({
                       setShowSettings(false);
                       setShowAppearance(false);
                     }}
-                    style={{ paddingLeft: '24px', fontSize: '13px' }}
+                    style={{ paddingLeft: '28px' }}
                   >
-                    <span>🌙 Dark</span>
+                    <Moon size={13} strokeWidth={1.8} />
+                    <span>Dark</span>
                     {theme === 'dark' && <span style={{ marginLeft: 'auto' }}>✓</span>}
                   </button>
                   <button
@@ -320,9 +326,10 @@ export function Sidebar({
                       setShowSettings(false);
                       setShowAppearance(false);
                     }}
-                    style={{ paddingLeft: '24px', fontSize: '13px' }}
+                    style={{ paddingLeft: '28px' }}
                   >
-                    <span>🔄 System</span>
+                    <Laptop size={13} strokeWidth={1.8} />
+                    <span>System</span>
                     {theme === 'system' && <span style={{ marginLeft: 'auto' }}>✓</span>}
                   </button>
                 </>
