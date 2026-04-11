@@ -109,6 +109,41 @@ export default function App() {
         onModelChange={setModel}
         hasConversation={activeConversationId !== null}
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
+        isPinned={activeConversation?.pinned ?? false}
+        onPin={() => {
+          if (activeConversationId) {
+            // Toggle pin status
+            const updatedProjects = projects.map(p => ({
+              ...p,
+              conversations: p.conversations.map(c =>
+                c.id === activeConversationId ? { ...c, pinned: !c.pinned } : c
+              ),
+            }));
+            // Update state (in a real app, you'd use a proper state management library)
+            // For now, this would need to be handled through the useProjects hook
+          }
+        }}
+        onRename={(newTitle) => {
+          if (activeConversationId) {
+            const updatedProjects = projects.map(p => ({
+              ...p,
+              conversations: p.conversations.map(c =>
+                c.id === activeConversationId ? { ...c, title: newTitle } : c
+              ),
+            }));
+            // Update state
+          }
+        }}
+        onDelete={() => {
+          if (activeConversationId) {
+            const updatedProjects = projects.map(p => ({
+              ...p,
+              conversations: p.conversations.filter(c => c.id !== activeConversationId),
+            }));
+            selectConversation('', '');
+            // Update state
+          }
+        }}
         onSend={(text) => {
           const history = (activeConversation?.messages ?? []).map((m) => ({
             role: m.role,

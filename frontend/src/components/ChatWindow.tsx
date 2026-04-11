@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Mic, Share2, ChevronDown, ArrowUp, Menu } from "lucide-react";
+import { Plus, Mic, Share2, ChevronDown, ArrowUp, Menu, Pin, PencilLine, Trash2 } from "lucide-react";
 import type { Message } from "../types";
 import { MessageBubble } from "./MessageBubble";
 import { ClaudeLogo } from "./ClaudeLogo";
@@ -22,6 +22,10 @@ interface Props {
   onSend: (text: string) => void;
   hasConversation: boolean;
   onMenuToggle?: () => void;
+  isPinned?: boolean;
+  onPin?: () => void;
+  onRename?: (newTitle: string) => void;
+  onDelete?: () => void;
 }
 
 export function ChatWindow({
@@ -33,7 +37,35 @@ export function ChatWindow({
   onSend,
   hasConversation,
   onMenuToggle,
+  isPinned,
+  onPin,
+  onRename,
+  onDelete,
 }: Props) {
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [renameInput, setRenameInput] = useState(title);
+  const [isRenaming, setIsRenaming] = useState(false);
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleRename = () => {
+    if (renameInput.trim() && renameInput !== title) {
+      onRename?.(renameInput.trim());
+    }
+    setIsRenaming(false);
+    setContextMenu(null);
+  };
+
+  const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this chat?')) {
+      onDelete?.();
+    }
+    setContextMenu(null);
+  };
+
   if (!hasConversation) {
     return (
       <div className="chat-window chat-window--empty">
@@ -47,10 +79,152 @@ export function ChatWindow({
   }
 
   return (
-    <div className="chat-window">
+    <div className="chat-window" onContextMenu={handleContextMenu}>
       <TopBar title={title} onMenuToggle={onMenuToggle} />
       <MessageList messages={messages} loading={loading} />
       <InputArea onSend={onSend} loading={loading} model={model} onModelChange={onModelChange} />
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 998,
+            }}
+            onClick={() => setContextMenu(null)}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: `${contextMenu.y}px`,
+              left: `${contextMenu.x}px`,
+              zIndex: 999,
+            }}
+            className="sidebar-project-menu"
+          >
+            <button
+              className="sidebar-menu-item"
+              onClick={() => {
+                onPin?.();
+                setContextMenu(null);
+              }}
+            >
+              <Pin size={14} strokeWidth={1.8} />
+              <span>{isPinned ? 'Unpin' : 'Pin'} Chat</span>
+            </button>
+            <button
+              className="sidebar-menu-item"
+              onClick={() => {
+                setIsRenaming(true);
+                setContextMenu(null);
+              }}
+            >
+              <PencilLine size={14} strokeWidth={1.8} />
+              <span>Rename Chat</span>
+            </button>
+            <button
+              className="sidebar-menu-item sidebar-menu-item--danger"
+              onClick={handleDelete}
+            >
+              <Trash2 size={14} strokeWidth={1.8} />
+              <span>Delete Chat</span>
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Rename Dialog */}
+      {isRenaming && (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 999,
+            }}
+            onClick={() => setIsRenaming(false)}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              padding: '20px',
+              zIndex: 1000,
+              minWidth: '300px',
+            }}
+          >
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontFamily: 'var(--display)' }}>Rename Chat</h3>
+            <input
+              type="text"
+              value={renameInput}
+              onChange={(e) => setRenameInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleRename();
+                if (e.key === 'Escape') setIsRenaming(false);
+              }}
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                marginBottom: '12px',
+                border: '1px solid var(--border)',
+                borderRadius: '4px',
+                fontSize: '14px',
+                fontFamily: 'var(--sans)',
+                backgroundColor: 'var(--bg)',
+                color: 'var(--text-h)',
+                boxSizing: 'border-box',
+              }}
+            />
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setIsRenaming(false)}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid var(--border)',
+                  borderRadius: '4px',
+                  backgroundColor: 'var(--bg)',
+                  color: 'var(--text-h)',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontFamily: 'var(--sans)',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRename}
+                style={{
+                  padding: '8px 16px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  backgroundColor: 'var(--accent)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontFamily: 'var(--sans)',
+                }}
+              >
+                Rename
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

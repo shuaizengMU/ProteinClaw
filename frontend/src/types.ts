@@ -43,4 +43,5 @@ export interface Conversation {
   model: string;
   createdAt: number;
   messages: Message[];
+  pinned?: boolean;     // Whether conversation is pinned
 }
