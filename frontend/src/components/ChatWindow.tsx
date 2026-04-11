@@ -112,11 +112,8 @@ export function ChatWindow({
         loading={loading}
         model={model}
         onModelChange={onModelChange}
-        showModelConfig={showModelConfig}
         setShowModelConfig={setShowModelConfig}
-        selectedModel={selectedModel}
         setSelectedModel={setSelectedModel}
-        configValue={configValue}
         setConfigValue={setConfigValue}
       />
 
@@ -487,22 +484,16 @@ function InputArea({
   loading,
   model,
   onModelChange,
-  showModelConfig,
   setShowModelConfig,
-  selectedModel,
   setSelectedModel,
-  configValue,
   setConfigValue,
 }: {
   onSend: (text: string) => void;
   loading: boolean;
   model: string;
   onModelChange: (m: string) => void;
-  showModelConfig: boolean;
   setShowModelConfig: (show: boolean) => void;
-  selectedModel: string | null;
   setSelectedModel: (model: string | null) => void;
-  configValue: string;
   setConfigValue: (value: string) => void;
 }) {
   const [input, setInput] = useState("");
@@ -538,8 +529,8 @@ function InputArea({
           value={input}
           onChange={(e) => { setInput(e.target.value); adjustHeight(); }}
           onKeyDown={handleKeyDown}
-          placeholder="Reply..."
-          disabled={loading}
+          placeholder={model ? "Reply..." : "Select a model first..."}
+          disabled={loading || !model}
           rows={1}
           aria-label="Message input"
         />
@@ -549,7 +540,7 @@ function InputArea({
           </button>
           <div className="input-card__toolbar-right">
             <select
-              className="input-card__model-select"
+              className={`input-card__model-select${!model ? " input-card__model-select--highlight" : ""}`}
               aria-label="Select AI model"
               value={model}
               onChange={(e) => {
