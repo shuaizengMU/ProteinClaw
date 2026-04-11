@@ -297,49 +297,55 @@ export function Sidebar({
                   )}
                 </span>
               </button>
-              {showAppearance && (
-                <>
-                  <button
-                    className="sidebar-menu-item"
-                    onClick={() => {
-                      onThemeChange?.('light');
-                      setShowSettings(false);
-                      setShowAppearance(false);
-                    }}
-                    style={{ paddingLeft: '28px' }}
-                  >
-                    <Sun size={13} strokeWidth={1.8} />
-                    <span>Light</span>
-                    {theme === 'light' && <span style={{ marginLeft: 'auto' }}>✓</span>}
-                  </button>
-                  <button
-                    className="sidebar-menu-item"
-                    onClick={() => {
-                      onThemeChange?.('dark');
-                      setShowSettings(false);
-                      setShowAppearance(false);
-                    }}
-                    style={{ paddingLeft: '28px' }}
-                  >
-                    <Moon size={13} strokeWidth={1.8} />
-                    <span>Dark</span>
-                    {theme === 'dark' && <span style={{ marginLeft: 'auto' }}>✓</span>}
-                  </button>
-                  <button
-                    className="sidebar-menu-item"
-                    onClick={() => {
-                      onThemeChange?.('system');
-                      setShowSettings(false);
-                      setShowAppearance(false);
-                    }}
-                    style={{ paddingLeft: '28px' }}
-                  >
-                    <Laptop size={13} strokeWidth={1.8} />
-                    <span>System</span>
-                    {theme === 'system' && <span style={{ marginLeft: 'auto' }}>✓</span>}
-                  </button>
-                </>
-              )}
+              <div
+                className="appearance-submenu"
+                style={{
+                  maxHeight: showAppearance ? '500px' : '0',
+                  overflow: 'hidden',
+                  opacity: showAppearance ? 1 : 0,
+                  transition: 'max-height 300ms ease-out, opacity 300ms ease-out',
+                }}
+              >
+                <button
+                  className="sidebar-menu-item"
+                  onClick={() => {
+                    onThemeChange?.('light');
+                    setShowSettings(false);
+                    setShowAppearance(false);
+                  }}
+                  style={{ paddingLeft: '28px' }}
+                >
+                  <Sun size={13} strokeWidth={1.8} />
+                  <span>Light</span>
+                  {theme === 'light' && <span style={{ marginLeft: 'auto' }}>✓</span>}
+                </button>
+                <button
+                  className="sidebar-menu-item"
+                  onClick={() => {
+                    onThemeChange?.('dark');
+                    setShowSettings(false);
+                    setShowAppearance(false);
+                  }}
+                  style={{ paddingLeft: '28px' }}
+                >
+                  <Moon size={13} strokeWidth={1.8} />
+                  <span>Dark</span>
+                  {theme === 'dark' && <span style={{ marginLeft: 'auto' }}>✓</span>}
+                </button>
+                <button
+                  className="sidebar-menu-item"
+                  onClick={() => {
+                    onThemeChange?.('system');
+                    setShowSettings(false);
+                    setShowAppearance(false);
+                  }}
+                  style={{ paddingLeft: '28px' }}
+                >
+                  <Laptop size={13} strokeWidth={1.8} />
+                  <span>System</span>
+                  {theme === 'system' && <span style={{ marginLeft: 'auto' }}>✓</span>}
+                </button>
+              </div>
             </div>
           )}
         </div>
