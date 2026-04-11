@@ -9,6 +9,27 @@ import type { Message } from "./types";
 export default function App() {
   const [model, setModel] = useStoredModel();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(() => {
+    const saved = localStorage.getItem('theme-preference');
+    return (saved as 'light' | 'dark' | 'system') || 'system';
+  });
+
+  // Apply theme to document
+  useEffect(() => {
+    const applyTheme = (t: 'light' | 'dark' | 'system') => {
+      const html = document.documentElement;
+      if (t === 'system') {
+        html.style.colorScheme = 'light dark';
+        html.removeAttribute('data-theme');
+      } else {
+        html.style.colorScheme = t;
+        html.setAttribute('data-theme', t);
+      }
+    };
+
+    applyTheme(theme);
+    localStorage.setItem('theme-preference', theme);
+  }, [theme]);
 
   // Close sidebar on larger screens
   useEffect(() => {
@@ -76,6 +97,8 @@ export default function App() {
         }}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
+        theme={theme}
+        onThemeChange={setTheme}
       />
       <ChatWindow
         key={activeConversationId ?? "empty"}

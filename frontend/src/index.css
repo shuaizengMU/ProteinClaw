@@ -1,6 +1,15 @@
 /* ── Font imports ───────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
 
+/* ── Theme override ─────────────────────────────────────── */
+[data-theme='light'] {
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
 /* ── Design tokens ───────────────────────────────────────── */
 :root {
   --bg:           #f3f3f3;   /* chat area cool gray */
@@ -30,8 +39,26 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* Forced dark mode */
+[data-theme='dark'] {
+  --bg:           #1a1a1a;   /* cool dark */
+  --sidebar-bg:   #1a1a1a;   /* cool dark */
+  --surface:      #262626;   /* cool dark surface */
+  --border:       #333333;   /* cool gray border */
+  --border-light: #2d2d2d;
+  --text:         #b3b3b3;   /* secondary text light gray */
+  --text-h:       #e8e8e8;   /* primary text light gray */
+  --text-xs:      #808080;   /* muted text medium gray */
+  --accent:       #4a9eff;   /* lighter blue for dark mode */
+  --accent-bg:    rgba(74,158,255,0.12);
+  --status-success: #22c55e;
+  --status-error:   #ef4444;
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* System preference dark mode (fallback) */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --bg:           #1a1a1a;   /* cool dark */
     --sidebar-bg:   #1a1a1a;   /* cool dark */
     --surface:      #262626;   /* cool dark surface */

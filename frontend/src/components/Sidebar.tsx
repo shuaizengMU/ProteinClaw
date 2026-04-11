@@ -54,6 +54,8 @@ interface Props {
   onNewChat: () => void;
   isOpen?: boolean;
   onToggle?: () => void;
+  theme?: 'light' | 'dark' | 'system';
+  onThemeChange?: (theme: 'light' | 'dark' | 'system') => void;
 }
 
 function relativeTime(ts: number): string {
@@ -79,12 +81,15 @@ export function Sidebar({
   onNewChat,
   isOpen = false,
   onToggle,
+  theme = 'system',
+  onThemeChange,
 }: Props) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [allCollapsed, setAllCollapsed] = useState(false);
   const [showAllMap, setShowAllMap] = useState<Record<string, boolean>>({});
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
   const [lockedProject, setLockedProject] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   function toggleProject(id: string) {
     setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -263,10 +268,50 @@ export function Sidebar({
 
       {/* Footer */}
       <div className="sidebar-footer">
-        <button className="sidebar-nav-item" aria-label="Open settings">
-          <Settings size={15} strokeWidth={1.8} />
-          <span>Settings</span>
-        </button>
+        <div style={{ position: 'relative' }}>
+          <button
+            className="sidebar-nav-item"
+            aria-label="Open settings"
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            <Settings size={15} strokeWidth={1.8} />
+            <span>Settings</span>
+          </button>
+          {showSettings && (
+            <div className="sidebar-project-menu" style={{ bottom: '100%', top: 'auto', marginBottom: '4px' }}>
+              <button
+                className="sidebar-menu-item"
+                onClick={() => {
+                  onThemeChange?.('light');
+                  setShowSettings(false);
+                }}
+              >
+                <span>☀️ Light</span>
+                {theme === 'light' && <span style={{ marginLeft: 'auto' }}>✓</span>}
+              </button>
+              <button
+                className="sidebar-menu-item"
+                onClick={() => {
+                  onThemeChange?.('dark');
+                  setShowSettings(false);
+                }}
+              >
+                <span>🌙 Dark</span>
+                {theme === 'dark' && <span style={{ marginLeft: 'auto' }}>✓</span>}
+              </button>
+              <button
+                className="sidebar-menu-item"
+                onClick={() => {
+                  onThemeChange?.('system');
+                  setShowSettings(false);
+                }}
+              >
+                <span>🔄 System</span>
+                {theme === 'system' && <span style={{ marginLeft: 'auto' }}>✓</span>}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </aside>
   );
