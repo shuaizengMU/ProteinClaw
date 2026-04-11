@@ -66,7 +66,24 @@ export function useChat(
       let currentContent = "";
       let currentToolCalls: WsEvent[] = [];
 
-      const payload: SendPayload = { message: text, model, history };
+      // Get API key from localStorage if configured
+      const apiKeyMap: Record<string, string> = {
+        "claude-opus-4-5": "ANTHROPIC_API_KEY",
+        "claude-sonnet-4-6": "ANTHROPIC_API_KEY",
+        "gpt-4o": "OPENAI_API_KEY",
+        "deepseek-chat": "DEEPSEEK_API_KEY",
+        "deepseek-reasoner": "DEEPSEEK_API_KEY",
+        "ollama/llama3": "OLLAMA_BASE_URL",
+      };
+
+      const configKey = apiKeyMap[model];
+      const apiKey = configKey ? localStorage.getItem(configKey) : null;
+
+      const payload: any = { message: text, model, history };
+      if (apiKey) {
+        payload.api_key = apiKey;
+        payload.config_key = configKey;
+      }
       ws.onopen = () => ws.send(JSON.stringify(payload));
 
       ws.onmessage = (e) => {
