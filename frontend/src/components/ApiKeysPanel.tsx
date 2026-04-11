@@ -5,7 +5,7 @@ const PROVIDERS = [
   { label: "Anthropic", storageKey: "ANTHROPIC_API_KEY" },
   { label: "OpenAI",    storageKey: "OPENAI_API_KEY" },
   { label: "DeepSeek",  storageKey: "DEEPSEEK_API_KEY" },
-  { label: "Google",    storageKey: "GEMINI_API_KEY" },
+  { label: "Google",    storageKey: "GEMINI_API_KEY", comingSoon: true },
 ] as const;
 
 function maskKey(value: string): string {
@@ -66,7 +66,7 @@ export function ApiKeysPanel({ onClose }: Props) {
       </div>
 
       <div className="api-keys-panel-body">
-        {PROVIDERS.map(({ label, storageKey }) => {
+        {PROVIDERS.map(({ label, storageKey, comingSoon }) => {
           const isEditing = editing === storageKey;
           return (
             <div key={storageKey} className="api-keys-provider">
@@ -75,6 +75,9 @@ export function ApiKeysPanel({ onClose }: Props) {
                 htmlFor={`api-key-input-${storageKey}`}
               >
                 {label}
+                {comingSoon && (
+                  <span className="api-keys-coming-soon">coming soon</span>
+                )}
               </label>
               <input
                 id={`api-key-input-${storageKey}`}
@@ -83,6 +86,9 @@ export function ApiKeysPanel({ onClose }: Props) {
                 value={isEditing ? editValue : maskKey(savedKeys[storageKey] ?? "")}
                 placeholder="点击输入..."
                 readOnly={!isEditing}
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
                 onFocus={() => handleFocus(storageKey)}
                 onChange={(e) => setEditValue(e.target.value)}
                 onBlur={() => handleBlur(storageKey)}

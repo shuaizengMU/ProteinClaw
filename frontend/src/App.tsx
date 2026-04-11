@@ -17,6 +17,8 @@ export default function App() {
   const [pendingProjectId, setPendingProjectId] = useState<string | null>(null);
   const [showApiKeys, setShowApiKeys] = useState(false);
 
+  const handleCloseApiKeys = useCallback(() => setShowApiKeys(false), []);
+
   // Debug: log the backend port on mount
   useEffect(() => {
     if (import.meta.env.DEV) {
@@ -124,7 +126,7 @@ export default function App() {
         onOpenApiKeys={() => setShowApiKeys(true)}
       />
       {showApiKeys && (
-        <ApiKeysPanel onClose={() => setShowApiKeys(false)} />
+        <ApiKeysPanel onClose={handleCloseApiKeys} />
       )}
       <ChatWindow
         key={activeConversationId ?? "empty"}
