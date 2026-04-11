@@ -243,7 +243,6 @@ export function Sidebar({
                         onClick={() => onSelectConversation(project.id, conv.id)}
                         title={conv.title}
                       >
-                        <span className="sidebar-conv-dot">•</span>
                         <span className="sidebar-conv-title">{conv.title}</span>
                         <span className="sidebar-conv-time">
                           {relativeTime(conv.createdAt)}
