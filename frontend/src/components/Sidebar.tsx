@@ -90,6 +90,7 @@ export function Sidebar({
   const [hoveredProject, setHoveredProject] = useState<string | null>(null);
   const [lockedProject, setLockedProject] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAppearance, setShowAppearance] = useState(false);
 
   function toggleProject(id: string) {
     setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -280,34 +281,52 @@ export function Sidebar({
             <div className="sidebar-project-menu" style={{ bottom: '100%', top: 'auto', marginBottom: '4px' }}>
               <button
                 className="sidebar-menu-item"
-                onClick={() => {
-                  onThemeChange?.('light');
-                  setShowSettings(false);
-                }}
+                onClick={() => setShowAppearance(!showAppearance)}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               >
-                <span>☀️ Light</span>
-                {theme === 'light' && <span style={{ marginLeft: 'auto' }}>✓</span>}
+                <span>🎨 Appearance</span>
+                <span style={{ marginLeft: 'auto' }}>{showAppearance ? '▼' : '▶'}</span>
               </button>
-              <button
-                className="sidebar-menu-item"
-                onClick={() => {
-                  onThemeChange?.('dark');
-                  setShowSettings(false);
-                }}
-              >
-                <span>🌙 Dark</span>
-                {theme === 'dark' && <span style={{ marginLeft: 'auto' }}>✓</span>}
-              </button>
-              <button
-                className="sidebar-menu-item"
-                onClick={() => {
-                  onThemeChange?.('system');
-                  setShowSettings(false);
-                }}
-              >
-                <span>🔄 System</span>
-                {theme === 'system' && <span style={{ marginLeft: 'auto' }}>✓</span>}
-              </button>
+              {showAppearance && (
+                <>
+                  <button
+                    className="sidebar-menu-item"
+                    onClick={() => {
+                      onThemeChange?.('light');
+                      setShowSettings(false);
+                      setShowAppearance(false);
+                    }}
+                    style={{ paddingLeft: '24px', fontSize: '13px' }}
+                  >
+                    <span>☀️ Light</span>
+                    {theme === 'light' && <span style={{ marginLeft: 'auto' }}>✓</span>}
+                  </button>
+                  <button
+                    className="sidebar-menu-item"
+                    onClick={() => {
+                      onThemeChange?.('dark');
+                      setShowSettings(false);
+                      setShowAppearance(false);
+                    }}
+                    style={{ paddingLeft: '24px', fontSize: '13px' }}
+                  >
+                    <span>🌙 Dark</span>
+                    {theme === 'dark' && <span style={{ marginLeft: 'auto' }}>✓</span>}
+                  </button>
+                  <button
+                    className="sidebar-menu-item"
+                    onClick={() => {
+                      onThemeChange?.('system');
+                      setShowSettings(false);
+                      setShowAppearance(false);
+                    }}
+                    style={{ paddingLeft: '24px', fontSize: '13px' }}
+                  >
+                    <span>🔄 System</span>
+                    {theme === 'system' && <span style={{ marginLeft: 'auto' }}>✓</span>}
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
