@@ -13,6 +13,7 @@ export default function App() {
     const saved = localStorage.getItem('theme-preference');
     return (saved as 'light' | 'dark' | 'system') || 'system';
   });
+  const [pendingProjectId, setPendingProjectId] = useState<string | null>(null);
 
   // Apply theme to document
   useEffect(() => {
@@ -59,8 +60,9 @@ export default function App() {
     } else {
       projectId = projects[0].id;
     }
-    const convId = createConversation(projectId, model);
-    selectConversation(projectId, convId);
+    // Set pending project but don't create conversation yet
+    setPendingProjectId(projectId);
+    selectConversation(projectId, 'pending');
   }
 
   const handleMessage = useCallback(
@@ -107,7 +109,7 @@ export default function App() {
         title={activeConversation?.title ?? ""}
         model={model}
         onModelChange={setModel}
-        hasConversation={activeConversationId !== null}
+        hasConversation={activeConversationId !== null || pendingProjectId !== null}
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
         isPinned={activeConversation?.pinned ?? false}
         onPin={() => {
@@ -145,11 +147,20 @@ export default function App() {
           }
         }}
         onSend={(text) => {
-          const history = (activeConversation?.messages ?? []).map((m) => ({
-            role: m.role,
-            content: m.content,
-          }));
-          send(text, model, history);
+          // If this is a pending conversation, create it now
+          if (pendingProjectId && activeConversationId === 'pending') {
+            const convId = createConversation(pendingProjectId, model);
+            selectConversation(pendingProjectId, convId);
+            // Use empty history for new conversation
+            send(text, model, []);
+            setPendingProjectId(null);
+          } else {
+            const history = (activeConversation?.messages ?? []).map((m) => ({
+              role: m.role,
+              content: m.content,
+            }));
+            send(text, model, history);
+          }
         }}
       />
     </div>
