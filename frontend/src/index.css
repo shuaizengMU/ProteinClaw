@@ -973,3 +973,112 @@ a:focus-visible {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-xs); }
+
+/* ── API Keys Panel ──────────────────────────────────────── */
+.api-keys-panel {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  animation: slideInPanel 250ms ease;
+}
+
+@keyframes slideInPanel {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+.api-keys-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.api-keys-panel-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 120ms, color 120ms;
+}
+
+.api-keys-panel-back:hover {
+  background: var(--border);
+  color: var(--text-h);
+}
+
+.api-keys-panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.api-keys-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.api-keys-provider {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.api-keys-provider-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-xs);
+}
+
+.api-keys-provider-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--text-h);
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+
+.api-keys-provider-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-bg);
+}
+
+.api-keys-provider-input::placeholder {
+  color: var(--text-xs);
+  font-family: var(--sans);
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .api-keys-panel {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 200;
+    height: 100vh;
+  }
+}
