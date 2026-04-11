@@ -18,6 +18,7 @@ import {
   Moon,
   Laptop,
   Palette,
+  Key,
 } from "lucide-react";
 import type { Project } from "../types";
 
@@ -57,6 +58,7 @@ interface Props {
   isOpen?: boolean;
   theme?: 'light' | 'dark' | 'system';
   onThemeChange?: (theme: 'light' | 'dark' | 'system') => void;
+  onOpenApiKeys?: () => void;
 }
 
 function relativeTime(ts: number): string {
@@ -83,6 +85,7 @@ export function Sidebar({
   isOpen = false,
   theme = 'system',
   onThemeChange,
+  onOpenApiKeys,
 }: Props) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [allCollapsed, setAllCollapsed] = useState(false);
@@ -314,6 +317,16 @@ export function Sidebar({
                 transition: 'opacity 300ms ease-out',
               }}
             >
+              <button
+                className="sidebar-menu-item"
+                onClick={() => {
+                  setShowSettings(false);
+                  onOpenApiKeys?.();
+                }}
+              >
+                <Key size={13} strokeWidth={1.8} />
+                <span>API Keys</span>
+              </button>
               <button
                 className="sidebar-menu-item"
                 onClick={() => setShowAppearance(!showAppearance)}
