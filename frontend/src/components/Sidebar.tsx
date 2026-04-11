@@ -95,19 +95,30 @@ export function Sidebar({
   const [lockedProject, setLockedProject] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showAppearance, setShowAppearance] = useState(false);
+  const [isSettingsClosing, setIsSettingsClosing] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Close settings menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
-        setShowSettings(false);
+        setIsSettingsClosing(true);
+        closeTimeoutRef.current = setTimeout(() => {
+          setShowSettings(false);
+          setIsSettingsClosing(false);
+        }, 300);
       }
     }
 
     if (showSettings) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        if (closeTimeoutRef.current) {
+          clearTimeout(closeTimeoutRef.current);
+        }
+      };
     }
   }, [showSettings]);
 
@@ -297,7 +308,16 @@ export function Sidebar({
             <span>Settings</span>
           </button>
           {showSettings && (
-            <div className="sidebar-project-menu" style={{ bottom: '100%', top: 'auto', marginBottom: '4px' }}>
+            <div
+              className="sidebar-project-menu"
+              style={{
+                bottom: '100%',
+                top: 'auto',
+                marginBottom: '4px',
+                opacity: isSettingsClosing ? 0 : 1,
+                transition: 'opacity 300ms ease-out',
+              }}
+            >
               <button
                 className="sidebar-menu-item"
                 onClick={() => setShowAppearance(!showAppearance)}
