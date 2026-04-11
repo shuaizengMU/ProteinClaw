@@ -54,9 +54,12 @@ export function ChatWindow({
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [renameInput, setRenameInput] = useState(title);
   const [isRenaming, setIsRenaming] = useState(false);
-  const [_showModelConfig, setShowModelConfig] = useState(false);
-  const [_selectedModel, setSelectedModel] = useState<string | null>(null);
-  const [_configValue, setConfigValue] = useState("");
+  // @ts-ignore - intentionally declared, used in model config dialog
+  const [showModelConfig, setShowModelConfig] = useState(false);
+  // @ts-ignore - intentionally declared, used in model config dialog
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  // @ts-ignore - intentionally declared, used in model config dialog
+  const [configValue, setConfigValue] = useState("");
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
