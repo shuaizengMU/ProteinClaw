@@ -81,7 +81,6 @@ export function Sidebar({
   onSelectConversation,
   onNewChat,
   isOpen = false,
-  onToggle,
   theme = 'system',
   onThemeChange,
 }: Props) {
@@ -94,7 +93,7 @@ export function Sidebar({
   const [showAppearance, setShowAppearance] = useState(false);
   const [isSettingsClosing, setIsSettingsClosing] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Close settings menu when clicking outside
   useEffect(() => {

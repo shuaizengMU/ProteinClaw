@@ -98,7 +98,6 @@ export default function App() {
           setSidebarOpen(false);
         }}
         isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
         theme={theme}
         onThemeChange={setTheme}
       />
