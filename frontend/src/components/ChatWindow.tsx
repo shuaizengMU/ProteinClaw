@@ -46,10 +46,20 @@ export function ChatWindow({
   const [renameInput, setRenameInput] = useState(title);
   const [isRenaming, setIsRenaming] = useState(false);
 
-  const handleContextMenu = (e: React.MouseEvent) => {
+  const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
+
+  // Close context menu when clicking elsewhere
+  useEffect(() => {
+    const handleClickOutside = () => setContextMenu(null);
+    if (contextMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [contextMenu]);
 
   const handleRename = () => {
     if (renameInput.trim() && renameInput !== title) {
@@ -96,7 +106,6 @@ export function ChatWindow({
               bottom: 0,
               zIndex: 998,
             }}
-            onClick={() => setContextMenu(null)}
           />
           <div
             style={{
@@ -106,10 +115,13 @@ export function ChatWindow({
               zIndex: 999,
             }}
             className="sidebar-project-menu"
+            onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => e.preventDefault()}
           >
             <button
               className="sidebar-menu-item"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 onPin?.();
                 setContextMenu(null);
               }}
@@ -119,7 +131,8 @@ export function ChatWindow({
             </button>
             <button
               className="sidebar-menu-item"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setIsRenaming(true);
                 setContextMenu(null);
               }}
@@ -129,7 +142,10 @@ export function ChatWindow({
             </button>
             <button
               className="sidebar-menu-item sidebar-menu-item--danger"
-              onClick={handleDelete}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+              }}
             >
               <Trash2 size={14} strokeWidth={1.8} />
               <span>Delete Chat</span>
