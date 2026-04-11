@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { ChatWindow } from "./components/ChatWindow";
 import { ApiKeysPanel } from "./components/ApiKeysPanel";
@@ -16,6 +16,7 @@ export default function App() {
   });
   const [pendingProjectId, setPendingProjectId] = useState<string | null>(null);
   const [showApiKeys, setShowApiKeys] = useState(false);
+  const newConvIdRef = useRef<string | null>(null);
 
   const handleCloseApiKeys = useCallback(() => setShowApiKeys(false), []);
 
@@ -90,8 +91,11 @@ export default function App() {
 
   const handleMessage = useCallback(
     (msg: Message) => {
-      if (activeConversationId) {
-        appendMessage(activeConversationId, msg);
+      // Use the ref if it's set (for newly created conversations during pending flow)
+      // Otherwise use the state value
+      const convId = newConvIdRef.current || activeConversationId;
+      if (convId) {
+        appendMessage(convId, msg);
       }
     },
     [activeConversationId, appendMessage]
@@ -178,9 +182,11 @@ export default function App() {
           // If this is a pending conversation, create it now
           if (pendingProjectId && activeConversationId === 'pending') {
             const convId = createConversation(pendingProjectId, model);
+            newConvIdRef.current = convId;
             selectConversation(pendingProjectId, convId);
             // Use empty history for new conversation
             send(text, model, []);
+            newConvIdRef.current = null;
             setPendingProjectId(null);
           } else {
             const history = (activeConversation?.messages ?? []).map((m) => ({

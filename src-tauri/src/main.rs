@@ -72,12 +72,23 @@ fn poll_health(port: u16, timeout_secs: u64) -> bool {
 fn start_python_server(
     venv_dir: &PathBuf,
     port: u16,
+    app_data_dir: &PathBuf,
 ) -> std::io::Result<Child> {
     // Use the venv Python directly — avoids uv trying to re-sync on every launch.
     #[cfg(target_os = "windows")]
     let python = venv_dir.join("Scripts").join("python.exe");
     #[cfg(not(target_os = "windows"))]
     let python = venv_dir.join("bin").join("python");
+
+    // Log output to files for debugging
+    let stdout_file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(app_data_dir.join("backend.log"))?;
+    let stderr_file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(app_data_dir.join("backend.log"))?;
 
     Command::new(python)
         .args([
@@ -86,8 +97,8 @@ fn start_python_server(
             "--host", "127.0.0.1",
             "--port", &port.to_string(),
         ])
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stdout(stdout_file)
+        .stderr(stderr_file)
         .spawn()
 }
 
@@ -140,7 +151,7 @@ fn main() {
             // Start Python server — retry up to 3 times before giving up
             let mut child: Option<Child> = None;
             for attempt in 1..=4 {
-                match start_python_server(&venv_dir, port) {
+                match start_python_server(&venv_dir, port, &app_data_dir) {
                     Ok(c) => {
                         if poll_health(port, 30) {
                             child = Some(c);
@@ -185,8 +196,8 @@ fn main() {
             // Window was created hidden (visible: false in tauri.conf.json),
             // so __BACKEND_PORT__ is set before any React code runs.
             if let Some(window) = app.get_webview_window("main") {
-                let script = format!("window.__BACKEND_PORT__ = {};", port);
-                window.eval(&script).expect("failed to inject __BACKEND_PORT__");
+                let script = format!("window.__BACKEND_PORT__ = {}; window.__DEBUG_MODE__ = {};", port, cfg!(debug_assertions));
+                window.eval(&script).expect("failed to inject variables");
                 if let Err(e) = window.show() {
                     eprintln!("Warning: failed to show window: {}", e);
                 }

@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 
 const PROVIDERS = [
-  { label: "Anthropic", storageKey: "ANTHROPIC_API_KEY" },
-  { label: "OpenAI",    storageKey: "OPENAI_API_KEY" },
-  { label: "DeepSeek",  storageKey: "DEEPSEEK_API_KEY" },
+  { label: "Anthropic", storageKey: "ANTHROPIC_API_KEY", comingSoon: false },
+  { label: "OpenAI",    storageKey: "OPENAI_API_KEY", comingSoon: false },
+  { label: "DeepSeek",  storageKey: "DEEPSEEK_API_KEY", comingSoon: false },
   { label: "Google",    storageKey: "GEMINI_API_KEY", comingSoon: true },
 ] as const;
 
@@ -84,7 +84,7 @@ export function ApiKeysPanel({ onClose }: Props) {
                 className="api-keys-provider-input"
                 type="text"
                 value={isEditing ? editValue : maskKey(savedKeys[storageKey] ?? "")}
-                placeholder="点击输入..."
+                placeholder="Click to enter..."
                 readOnly={!isEditing}
                 autoComplete="off"
                 autoCorrect="off"
