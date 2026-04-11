@@ -266,7 +266,7 @@ export function ChatWindow({
       )}
 
       {/* Model Config Dialog */}
-      {showModelConfig && selectedModel && (
+      {showModelConfig && (
         <>
           <div
             style={{
@@ -295,76 +295,119 @@ export function ChatWindow({
             }}
           >
             <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontFamily: 'var(--display)' }}>
-              Configure {selectedModel.split("/").pop()}
+              {selectedModel ? `Configure ${selectedModel.split("/").pop()}` : "Add a Model"}
             </h3>
             <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text)', lineHeight: '1.5' }}>
-              Please provide the required configuration for this model:
+              {selectedModel ? "Please provide the required configuration:" : "Select a model to configure:"}
             </p>
-            <input
-              type="password"
-              placeholder={MODEL_CONFIG_KEYS[selectedModel] || "Configuration value"}
-              value={configValue}
-              onChange={(e) => setConfigValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && configValue.trim()) {
-                  localStorage.setItem(MODEL_CONFIG_KEYS[selectedModel], configValue);
-                  onModelChange(selectedModel);
-                  setShowModelConfig(false);
-                }
-              }}
-              autoFocus
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                marginBottom: '12px',
-                border: '1px solid var(--border)',
-                borderRadius: '4px',
-                fontSize: '14px',
-                fontFamily: 'var(--sans)',
-                backgroundColor: 'var(--bg)',
-                color: 'var(--text-h)',
-                boxSizing: 'border-box',
-              }}
-            />
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setShowModelConfig(false)}
+
+            {!selectedModel ? (
+              <select
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setSelectedModel(e.target.value);
+                    setConfigValue("");
+                  }
+                }}
+                autoFocus
                 style={{
-                  padding: '8px 16px',
+                  width: '100%',
+                  padding: '8px 12px',
+                  marginBottom: '12px',
                   border: '1px solid var(--border)',
                   borderRadius: '4px',
-                  backgroundColor: 'var(--bg)',
-                  color: 'var(--text-h)',
-                  cursor: 'pointer',
                   fontSize: '14px',
                   fontFamily: 'var(--sans)',
+                  backgroundColor: 'var(--bg)',
+                  color: 'var(--text-h)',
+                  boxSizing: 'border-box',
                 }}
               >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  if (configValue.trim()) {
+                <option value="">Choose a model...</option>
+                {MODELS.map((m) => {
+                  const configKey = MODEL_CONFIG_KEYS[m];
+                  const isConfigured = localStorage.getItem(configKey);
+                  return !isConfigured ? (
+                    <option key={m} value={m}>{m.split("/").pop()}</option>
+                  ) : null;
+                })}
+              </select>
+            ) : (
+              <input
+                type="password"
+                placeholder={MODEL_CONFIG_KEYS[selectedModel] || "Configuration value"}
+                value={configValue}
+                onChange={(e) => setConfigValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && configValue.trim()) {
                     localStorage.setItem(MODEL_CONFIG_KEYS[selectedModel], configValue);
                     onModelChange(selectedModel);
                     setShowModelConfig(false);
+                    setSelectedModel(null);
                   }
                 }}
-                disabled={!configValue.trim()}
+                autoFocus
                 style={{
-                  padding: '8px 16px',
-                  border: 'none',
+                  width: '100%',
+                  padding: '8px 12px',
+                  marginBottom: '12px',
+                  border: '1px solid var(--border)',
                   borderRadius: '4px',
-                  backgroundColor: configValue.trim() ? 'var(--accent)' : 'var(--border)',
-                  color: '#fff',
-                  cursor: configValue.trim() ? 'pointer' : 'not-allowed',
                   fontSize: '14px',
                   fontFamily: 'var(--sans)',
+                  backgroundColor: 'var(--bg)',
+                  color: 'var(--text-h)',
+                  boxSizing: 'border-box',
                 }}
-              >
-                Save
-              </button>
-            </div>
+              />
+            )}
+            {selectedModel && (
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => {
+                    setShowModelConfig(false);
+                    setSelectedModel(null);
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    border: '1px solid var(--border)',
+                    borderRadius: '4px',
+                    backgroundColor: 'var(--bg)',
+                    color: 'var(--text-h)',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontFamily: 'var(--sans)',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (configValue.trim()) {
+                      localStorage.setItem(MODEL_CONFIG_KEYS[selectedModel], configValue);
+                      onModelChange(selectedModel);
+                      setShowModelConfig(false);
+                      setSelectedModel(null);
+                      setConfigValue("");
+                    }
+                  }}
+                  disabled={!configValue.trim()}
+                  style={{
+                    padding: '8px 16px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    backgroundColor: configValue.trim() ? 'var(--accent)' : 'var(--border)',
+                    color: '#fff',
+                    cursor: configValue.trim() ? 'pointer' : 'not-allowed',
+                    fontSize: '14px',
+                    fontFamily: 'var(--sans)',
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -510,26 +553,27 @@ function InputArea({
               value={model}
               onChange={(e) => {
                 const newModel = e.target.value;
-                const configKey = MODEL_CONFIG_KEYS[newModel];
-                const isConfigured = localStorage.getItem(configKey);
 
-                console.log("Model selected:", newModel, "Config key:", configKey, "Is configured:", !!isConfigured);
-
-                // Always change the model
-                onModelChange(newModel);
-
-                // If not configured, show config dialog
-                if (!isConfigured) {
-                  console.log("Showing config dialog for:", newModel);
-                  setSelectedModel(newModel);
+                if (newModel === "add-model") {
+                  // Show model selection dialog
+                  setSelectedModel(null);
                   setConfigValue("");
                   setShowModelConfig(true);
+                } else {
+                  onModelChange(newModel);
                 }
               }}
             >
-              {MODELS.map((m) => (
-                <option key={m} value={m}>{m.split("/").pop()}</option>
-              ))}
+              <option value="">Select a model...</option>
+              {MODELS.map((m) => {
+                const configKey = MODEL_CONFIG_KEYS[m];
+                const isConfigured = localStorage.getItem(configKey);
+
+                return isConfigured ? (
+                  <option key={m} value={m}>{m.split("/").pop()}</option>
+                ) : null;
+              })}
+              <option value="add-model">+ Add model</option>
             </select>
             {input.trim() ? (
               <button
