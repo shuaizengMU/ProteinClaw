@@ -104,7 +104,18 @@ export function ChatWindow({
     <div className="chat-window" onContextMenu={handleContextMenu}>
       <TopBar title={title} onMenuToggle={onMenuToggle} />
       <MessageList messages={messages} loading={loading} />
-      <InputArea onSend={onSend} loading={loading} model={model} onModelChange={onModelChange} />
+      <InputArea
+        onSend={onSend}
+        loading={loading}
+        model={model}
+        onModelChange={onModelChange}
+        showModelConfig={showModelConfig}
+        setShowModelConfig={setShowModelConfig}
+        selectedModel={selectedModel}
+        setSelectedModel={setSelectedModel}
+        configValue={configValue}
+        setConfigValue={setConfigValue}
+      />
 
       {/* Context Menu */}
       {contextMenu && (
@@ -430,11 +441,23 @@ function InputArea({
   loading,
   model,
   onModelChange,
+  showModelConfig,
+  setShowModelConfig,
+  selectedModel,
+  setSelectedModel,
+  configValue,
+  setConfigValue,
 }: {
   onSend: (text: string) => void;
   loading: boolean;
   model: string;
   onModelChange: (m: string) => void;
+  showModelConfig: boolean;
+  setShowModelConfig: (show: boolean) => void;
+  selectedModel: string | null;
+  setSelectedModel: (model: string | null) => void;
+  configValue: string;
+  setConfigValue: (value: string) => void;
 }) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
