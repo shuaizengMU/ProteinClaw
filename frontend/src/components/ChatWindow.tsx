@@ -54,12 +54,9 @@ export function ChatWindow({
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [renameInput, setRenameInput] = useState(title);
   const [isRenaming, setIsRenaming] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [showModelConfig, setShowModelConfig] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedModel, setSelectedModel] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [configValue, setConfigValue] = useState("");
+  const [_showModelConfig, setShowModelConfig] = useState(false);
+  const [_selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [_configValue, setConfigValue] = useState("");
 
   const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();

@@ -114,8 +114,7 @@ export default function App() {
         onPin={() => {
           if (activeConversationId) {
             // Toggle pin status
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const updatedProjects = projects.map(p => ({
+            void projects.map(p => ({
               ...p,
               conversations: p.conversations.map(c =>
                 c.id === activeConversationId ? { ...c, pinned: !c.pinned } : c
@@ -127,8 +126,7 @@ export default function App() {
         }}
         onRename={(newTitle) => {
           if (activeConversationId) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const updatedProjects = projects.map(p => ({
+            void projects.map(p => ({
               ...p,
               conversations: p.conversations.map(c =>
                 c.id === activeConversationId ? { ...c, title: newTitle } : c
@@ -139,8 +137,7 @@ export default function App() {
         }}
         onDelete={() => {
           if (activeConversationId) {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const updatedProjects = projects.map(p => ({
+            void projects.map(p => ({
               ...p,
               conversations: p.conversations.filter(c => c.id !== activeConversationId),
             }));
