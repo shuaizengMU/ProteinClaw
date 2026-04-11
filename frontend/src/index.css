@@ -984,12 +984,12 @@ a:focus-visible {
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
-  animation: slideInPanel 250ms ease;
+  animation: slideInPanel 250ms ease forwards;
 }
 
 @keyframes slideInPanel {
-  from { transform: translateX(-100%); opacity: 0; }
-  to   { transform: translateX(0);     opacity: 1; }
+  from { width: 0; opacity: 0; }
+  to   { width: 240px; opacity: 1; }
 }
 
 .api-keys-panel-header {
@@ -1078,7 +1078,13 @@ a:focus-visible {
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 200;
+    z-index: 1000;
     height: 100vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .api-keys-panel {
+    width: 100%;
   }
 }
