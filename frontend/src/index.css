@@ -1,3 +1,6 @@
+/* ── Font imports ───────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 /* ── Design tokens ───────────────────────────────────────── */
 :root {
   --bg:           #f3f3f3;   /* chat area cool gray */
@@ -17,6 +20,7 @@
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
+  --display: 'JetBrains Mono', 'Courier New', monospace;
 
   font: 15px/150% var(--sans);
   color: var(--text-h);
@@ -47,6 +51,17 @@
 body { margin: 0; overflow: hidden; }
 
 *, *::before, *::after { box-sizing: border-box; }
+
+/* ── Typography – Headers ────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: 24px; line-height: 1.2; }
+h2 { font-size: 20px; line-height: 1.25; }
+h3 { font-size: 16px; line-height: 1.3; }
 
 #root {
   width: 100%;
@@ -166,8 +181,10 @@ body { margin: 0; overflow: hidden; }
 .sidebar-threads-label {
   font-size: 12px;
   font-weight: 600;
+  font-family: var(--display);
   color: var(--text);
   flex: 1;
+  letter-spacing: 0.05em;
 }
 
 .sidebar-threads-actions {
@@ -272,6 +289,7 @@ body { margin: 0; overflow: hidden; }
   flex: 1;
   font-size: 13px;
   font-weight: 500;
+  font-family: var(--display);
   color: var(--text-h);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -279,6 +297,7 @@ body { margin: 0; overflow: hidden; }
   display: flex;
   align-items: center;
   height: 20px;
+  letter-spacing: -0.005em;
 }
 
 .sidebar-project-actions {
@@ -392,11 +411,14 @@ body { margin: 0; overflow: hidden; }
 .sidebar-conv-title {
   flex: 1;
   font-size: 13px;
+  font-family: var(--display);
+  font-weight: 500;
   color: var(--text-h);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1.4;
+  letter-spacing: -0.005em;
 }
 
 .sidebar-conv-time {
@@ -490,8 +512,10 @@ body { margin: 0; overflow: hidden; }
 .empty-state h2 {
   font-size: 20px;
   font-weight: 500;
+  font-family: var(--display);
   color: var(--text-h);
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .empty-state p {
@@ -521,11 +545,13 @@ body { margin: 0; overflow: hidden; }
 .top-bar__conv-title {
   font-size: 14px;
   font-weight: 500;
+  font-family: var(--display);
   color: var(--text-h);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 200px;
+  letter-spacing: -0.01em;
 }
 
 .top-bar__chevron {
@@ -683,8 +709,10 @@ body { margin: 0; overflow: hidden; }
 .msg-assistant-content h2,
 .msg-assistant-content h3 {
   font-weight: 600;
+  font-family: var(--display);
   color: var(--text-h);
   margin: 16px 0 6px;
+  letter-spacing: -0.01em;
 }
 
 /* Reaction buttons */
