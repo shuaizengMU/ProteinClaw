@@ -27,21 +27,50 @@ export interface SendPayload {
   history: Array<{ role: string; content: string }>;
 }
 
-// Alias for spec compatibility — same shape as ChatMessage
 export type Message = ChatMessage;
 
-export interface Project {
-  id: string;           // crypto.randomUUID()
-  name: string;
-  createdAt: number;    // Unix timestamp ms
-  conversations: Conversation[];
-}
-
-export interface Conversation {
+// Stored in index.json — no messages
+export interface ConversationMeta {
   id: string;
-  title: string;        // First user message truncated to 60 chars; starts as "New Chat"
+  title: string;
   model: string;
   createdAt: number;
+  pinned?: boolean;
+}
+
+// Stored in conversations/{id}.json
+export interface ConversationMessages {
+  id: string;
   messages: Message[];
-  pinned?: boolean;     // Whether conversation is pinned
+}
+
+// Combined in memory for use across the app
+export interface Conversation extends ConversationMeta {
+  messages: Message[];
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  createdAt: number;
+  folderPath?: string;
+  conversations: ConversationMeta[];
+}
+
+export type CaseStudyCategoryId = 'sequence' | 'structure' | 'drug' | 'function';
+
+export interface CaseStudyCategory {
+  id: CaseStudyCategoryId | 'all';
+  label: string;
+  color: string;
+}
+
+export interface CaseStudy {
+  id: string;
+  title: string;
+  category: CaseStudyCategoryId;
+  icon: string;
+  description: string;
+  examplePrompt: string;
+  exampleResult: string;
 }
