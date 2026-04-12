@@ -19,6 +19,9 @@ import {
   Laptop,
   Palette,
   Key,
+  Pin,
+  PinOff,
+  X,
 } from "lucide-react";
 import type { Project } from "../types";
 
@@ -50,11 +53,21 @@ function TriangleRight({ size = 8 }: { size?: number }) {
   );
 }
 
+interface ConvContextMenu {
+  convId: string;
+  pinned: boolean;
+  x: number;
+  y: number;
+}
+
 interface Props {
   projects: Project[];
   activeConversationId: string | null;
   onSelectConversation: (projectId: string, conversationId: string) => void;
   onNewChat: () => void;
+  onDeleteConversation?: (convId: string) => void;
+  onRenameConversation?: (convId: string, title: string) => void;
+  onPinConversation?: (convId: string) => void;
   isOpen?: boolean;
   theme?: 'light' | 'dark' | 'system';
   onThemeChange?: (theme: 'light' | 'dark' | 'system') => void;
@@ -82,6 +95,9 @@ export function Sidebar({
   activeConversationId,
   onSelectConversation,
   onNewChat,
+  onDeleteConversation,
+  onRenameConversation,
+  onPinConversation,
   isOpen = false,
   theme = 'system',
   onThemeChange,
@@ -95,6 +111,13 @@ export function Sidebar({
   const [showSettings, setShowSettings] = useState(false);
   const [showAppearance, setShowAppearance] = useState(false);
   const [isSettingsClosing, setIsSettingsClosing] = useState(false);
+  const [convContextMenu, setConvContextMenu] = useState<ConvContextMenu | null>(null);
+  const [renamingConvId, setRenamingConvId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const renameInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const settingsRef = useRef<HTMLDivElement>(null);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -121,6 +144,29 @@ export function Sidebar({
     }
   }, [showSettings]);
 
+  // Close conv context menu on outside click
+  useEffect(() => {
+    if (!convContextMenu) return;
+    const close = () => setConvContextMenu(null);
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [convContextMenu]);
+
+  // Focus rename input when it appears
+  useEffect(() => {
+    if (renamingConvId) renameInputRef.current?.select();
+  }, [renamingConvId]);
+
+  useEffect(() => {
+    if (!showSearch) return;
+    searchInputRef.current?.focus();
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") closeSearch();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [showSearch]);
+
   function toggleProject(id: string) {
     setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
   }
@@ -137,7 +183,19 @@ export function Sidebar({
     setCollapsed(map);
   }
 
+  function closeSearch() {
+    setShowSearch(false);
+    setSearchQuery("");
+  }
+
   const activeProjects = projects.filter((p) => p.conversations.length > 0);
+
+  const searchResults = showSearch
+    ? projects
+        .flatMap((p) => p.conversations.map((c) => ({ ...c, projectId: p.id })))
+        .filter((c) => c.title.toLowerCase().includes(searchQuery.toLowerCase()))
+        .sort((a, b) => b.createdAt - a.createdAt)
+    : [];
 
   return (
     <aside className={`sidebar${isOpen ? " open" : ""}`}>
@@ -150,7 +208,7 @@ export function Sidebar({
           <Plus size={16} strokeWidth={2} />
           <span>New chat</span>
         </button>
-        <button className="sidebar-nav-item" aria-label="Search conversations">
+        <button className="sidebar-nav-item" aria-label="Search conversations" onClick={() => setShowSearch(true)}>
           <Search size={15} strokeWidth={1.8} />
           <span>Search</span>
         </button>
@@ -163,7 +221,7 @@ export function Sidebar({
       {/* Threads */}
       <div className="sidebar-threads">
         <div className="sidebar-threads-header">
-          <span className="sidebar-threads-label">Sessions</span>
+          <span className="sidebar-threads-label">All projects</span>
           <div className="sidebar-threads-actions">
             <button
               className="sidebar-threads-btn"
@@ -267,17 +325,47 @@ export function Sidebar({
                 {!isCollapsed && (
                   <div className="sidebar-project-convs">
                     {visible.map((conv) => (
-                      <button
+                      <div
                         key={conv.id}
-                        className={`sidebar-conv-item${conv.id === activeConversationId ? " active" : ""}`}
-                        onClick={() => onSelectConversation(project.id, conv.id)}
+                        className={`sidebar-conv-item${conv.id === activeConversationId ? " active" : ""}${conv.pinned ? " pinned" : ""}`}
+                        onClick={() => renamingConvId !== conv.id && onSelectConversation(project.id, conv.id)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          setConvContextMenu({ convId: conv.id, pinned: !!conv.pinned, x: e.clientX, y: e.clientY });
+                        }}
                         title={conv.title}
                       >
-                        <span className="sidebar-conv-title">{conv.title}</span>
-                        <span className="sidebar-conv-time">
-                          {relativeTime(conv.createdAt)}
-                        </span>
-                      </button>
+                        {renamingConvId === conv.id ? (
+                          <input
+                            ref={renameInputRef}
+                            className="sidebar-conv-rename-input"
+                            value={renameValue}
+                            onChange={(e) => setRenameValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const trimmed = renameValue.trim();
+                                if (trimmed) onRenameConversation?.(conv.id, trimmed);
+                                setRenamingConvId(null);
+                              } else if (e.key === 'Escape') {
+                                setRenamingConvId(null);
+                              }
+                            }}
+                            onBlur={() => {
+                              const trimmed = renameValue.trim();
+                              if (trimmed) onRenameConversation?.(conv.id, trimmed);
+                              setRenamingConvId(null);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <>
+                            <span className="sidebar-conv-title">{conv.title}</span>
+                            <span className="sidebar-conv-time">
+                              {relativeTime(conv.createdAt)}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     ))}
                     {hasMore && (
                       <button
@@ -294,6 +382,48 @@ export function Sidebar({
           })}
         </div>
       </div>
+
+      {/* Conversation context menu */}
+      {convContextMenu && (
+        <div
+          className="sidebar-project-menu"
+          style={{ position: 'fixed', top: convContextMenu.y, left: convContextMenu.x, right: 'auto', zIndex: 1000 }}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <button
+            className="sidebar-menu-item"
+            onClick={() => {
+              onPinConversation?.(convContextMenu.convId);
+              setConvContextMenu(null);
+            }}
+          >
+            {convContextMenu.pinned ? <PinOff size={12} strokeWidth={1.8} /> : <Pin size={12} strokeWidth={1.8} />}
+            <span>{convContextMenu.pinned ? 'Unpin' : 'Pin'}</span>
+          </button>
+          <button
+            className="sidebar-menu-item"
+            onClick={() => {
+              const conv = projects.flatMap(p => p.conversations).find(c => c.id === convContextMenu.convId);
+              setRenameValue(conv?.title ?? '');
+              setRenamingConvId(convContextMenu.convId);
+              setConvContextMenu(null);
+            }}
+          >
+            <PencilLine size={12} strokeWidth={1.8} />
+            <span>Rename</span>
+          </button>
+          <button
+            className="sidebar-menu-item sidebar-menu-item--danger"
+            onClick={() => {
+              onDeleteConversation?.(convContextMenu.convId);
+              setConvContextMenu(null);
+            }}
+          >
+            <Trash2 size={12} strokeWidth={1.8} />
+            <span>Delete</span>
+          </button>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="sidebar-footer">
@@ -388,6 +518,45 @@ export function Sidebar({
           )}
         </div>
       </div>
+      {/* Search overlay + panel */}
+      {showSearch && (
+        <>
+          <div className="search-overlay" onClick={closeSearch} />
+          <div className="search-panel">
+            <div className="search-panel__input-wrap">
+              <Search size={15} strokeWidth={1.8} className="search-panel__icon" />
+              <input
+                ref={searchInputRef}
+                className="search-panel__input"
+                placeholder="Search chats..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button className="search-panel__clear" onClick={closeSearch} aria-label="Close search">
+                <X size={15} strokeWidth={1.8} />
+              </button>
+            </div>
+            <div className="search-panel__list">
+              {searchResults.length === 0 && searchQuery.trim() !== "" && (
+                <div className="search-panel__empty">No chats found</div>
+              )}
+              {searchResults.map((conv) => (
+                <div
+                  key={conv.id}
+                  className="search-panel__item"
+                  onClick={() => {
+                    onSelectConversation(conv.projectId, conv.id);
+                    closeSearch();
+                  }}
+                >
+                  <span className="search-panel__item-title">{conv.title}</span>
+                  <span className="search-panel__item-time">{relativeTime(conv.createdAt)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </aside>
   );
 }
