@@ -167,6 +167,11 @@ export function Sidebar({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [showSearch]);
 
+  // Close search when sidebar closes (mobile)
+  useEffect(() => {
+    if (!isOpen) closeSearch();
+  }, [isOpen]);
+
   function toggleProject(id: string) {
     setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
   }
@@ -522,7 +527,7 @@ export function Sidebar({
       {showSearch && (
         <>
           <div className="search-overlay" onClick={closeSearch} />
-          <div className="search-panel">
+          <div className="search-panel" role="dialog" aria-label="Search chats" aria-modal="true">
             <div className="search-panel__input-wrap">
               <Search size={15} strokeWidth={1.8} className="search-panel__icon" />
               <input
@@ -541,7 +546,7 @@ export function Sidebar({
                 <div className="search-panel__empty">No chats found</div>
               )}
               {searchResults.map((conv) => (
-                <div
+                <button
                   key={conv.id}
                   className="search-panel__item"
                   onClick={() => {
@@ -551,7 +556,7 @@ export function Sidebar({
                 >
                   <span className="search-panel__item-title">{conv.title}</span>
                   <span className="search-panel__item-time">{relativeTime(conv.createdAt)}</span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
