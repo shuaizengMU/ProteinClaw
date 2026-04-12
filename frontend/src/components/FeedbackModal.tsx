@@ -57,9 +57,9 @@ export function FeedbackModal({ type, messageContent, onClose }: Props) {
   return (
     <>
       <div className="feedback-overlay" onClick={onClose} />
-      <div className="feedback-modal" role="dialog" aria-modal="true">
+      <div className="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
         <div className="feedback-modal__header">
-          <h3 className="feedback-modal__title">
+          <h3 className="feedback-modal__title" id="feedback-modal-title">
             {isPositive ? "👍 Positive Feedback" : "👎 Report an Issue"}
           </h3>
           <button
@@ -98,6 +98,7 @@ export function FeedbackModal({ type, messageContent, onClose }: Props) {
             <textarea
               className="feedback-modal__textarea"
               rows={3}
+              maxLength={500}
               placeholder={isPositive ? "Tell us what was helpful…" : "Describe the issue…"}
               value={comment}
               onChange={(e) => setComment(e.target.value)}

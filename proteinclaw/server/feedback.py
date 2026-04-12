@@ -11,7 +11,7 @@ class FeedbackRequest(BaseModel):
     feedback_type: Literal["positive", "negative"]
     category: Optional[str] = None
     comment: str = Field(default="", max_length=500)
-    message_content: str = Field(max_length=500)
+    message_content: str = Field(max_length=100)
 
 
 @router.post("/feedback")
