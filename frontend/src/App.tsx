@@ -139,6 +139,7 @@ export default function App() {
         title={activeConversation?.title ?? ""}
         model={model}
         onModelChange={setModel}
+        onOpenApiKeys={() => setShowApiKeys(true)}
         hasConversation={activeConversationId !== null || pendingProjectId !== null}
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
         isPinned={activeConversation?.pinned ?? false}

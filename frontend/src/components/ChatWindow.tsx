@@ -35,6 +35,7 @@ interface Props {
   onPin?: () => void;
   onRename?: (newTitle: string) => void;
   onDelete?: () => void;
+  onOpenApiKeys?: () => void;
 }
 
 export function ChatWindow({
@@ -50,6 +51,7 @@ export function ChatWindow({
   onPin,
   onRename,
   onDelete,
+  onOpenApiKeys,
 }: Props) {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [renameInput, setRenameInput] = useState(title);
@@ -112,6 +114,7 @@ export function ChatWindow({
         loading={loading}
         model={model}
         onModelChange={onModelChange}
+        onOpenApiKeys={onOpenApiKeys}
         setShowModelConfig={setShowModelConfig}
         setSelectedModel={setSelectedModel}
         setConfigValue={setConfigValue}
@@ -484,6 +487,7 @@ function InputArea({
   loading,
   model,
   onModelChange,
+  onOpenApiKeys,
   setShowModelConfig,
   setSelectedModel,
   setConfigValue,
@@ -492,12 +496,17 @@ function InputArea({
   loading: boolean;
   model: string;
   onModelChange: (m: string) => void;
+  onOpenApiKeys?: () => void;
   setShowModelConfig: (show: boolean) => void;
   setSelectedModel: (model: string | null) => void;
   setConfigValue: (value: string) => void;
 }) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const isModelValid = Boolean(
+    model && MODEL_CONFIG_KEYS[model] && localStorage.getItem(MODEL_CONFIG_KEYS[model])
+  );
 
   function adjustHeight() {
     const el = textareaRef.current;
@@ -529,8 +538,8 @@ function InputArea({
           value={input}
           onChange={(e) => { setInput(e.target.value); adjustHeight(); }}
           onKeyDown={handleKeyDown}
-          placeholder={model ? "Reply..." : "Select a model first..."}
-          disabled={loading || !model}
+          placeholder={isModelValid ? "Reply..." : "Select a model first..."}
+          disabled={loading || !isModelValid}
           rows={1}
           aria-label="Message input"
         />
@@ -540,19 +549,14 @@ function InputArea({
           </button>
           <div className="input-card__toolbar-right">
             <select
-              className={`input-card__model-select${!model ? " input-card__model-select--highlight" : ""}`}
+              className={`input-card__model-select${!isModelValid ? " input-card__model-select--highlight" : ""}`}
               aria-label="Select AI model"
               value={model}
               onChange={(e) => {
-                const newModel = e.target.value;
-
-                if (newModel === "add-model") {
-                  // Show model selection dialog
-                  setSelectedModel(null);
-                  setConfigValue("");
-                  setShowModelConfig(true);
+                if (e.target.value === "configure-model") {
+                  onOpenApiKeys?.();
                 } else {
-                  onModelChange(newModel);
+                  onModelChange(e.target.value);
                 }
               }}
             >
@@ -565,7 +569,7 @@ function InputArea({
                   <option key={m} value={m}>{m.split("/").pop()}</option>
                 ) : null;
               })}
-              <option value="add-model">+ Add model</option>
+              <option value="configure-model">Configure model...</option>
             </select>
             {input.trim() ? (
               <button
