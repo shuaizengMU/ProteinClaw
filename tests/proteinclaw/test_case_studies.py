@@ -55,3 +55,14 @@ async def test_get_case_studies_reads_user_file_when_present(tmp_path):
     assert response.status_code == 200
     data = response.json()
     assert data["cases"][0]["id"] == "custom"
+
+
+@pytest.mark.asyncio
+async def test_get_case_studies_returns_500_on_corrupt_file(tmp_path):
+    """When the case studies file is corrupt JSON, returns 500."""
+    user_file = tmp_path / "case-studies.json"
+    user_file.write_text("not valid json")
+    with patch("proteinclaw.server.case_studies.USER_CASE_STUDIES_PATH", user_file):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.get("/api/case-studies")
+    assert response.status_code == 500

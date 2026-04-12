@@ -1,7 +1,7 @@
 import json
 import shutil
 from pathlib import Path
-from importlib.resources import files
+from importlib.resources import files, as_file
 from fastapi import APIRouter, HTTPException
 
 router = APIRouter()
@@ -14,7 +14,8 @@ _BUNDLED = files("proteinclaw.resources").joinpath("case-studies.json")
 def _load() -> dict:
     if not USER_CASE_STUDIES_PATH.exists():
         USER_CASE_STUDIES_PATH.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(str(_BUNDLED), USER_CASE_STUDIES_PATH)
+        with as_file(_BUNDLED) as bundled_path:
+            shutil.copy(bundled_path, USER_CASE_STUDIES_PATH)
     try:
         return json.loads(USER_CASE_STUDIES_PATH.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError) as exc:
