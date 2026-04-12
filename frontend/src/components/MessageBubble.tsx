@@ -4,6 +4,7 @@ import { Copy, ThumbsUp, ThumbsDown, RotateCcw, Check } from "lucide-react";
 import type { Message } from "../types";
 import { ToolCallCard } from "./ToolCallCard";
 import { ClaudeLogo } from "./ClaudeLogo";
+import { FeedbackModal } from "./FeedbackModal";
 
 interface Props {
   message: Message;
@@ -11,6 +12,7 @@ interface Props {
 
 export function MessageBubble({ message }: Props) {
   const [copied, setCopied] = useState(false);
+  const [feedbackModal, setFeedbackModal] = useState<"positive" | "negative" | null>(null);
 
   const calls = message.toolCalls?.filter((e) => e.type === "tool_call") ?? [];
   const obs = message.toolCalls?.filter((e) => e.type === "observation") ?? [];
@@ -47,10 +49,20 @@ export function MessageBubble({ message }: Props) {
             <button className="msg-reaction-btn" onClick={handleCopy} title="Copy" aria-label={copied ? "Copied" : "Copy response"}>
               {copied ? <Check size={14} strokeWidth={2} /> : <Copy size={14} strokeWidth={1.8} />}
             </button>
-            <button className="msg-reaction-btn" title="Good response" aria-label="Mark as helpful">
+            <button
+              className="msg-reaction-btn"
+              title="Good response"
+              aria-label="Mark as helpful"
+              onClick={() => setFeedbackModal("positive")}
+            >
               <ThumbsUp size={14} strokeWidth={1.8} />
             </button>
-            <button className="msg-reaction-btn" title="Bad response" aria-label="Mark as unhelpful">
+            <button
+              className="msg-reaction-btn"
+              title="Bad response"
+              aria-label="Mark as unhelpful"
+              onClick={() => setFeedbackModal("negative")}
+            >
               <ThumbsDown size={14} strokeWidth={1.8} />
             </button>
             <button className="msg-reaction-btn" title="Retry" aria-label="Regenerate response">
@@ -59,6 +71,14 @@ export function MessageBubble({ message }: Props) {
           </div>
         )}
       </div>
+
+      {feedbackModal && (
+        <FeedbackModal
+          type={feedbackModal}
+          messageContent={message.content}
+          onClose={() => setFeedbackModal(null)}
+        />
+      )}
     </div>
   );
 }
