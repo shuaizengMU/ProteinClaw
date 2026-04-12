@@ -1,0 +1,85 @@
+{
+  "cases": [
+    {
+      "id": "predict-binding-sites",
+      "title": "Predict Binding Sites",
+      "category": "sequence",
+      "icon": "dna",
+      "description": "Given a protein sequence in FASTA format, identify active site residues and binding pocket candidates using sequence-based heuristics and known motif databases.",
+      "examplePrompt": "Analyze the following protein sequence and identify potential binding site residues. Highlight any known catalytic motifs and provide the residue positions.\n\n>sp|P04637|P53_HUMAN Cellular tumor antigen p53\nMEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDP",
+      "exampleResult": "Active Site Residues Identified:\n• DNA-binding domain: R175, G245, R248, R249, R273, R282\n• Tetramerization domain: residues 325–356\n\nBinding Pocket Candidates:\n• Pocket 1 (score 0.89): DNA-binding cleft at residues 176–180, 245–250\n• Pocket 2 (score 0.71): Allosteric site near L344\n\nConfidence: High · Based on UniProt P04637 annotations"
+    },
+    {
+      "id": "motif-search",
+      "title": "Motif Search",
+      "category": "sequence",
+      "icon": "search",
+      "description": "Find conserved sequence motifs across a protein family by scanning a list of sequences against known motif databases such as PROSITE or Pfam.",
+      "examplePrompt": "Search for conserved motifs in the following kinase domain sequences. Report any PROSITE patterns or Pfam domains found, with positions.\n\n>KinaseA\nGXGXXGXXXXK\n>KinaseB\nGSGSFGTVYK",
+      "exampleResult": "Motifs Found:\n• PS00107 (Protein kinase ATP-binding): positions 1–11 in KinaseA, 1–10 in KinaseB\n• PF00069 (Protein kinase domain): full match in both sequences\n\nConservation score: 0.94 across 2 sequences\nRecommendation: Both sequences belong to the Ser/Thr kinase subfamily."
+    },
+    {
+      "id": "conservation-analysis",
+      "title": "Conservation Analysis",
+      "category": "sequence",
+      "icon": "bar-chart",
+      "description": "Score per-residue conservation from a multiple sequence alignment (MSA). Identifies highly conserved positions likely important for function or structure.",
+      "examplePrompt": "Given the following multiple sequence alignment in FASTA format, compute per-residue conservation scores and highlight positions with conservation > 0.8.\n\n>seq1\nMKTAYIAKQRQISFVKSHFSRQ\n>seq2\nMKTAYIAKQRQISFVKSHFSRQ\n>seq3\nMKTAFIAKQRQISFVKSHFARQ",
+      "exampleResult": "Per-residue Conservation Scores (Shannon entropy, normalized):\nPos 1  M: 1.00 ██████████\nPos 2  K: 1.00 ██████████\nPos 3  T: 1.00 ██████████\nPos 5  Y/F: 0.72 ███████\nPos 18 S/A: 0.61 ██████\n\nHighly conserved (>0.8): positions 1–4, 6–17, 19–22\nVariable positions: 5, 18"
+    },
+    {
+      "id": "phylogenetic-tree",
+      "title": "Phylogenetic Tree",
+      "category": "sequence",
+      "icon": "git-branch",
+      "description": "Build an evolutionary tree from a set of aligned protein sequences. Uses neighbor-joining or maximum likelihood methods to infer evolutionary relationships.",
+      "examplePrompt": "Construct a phylogenetic tree from the following aligned hemoglobin alpha-chain sequences. Label each branch with bootstrap support values.\n\n>Human\nMSLTKTERTIIVSMWAKISTQADTIGTETLERLFLSHPETLEKFDRFKHLKTEAEMK\n>Mouse\nMSLSADDKTNIKNCWGKIGGHAGEYGAEALERMFLSFPTTKTYFPHFDLSHGSAQVK\n>Zebrafish\nMSLTAEEKAAVTSLWGKVNVDEVGGEALGRLLVVYPWTQRFFSSFGNLSSATAISGNK",
+      "exampleResult": "Phylogenetic Tree (Neighbor-Joining):\n\n┌── Human (bootstrap: 98)\n│\n├── Mouse (bootstrap: 95)\n│\n└── Zebrafish (bootstrap: 87)\n\nTree topology: Human and Mouse form a clade (mammals), Zebrafish is outgroup.\nBranch lengths reflect substitutions per site.\nRecommendation: Use Maximum Likelihood for more robust support values."
+    },
+    {
+      "id": "structure-comparison",
+      "title": "Structure Comparison",
+      "category": "structure",
+      "icon": "layers",
+      "description": "Compute RMSD-based structural alignment between two PDB structures to quantify their 3D similarity and identify structurally equivalent residues.",
+      "examplePrompt": "Compare the 3D structures of PDB entries 1TUP (p53 DNA-binding domain) and 2OCJ (p53 mutant R175H). Report the RMSD, number of aligned residues, and highlight regions of structural divergence.",
+      "exampleResult": "Structural Alignment Results:\n• RMSD (all Cα): 0.82 Å over 189 aligned residues\n• Sequence identity in aligned region: 99.5%\n• Aligned residues: 189 / 194 total\n\nRegions of divergence (RMSD > 2.0 Å):\n• Loop L2 (residues 164–194): local RMSD 2.4 Å — mutation R175H causes side-chain repositioning\n• Helix H2 (residues 278–289): minor shift of 1.1 Å\n\nConclusion: Structures are nearly identical globally; local distortion near mutation site."
+    },
+    {
+      "id": "pocket-detection",
+      "title": "Pocket Detection",
+      "category": "structure",
+      "icon": "box",
+      "description": "Identify druggable binding pockets from a PDB structure using geometric cavity detection. Reports pocket volume, depth, and druggability score.",
+      "examplePrompt": "Analyze the PDB structure 1HSG (HIV-1 protease with bound inhibitor) and identify the top 3 binding pockets. Report their volume, surface area, and druggability score.",
+      "exampleResult": "Top Binding Pockets Detected:\n\n1. Active site pocket (druggability: 0.94)\n   Volume: 842 Å³ | Surface area: 612 Å²\n   Residues: D25, T26, G27, A28, D29, T30 (chain A+B)\n   Note: Contains known inhibitor binding site\n\n2. Flap region pocket (druggability: 0.61)\n   Volume: 312 Å³ | Surface area: 198 Å²\n   Residues: I50, G51, G52 (chain A)\n\n3. Dimer interface (druggability: 0.43)\n   Volume: 187 Å³ | Surface area: 143 Å²"
+    },
+    {
+      "id": "contact-map",
+      "title": "Contact Map",
+      "category": "structure",
+      "icon": "box",
+      "description": "Compute a residue contact map from PDB 3D coordinates. Two residues are in contact if their Cβ atoms are within a specified distance threshold (typically 8 Å).",
+      "examplePrompt": "Generate a residue contact map for PDB structure 1UBQ (ubiquitin) using an 8 Å Cβ distance threshold. Report the contact density and identify any long-range contacts (|i-j| > 12).",
+      "exampleResult": "Contact Map Summary for 1UBQ (76 residues):\n• Total contacts: 284 (threshold: 8 Å Cβ-Cβ)\n• Contact density: 0.099 contacts/residue²\n\nLong-range contacts (|i-j| > 12): 47 pairs\nNotable long-range contacts:\n  L8–L50  distance 5.2 Å  (β-strand pairing)\n  K11–E34 distance 6.8 Å  (salt bridge)\n  V26–I61 distance 7.1 Å  (hydrophobic core)\n\nSheet topology: β1(2-7)–β2(10-16)–β3(40-45)–β4(48-50)–β5(64-72)"
+    },
+    {
+      "id": "virtual-screening",
+      "title": "Virtual Screening",
+      "category": "drug",
+      "icon": "flask",
+      "description": "Score a set of small-molecule ligand candidates against a defined protein binding pocket using docking scores and interaction fingerprints.",
+      "examplePrompt": "Screen the following 3 SMILES ligands against the HIV-1 protease active site (PDB: 1HSG, pocket 1). Rank by predicted binding affinity and report key interactions.\n\nLigand A: CC(C)CC1=CC=C(C=C1)C(C)C(=O)O\nLigand B: CN1CCN(CC1)C2=NC3=CC=CC=C3N=C2Cl\nLigand C: OC(=O)C1=CC=CC=C1",
+      "exampleResult": "Virtual Screening Results (ranked by docking score):\n\n1. Ligand B  Score: -9.2 kcal/mol\n   Key interactions: H-bond with D25 (2.8 Å), hydrophobic with V82, I84\n   Predicted Ki: 0.18 μM  ★ Top hit\n\n2. Ligand A  Score: -7.4 kcal/mol\n   Key interactions: H-bond with G27 (3.1 Å), van der Waals with L23\n   Predicted Ki: 3.2 μM\n\n3. Ligand C  Score: -4.1 kcal/mol\n   Key interactions: weak electrostatic with R8\n   Predicted Ki: 890 μM  (poor fit)"
+    },
+    {
+      "id": "admet-prediction",
+      "title": "ADMET Prediction",
+      "category": "drug",
+      "icon": "activity",
+      "description": "Predict absorption, distribution, metabolism, excretion, and toxicity (ADMET) properties for a small molecule using its SMILES string.",
+      "examplePrompt": "Predict the ADMET properties for the following drug candidate:\n\nSMILES: CN1CCN(CC1)C2=NC3=CC=CC=C3N=C2Cl\nCompound name: Clozapine\n\nReport Lipinski's Rule of Five compliance, predicted solubility, blood-brain barrier penetration, CYP450 inhibition, and hERG toxicity risk.",
+      "exampleResult": "ADMET Prediction for Clozapine (CN1CCN(CC1)C2=NC3=CC=CC=C3N=C2Cl):\n\nLipinski RO5: ✓ PASS\n  MW: 326.8 Da | logP: 3.2 | HBD: 1 | HBA: 4 | RotBonds: 2\n\nAbsorption:\n  Caco-2 permeability: 18.4 nm/s (high)\n  Oral bioavailability: ~60% (predicted)\n\nDistribution:\n  BBB penetration: HIGH (logBB = 0.31) — consistent with CNS activity\n  Plasma protein binding: 97%\n\nMetabolism:\n  CYP1A2 substrate: YES (major)\n  CYP3A4 inhibitor: moderate risk\n\nToxicity:\n  hERG inhibition: MODERATE risk (IC50 ~1.2 μM)\n  Ames mutagenicity: NEGATIVE\n  Hepatotoxicity: LOW risk"
+    }
+  ]
+}
