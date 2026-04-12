@@ -33,7 +33,7 @@ export function FeedbackModal({ type, messageContent, onClose }: Props) {
     setSubmitting(true);
     const port = (window as any).__BACKEND_PORT__ ?? 8000;
     try {
-      await fetch(`http://127.0.0.1:${port}/feedback`, {
+      const resp = await fetch(`http://127.0.0.1:${port}/feedback`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -43,8 +43,13 @@ export function FeedbackModal({ type, messageContent, onClose }: Props) {
           message_content: messageContent.slice(0, 100),
         }),
       });
+      if (!resp.ok) {
+        console.warn("[FeedbackModal] feedback returned non-ok status:", resp.status);
+      }
     } catch (err) {
       console.warn("[FeedbackModal] failed to submit feedback:", err);
+    } finally {
+      setSubmitting(false);
     }
     onClose();
   }
