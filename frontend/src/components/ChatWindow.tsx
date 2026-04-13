@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Mic, Share2, ChevronDown, ArrowUp, Menu, Pin, PencilLine, Trash2 } from "lucide-react";
+import { Plus, Mic, Share2, ChevronDown, ArrowUp, Menu, FolderOpen, Monitor, PanelRight, X } from "lucide-react";
 import type { Message } from "../types";
 import { MessageBubble } from "./MessageBubble";
 import { ClaudeLogo } from "./ClaudeLogo";
+import { isTauri } from "../lib/storage";
+import { invoke } from "@tauri-apps/api/core";
 
 const MODELS = [
   "claude-opus-4-5",
@@ -31,11 +33,10 @@ interface Props {
   onSend: (text: string) => void;
   hasConversation: boolean;
   onMenuToggle?: () => void;
-  isPinned?: boolean;
-  onPin?: () => void;
-  onRename?: (newTitle: string) => void;
-  onDelete?: () => void;
   onOpenApiKeys?: () => void;
+  folderPath?: string | null;
+  onSelectFolder?: (path: string) => void;
+  prefillPrompt?: string;
 }
 
 export function ChatWindow({
@@ -47,51 +48,18 @@ export function ChatWindow({
   onSend,
   hasConversation,
   onMenuToggle,
-  isPinned,
-  onPin,
-  onRename,
-  onDelete,
   onOpenApiKeys,
+  folderPath,
+  onSelectFolder,
+  prefillPrompt,
 }: Props) {
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
-  const [renameInput, setRenameInput] = useState(title);
-  const [isRenaming, setIsRenaming] = useState(false);
   // @ts-ignore - intentionally declared, used in model config dialog
   const [showModelConfig, setShowModelConfig] = useState(false);
   // @ts-ignore - intentionally declared, used in model config dialog
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   // @ts-ignore - intentionally declared, used in model config dialog
   const [configValue, setConfigValue] = useState("");
-
-  const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setContextMenu({ x: e.clientX, y: e.clientY });
-  };
-
-  // Close context menu when clicking elsewhere
-  useEffect(() => {
-    const handleClickOutside = () => setContextMenu(null);
-    if (contextMenu) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [contextMenu]);
-
-  const handleRename = () => {
-    if (renameInput.trim() && renameInput !== title) {
-      onRename?.(renameInput.trim());
-    }
-    setIsRenaming(false);
-    setContextMenu(null);
-  };
-
-  const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this chat?')) {
-      onDelete?.();
-    }
-    setContextMenu(null);
-  };
+  const [showRightSidebar, setShowRightSidebar] = useState(false);
 
   if (!hasConversation) {
     return (
@@ -106,8 +74,9 @@ export function ChatWindow({
   }
 
   return (
-    <div className="chat-window" onContextMenu={handleContextMenu}>
-      <TopBar title={title} onMenuToggle={onMenuToggle} />
+    <div className="chat-window">
+      <div className="chat-main">
+      <TopBar title={title} onMenuToggle={onMenuToggle} onRightSidebarToggle={() => setShowRightSidebar(v => !v)} rightSidebarOpen={showRightSidebar} />
       <MessageList messages={messages} loading={loading} />
       <InputArea
         onSend={onSend}
@@ -118,155 +87,29 @@ export function ChatWindow({
         setShowModelConfig={setShowModelConfig}
         setSelectedModel={setSelectedModel}
         setConfigValue={setConfigValue}
+        folderPath={folderPath}
+        onSelectFolder={onSelectFolder}
+        prefillPrompt={prefillPrompt}
       />
 
-      {/* Context Menu */}
-      {contextMenu && (
-        <>
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 998,
-            }}
-          />
-          <div
-            style={{
-              position: 'fixed',
-              top: `${contextMenu.y}px`,
-              left: `${contextMenu.x}px`,
-              zIndex: 999,
-            }}
-            className="sidebar-project-menu"
-            onClick={(e) => e.stopPropagation()}
-            onContextMenu={(e) => e.preventDefault()}
-          >
-            <button
-              className="sidebar-menu-item"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPin?.();
-                setContextMenu(null);
-              }}
-            >
-              <Pin size={14} strokeWidth={1.8} />
-              <span>{isPinned ? 'Unpin' : 'Pin'} Chat</span>
-            </button>
-            <button
-              className="sidebar-menu-item"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsRenaming(true);
-                setContextMenu(null);
-              }}
-            >
-              <PencilLine size={14} strokeWidth={1.8} />
-              <span>Rename Chat</span>
-            </button>
-            <button
-              className="sidebar-menu-item sidebar-menu-item--danger"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete();
-              }}
-            >
-              <Trash2 size={14} strokeWidth={1.8} />
-              <span>Delete Chat</span>
-            </button>
-          </div>
-        </>
-      )}
+      </div>{/* end chat-main */}
 
-      {/* Rename Dialog */}
-      {isRenaming && (
-        <>
-          <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 999,
-            }}
-            onClick={() => setIsRenaming(false)}
-          />
-          <div
-            style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              backgroundColor: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              padding: '20px',
-              zIndex: 1000,
-              minWidth: '300px',
-            }}
+      {/* Right Sidebar */}
+      <div className={`right-sidebar${showRightSidebar ? " right-sidebar--open" : ""}`}>
+        <div className="right-sidebar__header">
+          <span className="right-sidebar__title">Details</span>
+          <button
+            className="right-sidebar__close"
+            onClick={() => setShowRightSidebar(false)}
+            aria-label="Close sidebar"
           >
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontFamily: 'var(--display)' }}>Rename Chat</h3>
-            <input
-              type="text"
-              value={renameInput}
-              onChange={(e) => setRenameInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleRename();
-                if (e.key === 'Escape') setIsRenaming(false);
-              }}
-              autoFocus
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                marginBottom: '12px',
-                border: '1px solid var(--border)',
-                borderRadius: '4px',
-                fontSize: '14px',
-                fontFamily: 'var(--sans)',
-                backgroundColor: 'var(--bg)',
-                color: 'var(--text-h)',
-                boxSizing: 'border-box',
-              }}
-            />
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setIsRenaming(false)}
-                style={{
-                  padding: '8px 16px',
-                  border: '1px solid var(--border)',
-                  borderRadius: '4px',
-                  backgroundColor: 'var(--bg)',
-                  color: 'var(--text-h)',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontFamily: 'var(--sans)',
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRename}
-                style={{
-                  padding: '8px 16px',
-                  border: 'none',
-                  borderRadius: '4px',
-                  backgroundColor: 'var(--accent)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontFamily: 'var(--sans)',
-                }}
-              >
-                Rename
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+            <X size={16} strokeWidth={1.8} />
+          </button>
+        </div>
+        <div className="right-sidebar__body">
+          <p className="right-sidebar__empty">No details available.</p>
+        </div>
+      </div>
 
       {/* Model Config Dialog */}
       {showModelConfig && (
@@ -418,7 +261,17 @@ export function ChatWindow({
   );
 }
 
-function TopBar({ title, onMenuToggle }: { title: string; onMenuToggle?: () => void }) {
+function TopBar({
+  title,
+  onMenuToggle,
+  onRightSidebarToggle,
+  rightSidebarOpen,
+}: {
+  title: string;
+  onMenuToggle?: () => void;
+  onRightSidebarToggle?: () => void;
+  rightSidebarOpen?: boolean;
+}) {
   return (
     <div className="top-bar">
       <button className="mobile-menu-btn" onClick={onMenuToggle} aria-label="Toggle sidebar">
@@ -428,13 +281,19 @@ function TopBar({ title, onMenuToggle }: { title: string; onMenuToggle?: () => v
         <span className="top-bar__conv-title">{title || "New Chat"}</span>
         <ChevronDown size={14} strokeWidth={1.8} className="top-bar__chevron" />
       </div>
-      <div className="top-bar__tabs">
-        <button className="top-bar__tab top-bar__tab--active">Chat</button>
-        <button className="top-bar__tab">Code</button>
+      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "4px" }}>
+        <button className="top-bar__action" aria-label="Share conversation">
+          <Share2 size={15} strokeWidth={1.8} />
+        </button>
+        <button
+          className={`top-bar__action${rightSidebarOpen ? " top-bar__action--active" : ""}`}
+          aria-label="Toggle right sidebar"
+          onClick={onRightSidebarToggle}
+          title="Sidebar"
+        >
+          <PanelRight size={16} strokeWidth={1.8} />
+        </button>
       </div>
-      <button className="top-bar__action" aria-label="Share conversation">
-        <Share2 size={15} strokeWidth={1.8} />
-      </button>
     </div>
   );
 }
@@ -469,7 +328,7 @@ function MessageList({
         {messages.map((msg, i) => (
           <MessageBubble key={i} message={msg} />
         ))}
-        {loading && (
+        {loading && !(messages.at(-1)?.role === 'assistant' && messages.at(-1)?.content) && (
           <div className="msg-assistant-wrap">
             <div className="msg-assistant-logo">
               <ClaudeLogo size={20} />
@@ -491,6 +350,9 @@ function InputArea({
   setShowModelConfig,
   setSelectedModel,
   setConfigValue,
+  folderPath,
+  onSelectFolder,
+  prefillPrompt,
 }: {
   onSend: (text: string) => void;
   loading: boolean;
@@ -500,9 +362,14 @@ function InputArea({
   setShowModelConfig: (show: boolean) => void;
   setSelectedModel: (model: string | null) => void;
   setConfigValue: (value: string) => void;
+  folderPath?: string | null;
+  onSelectFolder?: (path: string) => void;
+  prefillPrompt?: string;
 }) {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(prefillPrompt ?? "");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isComposingRef = useRef(false);
+  const justFinishedComposingRef = useRef(false);
 
   const isModelValid = Boolean(
     model && MODEL_CONFIG_KEYS[model] && localStorage.getItem(MODEL_CONFIG_KEYS[model])
@@ -515,6 +382,10 @@ function InputArea({
     el.style.height = Math.min(el.scrollHeight, 160) + "px";
   }
 
+  useEffect(() => {
+    if (prefillPrompt) adjustHeight();
+  }, []);
+
   function submit() {
     if (!input.trim() || loading) return;
     onSend(input.trim());
@@ -523,7 +394,7 @@ function InputArea({
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing && !isComposingRef.current && !justFinishedComposingRef.current) {
       e.preventDefault();
       submit();
     }
@@ -537,6 +408,12 @@ function InputArea({
           className="input-card__textarea"
           value={input}
           onChange={(e) => { setInput(e.target.value); adjustHeight(); }}
+          onCompositionStart={() => { isComposingRef.current = true; }}
+          onCompositionEnd={() => {
+            isComposingRef.current = false;
+            justFinishedComposingRef.current = true;
+            setTimeout(() => { justFinishedComposingRef.current = false; }, 0);
+          }}
           onKeyDown={handleKeyDown}
           placeholder={isModelValid ? "Reply..." : "Select a model first..."}
           disabled={loading || !isModelValid}
@@ -592,6 +469,30 @@ function InputArea({
             )}
           </div>
         </div>
+      </div>
+      <div className="input-subbar">
+        <button
+          className="input-subbar__btn"
+          title={folderPath ?? "Select folder"}
+          onClick={async () => {
+            console.log('[folder] isTauri:', isTauri(), 'window.__TAURI__:', !!(window as any).__TAURI__);
+            try {
+              const selected = await invoke<string | null>("pick_folder");
+              console.log('[folder] selected:', selected);
+              if (selected) onSelectFolder?.(selected);
+            } catch (e) {
+              console.error('[folder] pick_folder error:', e);
+            }
+          }}
+        >
+          <FolderOpen size={13} strokeWidth={1.8} />
+          <span>{folderPath ? folderPath.split("/").pop() : "Select folder"}</span>
+        </button>
+        <button className="input-subbar__btn" title="Environment">
+          <Monitor size={13} strokeWidth={1.8} />
+          <span>Local</span>
+          <ChevronDown size={11} strokeWidth={2} />
+        </button>
       </div>
       <p className="input-disclaimer">
         ProteinClaw can make mistakes. Please double-check responses.
