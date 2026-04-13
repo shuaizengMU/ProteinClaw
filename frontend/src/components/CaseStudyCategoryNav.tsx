@@ -5,7 +5,14 @@ export const CATEGORIES: CaseStudyCategory[] = [
   { id: "sequence", label: "Sequence Analysis", color: "#60a5fa" },
   { id: "structure",label: "Structure",         color: "#a78bfa" },
   { id: "drug",     label: "Drug Discovery",    color: "#34d399" },
-  { id: "function", label: "Function",          color: "#fb923c" },
+  { id: "function",   label: "Function",             color: "#fb923c" },
+  { id: "annotation", label: "Annotation",           color: "#f59e0b" },
+  { id: "variants",   label: "Variants & Clinical",  color: "#ec4899" },
+  { id: "disease",    label: "Disease & Oncology",   color: "#ef4444" },
+  { id: "pathways",   label: "Pathways & Networks",  color: "#06b6d4" },
+  { id: "expression", label: "Expression",           color: "#84cc16" },
+  { id: "genomics",   label: "Gene & Genomics",      color: "#8b5cf6" },
+  { id: "literature", label: "Literature",           color: "#94a3b8" },
 ];
 
 interface Props {
