@@ -155,22 +155,14 @@ proteinclaw query "What drugs bind EGFR and what are their affinities?"
 | Category | Query | Tools invoked |
 |----------|-------|--------------|
 | Annotation | `What is P04637?` | `uniprot` → `interpro` → `panther` |
-| Structure | `Show me EGFR structures and classify its domains` | `pdb` → `alphafold` → `cath` → `scopedb` |
-| Membrane | `Is EGFR a membrane protein? What's its orientation?` | `opm` |
-| Evolution | `How conserved is the EGFR kinase domain across species?` | `eggnog` → `consurf` → `phylomedb` |
+| Structure | `Show me EGFR structures and classify its domains` | `pdb` → `alphafold` → `cath` |
 | Sequence | `Find proteins similar to this sequence: <FASTA>` | `blast` → `elm` → `disprot` → `mobidb` |
 | Variants | `What variants are reported for BRCA1?` | `clinvar` → `gnomad` → `uniprot_variants` |
-| Kinetics | `What are the kinetic parameters of EC 2.7.10.1?` | `expasy_enzyme` → `sabio_rk` → `brenda` |
-| Expression | `Where is TP53 expressed at mRNA and protein level?` | `gtex` → `protein_atlas` → `paxdb` → `proteomicsdb` |
-| Complexes | `What protein complexes does EGFR form?` | `complex_portal` → `corum` |
+| Expression | `Where is TP53 expressed at mRNA and protein level?` | `gtex` → `protein_atlas` |
 | Interactions | `Who are EGFR's top interaction partners?` | `string` → `intact` |
-| Drug & Binding | `What drugs target EGFR and how tightly do they bind?` | `drugbank` → `chembl` → `bindingdb` → `dgidb` |
 | Disease | `What diseases are linked to TP53?` | `opentargets` → `disgenet` → `omim` |
-| PTM | `What post-translational modifications regulate EGFR?` | `phosphosite` → `dbptm` |
 | Cancer | `Tell me about TP53 mutations in lung cancer` | `cbioportal` → `uniprot_variants` |
 | Pathways | `What pathways does EGFR participate in?` | `reactome` → `wikipathways` → `kegg` |
-| Immunology | `Characterize the IGHV1-2 germline gene` | `imgt` |
-| Proteomics | `Find public proteomics datasets for EGFR` | `pride` |
 | Literature | `Recent papers on EGFR resistance` | `literature` → `pubmed` |
 
 **TUI slash commands:**
@@ -228,8 +220,6 @@ You only need one key to get started.
 | `DEEPSEEK_API_KEY` | DeepSeek | If using DeepSeek |
 | `MINIMAX_API_KEY` | MiniMax | If using MiniMax |
 | `NCBI_API_KEY` | NCBI | Optional — raises BLAST rate limit |
-| `DRUGBANK_TOKEN` | DrugBank | Optional — enables `drugbank` tool (free registration at drugbank.com) |
-| `BRENDA_EMAIL` + `BRENDA_PASSWORD` | BRENDA | Optional — enables `brenda` tool (free registration at brenda-enzymes.org) |
 
 ---
 
@@ -249,15 +239,10 @@ You only need one key to get started.
 | **Protein Structure** | `alphafold` | API | AlphaFold DB (EBI) | Predicted structure, pLDDT confidence score, sequence coverage, model version |
 | | `pdb` | API | RCSB Protein Data Bank | Structure metadata: method, resolution, organism, deposit date, chains, ligands |
 | | `cath` | API | CATH Structural DB | Domain classification: Class, Architecture, Topology, Homology hierarchy |
-| | `scopedb` | API | SCOPe | SCOP class, fold, superfamily, and family for each PDB domain |
-| | `opm` | API | OPM (MPSTRUC) | Membrane protein orientation: tilt angle, hydrophobic thickness, topology type |
 | **Sequence & Motifs** | `blast` | API | NCBI BLAST | Sequence similarity against NR database; E-values, percent identity |
 | | `elm` | Local | — | Short linear motif predictions: binding sites, modification sites, degradation signals |
 | | `disprot` | API | DisProt | Experimentally validated intrinsically disordered regions with coordinates and evidence |
 | | `mobidb` | API | MobiDB | Disorder consensus regions, curated disorder annotations |
-| **Protein Evolution** | `eggnog` | API | eggNOG v6 | Orthologous group ID, COG functional category, GO terms, species coverage |
-| | `consurf` | API | ConSurf DB | Per-residue conservation grades (1–9), functional residue flags |
-| | `phylomedb` | API | PhylomeDB | Phylome IDs, 1:1/1:N orthologs with species and identity scores, paralogs |
 | **Variants & Clinical** | `clinvar` | API | ClinVar (NCBI) | Clinical significance by gene; pathogenic/benign calls, associated conditions |
 | | `dbsnp` | API | dbSNP (NCBI) | SNP details by rsID: position, alleles, clinical significance, minor allele frequency |
 | | `gnomad` | API | gnomAD (Broad) | Gene constraint metrics: pLI, LOEUF, missense constraint |
@@ -266,30 +251,17 @@ You only need one key to get started.
 | **Gene & Genomics** | `ensembl` | API | Ensembl REST API | Gene/transcript IDs, genomic coordinates, biotype, orthologs, cross-references |
 | | `ncbi_gene` | API | NCBI Gene (Entrez) | Gene ID, aliases, organism, chromosome location, summary |
 | | `kegg` | API | KEGG REST API | KEGG pathway IDs and names for a gene |
-| **Enzyme / Metabolism** | `expasy_enzyme` | API | ExPASy ENZYME | EC number, accepted name, reaction equation, cofactors, UniProt entry count |
-| | `sabio_rk` | API | SABIO-RK | Km, kcat, Vmax with organism, pH, temperature, and PubMed reference |
-| | `brenda` †| API | BRENDA | Km values, substrates, inhibitors, cofactors, optimal pH/temperature |
 | **Pathways & Interactions** | `reactome` | API | Reactome | Biological pathways with names, species, diagram availability, sub-pathways |
 | | `wikipathways` | API | WikiPathways | Pathways by gene/term: IDs, names, species, revision dates |
 | | `string` | API | STRING Database | Protein-protein interactions: top partners with combined and interaction scores |
 | | `intact` | API | IntAct (EBI) | Curated binary protein interactions with detection methods, MI scores |
-| **Protein Complexes** | `complex_portal` | API | Complex Portal (EBI) | Experimentally validated complexes: subunits, stoichiometry, GO terms |
-| | `corum` | API | CORUM | Curated mammalian complexes: subunit list, purification method, tissue, disease |
-| **Disease & Drug** | `opentargets` | API | Open Targets Platform | Target-disease associations with evidence scores, known drugs, tractability |
+| **Disease & Oncology** | `opentargets` | API | Open Targets Platform | Target-disease associations with evidence scores, known drugs, tractability |
 | | `chembl` | API | ChEMBL (EBI) | Drug-target interactions: approved drugs and clinical candidates with mechanisms |
 | | `disgenet` | API | DisGeNET + NCBI | Disease-gene associations with scores; NCBI fallback for Mendelian disease entries |
 | | `omim` | API | OMIM (via NCBI) | Genetic disease associations via NCBI Gene → OMIM linkage |
 | | `cbioportal` | API | cBioPortal | Cancer genomics: gene type, cytoband, mutation landscape across 535+ cancer studies |
-| **Drug & Binding Affinity** | `drugbank` †| API | DrugBank | Mechanism of action, pharmacodynamics, ADMET, indications, targets |
-| | `bindingdb` | API | BindingDB | Protein-ligand Ki, Kd, IC50 values with assay type and organism |
-| | `dgidb` | API | DGIdb | Drug-gene interactions: drug names, interaction types (inhibitor/activator/antibody) |
-| **PTM & Structural** | `dbptm` | API | dbPTM | Experimentally verified PTMs: type, residue position, kinase (if phosphorylation) |
-| | `imgt` | API | IMGT | Immunoglobulin, TCR, and MHC gene classification, alleles, chromosomal location |
 | **Expression** | `gtex` | API | GTEx Portal | Tissue-specific gene expression (median TPM) across human tissues |
 | | `protein_atlas` | API | Human Protein Atlas | Tissue expression, IHC detection, subcellular localization, cancer specificity |
-| **Proteomics / Abundance** | `paxdb` | API | PaxDb | Protein abundance in ppm across tissues and species (integrated proteomics) |
-| | `proteomicsdb` | API | ProteomicsDB | MS intensity by tissue and cell line, peptide detectability |
-| | `pride` | API | PRIDE Archive | Public proteomics dataset accessions, species, submission dates, PubMed links |
 | **Literature** | `pubmed` | API | PubMed (NCBI eUtils) | Article titles, authors, journal, year, abstract snippets |
 | | `literature` | API | PubMed · Europe PMC · Semantic Scholar · CrossRef · bioRxiv · arXiv | Searches 6 sources in parallel, deduplicates by DOI, merges results with citation counts |
 
