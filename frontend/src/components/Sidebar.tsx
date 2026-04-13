@@ -3,6 +3,7 @@ import {
   Plus,
   Search,
   Puzzle,
+  BookOpen,
   Settings,
   ChevronDown,
   ChevronRight,
@@ -72,6 +73,7 @@ interface Props {
   theme?: 'light' | 'dark' | 'system';
   onThemeChange?: (theme: 'light' | 'dark' | 'system') => void;
   onOpenApiKeys?: () => void;
+  onNavigate?: (view: 'case-study') => void;
 }
 
 function relativeTime(ts: number): string {
@@ -102,6 +104,7 @@ export function Sidebar({
   theme = 'system',
   onThemeChange,
   onOpenApiKeys,
+  onNavigate,
 }: Props) {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [allCollapsed, setAllCollapsed] = useState(false);
@@ -220,6 +223,10 @@ export function Sidebar({
         <button className="sidebar-nav-item" aria-label="View plugins">
           <Puzzle size={15} strokeWidth={1.8} />
           <span>Plugins</span>
+        </button>
+        <button className="sidebar-nav-item" aria-label="View case studies" onClick={() => onNavigate?.('case-study')}>
+          <BookOpen size={15} strokeWidth={1.8} />
+          <span>Case study</span>
         </button>
       </div>
 

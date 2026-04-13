@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect, useRef } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { ChatWindow } from "./components/ChatWindow";
+import { CaseStudyPage } from "./components/CaseStudyPage";
 import { ApiKeysPanel } from "./components/ApiKeysPanel";
 import { useChat } from "./hooks/useChat";
 import { useProjects } from "./hooks/useProjects";
@@ -16,7 +17,10 @@ export default function App() {
   });
   const [pendingProjectId, setPendingProjectId] = useState<string | null>(null);
   const [showApiKeys, setShowApiKeys] = useState(false);
+  const [appLoading, setAppLoading] = useState(false);
   const newConvIdRef = useRef<string | null>(null);
+  const [currentView, setCurrentView] = useState<'chat' | 'case-study'>('chat');
+  const pendingPromptRef = useRef<string | null>(null);
 
   const handleCloseApiKeys = useCallback(() => setShowApiKeys(false), []);
 
@@ -69,13 +73,21 @@ export default function App() {
 
   const {
     projects,
+    loaded,
+    activeProjectId,
     activeConversationId,
     activeConversation,
     createProject,
     createConversation,
     selectConversation,
     appendMessage,
+    updateConversationTitle,
+    deleteConversation,
+    togglePinConversation,
+    updateProjectFolder,
   } = useProjects();
+
+  const activeProject = projects.find((p) => p.id === activeProjectId) ?? null;
 
   function handleNewChat() {
     let projectId: string;
@@ -89,8 +101,15 @@ export default function App() {
     selectConversation(projectId, 'pending');
   }
 
+  function handleTryIt(prompt: string) {
+    pendingPromptRef.current = prompt;
+    handleNewChat();
+    setCurrentView('chat');
+  }
+
   const handleMessage = useCallback(
     (msg: Message) => {
+      if (msg.role === 'assistant') setAppLoading(false);
       // Use the ref if it's set (for newly created conversations during pending flow)
       // Otherwise use the state value
       const convId = newConvIdRef.current || activeConversationId;
@@ -106,6 +125,8 @@ export default function App() {
     handleMessage
   );
 
+  if (!loaded) return null;
+
   const displayMessages: Message[] = [
     ...(activeConversation?.messages ?? []),
     ...(streamingAssistant ? [streamingAssistant] : []),
@@ -118,86 +139,76 @@ export default function App() {
         activeConversationId={activeConversationId}
         onSelectConversation={(projectId, convId) => {
           selectConversation(projectId, convId);
-          setSidebarOpen(false); // Close sidebar after selecting
+          setSidebarOpen(false);
+          setCurrentView('chat');
+          pendingPromptRef.current = null;
         }}
         onNewChat={() => {
           handleNewChat();
           setSidebarOpen(false);
+          setCurrentView('chat');
         }}
+        onDeleteConversation={(convId) => {
+          deleteConversation(convId);
+          if (activeConversationId === convId) selectConversation('', '');
+        }}
+        onRenameConversation={updateConversationTitle}
+        onPinConversation={togglePinConversation}
         isOpen={sidebarOpen}
         theme={theme}
         onThemeChange={setTheme}
         onOpenApiKeys={() => setShowApiKeys(true)}
+        onNavigate={(view) => setCurrentView(view)}
       />
       {showApiKeys && (
         <ApiKeysPanel onClose={handleCloseApiKeys} />
       )}
-      <ChatWindow
-        key={activeConversationId ?? "empty"}
-        messages={displayMessages}
-        loading={loading}
-        title={activeConversation?.title ?? ""}
-        model={model}
-        onModelChange={setModel}
-        onOpenApiKeys={() => setShowApiKeys(true)}
-        hasConversation={activeConversationId !== null || pendingProjectId !== null}
-        onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
-        isPinned={activeConversation?.pinned ?? false}
-        onPin={() => {
-          if (activeConversationId) {
-            // @ts-ignore - intentionally unused, TODO: implement state update
-            const updatedProjects = projects.map(p => ({
-              ...p,
-              conversations: p.conversations.map(c =>
-                c.id === activeConversationId ? { ...c, pinned: !c.pinned } : c
-              ),
-            }));
-            // Update state (in a real app, you'd use a proper state management library)
-            // For now, this would need to be handled through the useProjects hook
-          }
-        }}
-        onRename={(newTitle) => {
-          if (activeConversationId) {
-            // @ts-ignore - intentionally unused, TODO: implement state update
-            const updatedProjects = projects.map(p => ({
-              ...p,
-              conversations: p.conversations.map(c =>
-                c.id === activeConversationId ? { ...c, title: newTitle } : c
-              ),
-            }));
-            // Update state
-          }
-        }}
-        onDelete={() => {
-          if (activeConversationId) {
-            // @ts-ignore - intentionally unused, TODO: implement state update
-            const updatedProjects = projects.map(p => ({
-              ...p,
-              conversations: p.conversations.filter(c => c.id !== activeConversationId),
-            }));
-            selectConversation('', '');
-            // Update state
-          }
-        }}
-        onSend={(text) => {
-          // If this is a pending conversation, create it now
-          if (pendingProjectId && activeConversationId === 'pending') {
-            const convId = createConversation(pendingProjectId, model);
-            newConvIdRef.current = convId;
-            selectConversation(pendingProjectId, convId);
-            // Use empty history for new conversation
-            send(text, model, []);
-            newConvIdRef.current = null;
-            setPendingProjectId(null);
-          } else {
-            const history = (activeConversation?.messages ?? []).map((m) => ({
-              role: m.role,
-              content: m.content,
-            }));
-            send(text, model, history);
-          }
-        }}
-      />
+      {currentView === 'case-study' ? (
+        <CaseStudyPage onTryIt={handleTryIt} />
+      ) : (
+        <ChatWindow
+          key={activeConversationId ?? "empty"}
+          messages={displayMessages}
+          loading={loading || appLoading}
+          title={activeConversation?.title ?? ""}
+          model={model}
+          onModelChange={setModel}
+          onOpenApiKeys={() => setShowApiKeys(true)}
+          hasConversation={activeConversationId !== null || pendingProjectId !== null}
+          onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
+          folderPath={activeProject?.folderPath ?? null}
+          onSelectFolder={(path) => {
+            if (activeProjectId) updateProjectFolder(activeProjectId, path);
+          }}
+          prefillPrompt={pendingPromptRef.current ?? undefined}
+          onSend={(text) => {
+            pendingPromptRef.current = null;
+            setAppLoading(true);
+            // If this is a pending conversation, create it now
+            if (pendingProjectId && activeConversationId === 'pending') {
+              const convId = createConversation(pendingProjectId, model);
+              newConvIdRef.current = convId;
+              // Auto-title from first message (explicit, before re-render)
+              updateConversationTitle(convId, text.slice(0, 60));
+              selectConversation(pendingProjectId, convId);
+              // Use empty history for new conversation
+              send(text, model, []);
+              newConvIdRef.current = null;
+              setPendingProjectId(null);
+            } else {
+              // Auto-title if this is the first message in an existing "New Chat"
+              if (activeConversationId && activeConversation?.title === "New Chat" && activeConversation.messages.length === 0) {
+                updateConversationTitle(activeConversationId, text.slice(0, 60));
+              }
+              const history = (activeConversation?.messages ?? []).map((m) => ({
+                role: m.role,
+                content: m.content,
+              }));
+              send(text, model, history);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
