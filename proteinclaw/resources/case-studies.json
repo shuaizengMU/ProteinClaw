@@ -80,6 +80,267 @@
       "description": "Predict absorption, distribution, metabolism, excretion, and toxicity (ADMET) properties for a small molecule using its SMILES string.",
       "examplePrompt": "Predict the ADMET properties for the following drug candidate:\n\nSMILES: CN1CCN(CC1)C2=NC3=CC=CC=C3N=C2Cl\nCompound name: Clozapine\n\nReport Lipinski's Rule of Five compliance, predicted solubility, blood-brain barrier penetration, CYP450 inhibition, and hERG toxicity risk.",
       "exampleResult": "ADMET Prediction for Clozapine (CN1CCN(CC1)C2=NC3=CC=CC=C3N=C2Cl):\n\nLipinski RO5: ✓ PASS\n  MW: 326.8 Da | logP: 3.2 | HBD: 1 | HBA: 4 | RotBonds: 2\n\nAbsorption:\n  Caco-2 permeability: 18.4 nm/s (high)\n  Oral bioavailability: ~60% (predicted)\n\nDistribution:\n  BBB penetration: HIGH (logBB = 0.31) — consistent with CNS activity\n  Plasma protein binding: 97%\n\nMetabolism:\n  CYP1A2 substrate: YES (major)\n  CYP3A4 inhibitor: moderate risk\n\nToxicity:\n  hERG inhibition: MODERATE risk (IC50 ~1.2 μM)\n  Ames mutagenicity: NEGATIVE\n  Hepatotoxicity: LOW risk"
+    },
+    {
+      "id": "uniprot-protein-lookup",
+      "title": "Protein Lookup",
+      "category": "annotation",
+      "icon": "database",
+      "description": "Look up a protein by UniProt accession to retrieve its name, function, organism, sequence length, and associated gene names.",
+      "examplePrompt": "What is the function of P38398?",
+      "exampleResult": "UniProt Entry: P38398 — BRCA1_HUMAN\n\nProtein name: Breast cancer type 1 susceptibility protein\nGene: BRCA1 (also known as FANCS, PPP1R53, RNF53)\nOrganism: Homo sapiens (Human)\nSequence length: 1863 amino acids\nChromosome: 17q21.31\n\nFunction:\nInvolved in DNA repair in response to double-strand breaks. Acts as a tumor suppressor. Has E3 ubiquitin-protein ligase activity. Required for maintenance of genomic stability. Participates in the BRCA1-PALB2-BRCA2 triple-BRCT domain complex.\n\nStatus: Reviewed (Swiss-Prot)"
+    },
+    {
+      "id": "interpro-domain-annotation",
+      "title": "Domain Architecture",
+      "category": "annotation",
+      "icon": "layers",
+      "description": "Retrieve domain and family annotations from InterPro for a protein, including Pfam, PROSITE, and CDD matches with residue coordinates.",
+      "examplePrompt": "What domains and families does EGFR (P00533) contain? Show domain coordinates.",
+      "exampleResult": "InterPro Domains for P00533 (EGFR_HUMAN):\n\nDomains found: 6\n\n1. IPR009030 — Furin-like cysteine rich domain\n   Pfam: PF00757; positions 180–309\n   Source: Pfam\n\n2. IPR009030 — Furin-like cysteine rich domain (2nd)\n   Pfam: PF00757; positions 348–481\n   Source: Pfam\n\n3. IPR013098 — EGF receptor, L domain\n   Pfam: PF07714; positions 57–167\n   Source: Pfam\n\n4. IPR000719 — Protein kinase domain\n   Pfam: PF00069; positions 712–979\n   PROSITE: PS50011\n   Source: Pfam, PROSITE\n\n5. IPR001245 — Serine-threonine/tyrosine-protein kinase\n   CDD: cd05052; positions 719–972\n   Source: CDD\n\n6. IPR017441 — Protein kinase, ATP binding site\n   PROSITE: PS00107; positions 730–752\n   Source: PROSITE"
+    },
+    {
+      "id": "panther-family-classification",
+      "title": "Protein Family Classification",
+      "category": "annotation",
+      "icon": "git-branch",
+      "description": "Classify a protein into PANTHER families and subfamilies to understand its evolutionary relationships and protein class.",
+      "examplePrompt": "Which PANTHER family and subfamily does BRCA1 (P38398) belong to? What is its protein class?",
+      "exampleResult": "PANTHER Classification for P38398 (BRCA1_HUMAN):\n\nFamily: PTHR11289\nFamily name: BREAST CANCER TYPE 1 SUSCEPTIBILITY PROTEIN\n\nSubfamily: PTHR11289:SF62\nSubfamily name: Breast cancer type 1 susceptibility protein\n\nProtein class:\n• PC00064 — DNA binding protein\n• PC00260 — Tumor suppressor\n\nGO Slim annotations:\n• Biological process: DNA repair, response to DNA damage\n• Molecular function: ubiquitin-protein transferase activity\n• Cellular component: nucleus\n\nEvolutionary notes:\nMember of the BRCA1 C-terminus (BRCT) superfamily. Conserved from vertebrates to invertebrates. Human protein is 76% identical to mouse ortholog."
+    },
+    {
+      "id": "gene-ontology-lookup",
+      "title": "GO Term Annotations",
+      "category": "annotation",
+      "icon": "tag",
+      "description": "Retrieve Gene Ontology annotations for a protein from QuickGO, organized by molecular function, biological process, and cellular component.",
+      "examplePrompt": "What are the Gene Ontology annotations for TP53 (P04637)? Show all three GO aspects.",
+      "exampleResult": "GO Annotations for P04637 (P53_HUMAN) via QuickGO:\n\nMolecular Function (MF):\n• GO:0003700 — DNA-binding transcription factor activity (IDA)\n• GO:0004871 — signal transducer activity (IDA)\n• GO:0008134 — transcription factor binding (IPI)\n• GO:0046872 — metal ion binding (IEA)\n• GO:0042802 — identical protein binding (IPI)\n\nBiological Process (BP):\n• GO:0006351 — transcription by RNA polymerase II (IDA)\n• GO:0006978 — DNA damage response, signal transduction (IDA)\n• GO:0006915 — apoptotic process (IDA)\n• GO:0016045 — detection of bacterium (IDA)\n• GO:0045893 — positive regulation of transcription (TAS)\n\nCellular Component (CC):\n• GO:0005654 — nucleoplasm (IDA)\n• GO:0005813 — centrosome (IDA)\n• GO:0005829 — cytosol (IDA)\n• GO:0016604 — nuclear body (IDA)\n\nTotal: 47 annotations (18 manually reviewed)"
+    },
+    {
+      "id": "ptm-sites-lookup",
+      "title": "PTM Sites",
+      "category": "annotation",
+      "icon": "zap",
+      "description": "Retrieve known post-translational modification sites for a protein from UniProt PTM annotations, including phosphorylation, ubiquitination, and acetylation.",
+      "examplePrompt": "What phosphorylation and ubiquitination sites are known for EGFR (P00533)?",
+      "exampleResult": "PTM Sites for P00533 (EGFR_HUMAN) from UniProt:\n\nPhosphorylation sites (42 total):\n• Y1068 — autophosphorylation (major site); recruits GRB2 and SHC1\n• Y1086 — autophosphorylation; recruits SH2 domain proteins\n• Y1148 — autophosphorylation; SHC recruitment\n• Y1173 — autophosphorylation; SHC/PLCG1 recruitment\n• T669  — phosphorylated by ERK1/2 (negative feedback)\n• S695  — phosphorylated by PKC\n• T693  — phosphorylated by CK2\n\nUbiquitination sites (8 total):\n• K692  — ubiquitinated by CBL E3 ligase (degradation signal)\n• K708  — monoubiquitination by CBL\n• K730  — polyubiquitination (K48-linked, proteasomal degradation)\n\nAcetylation sites (3 total):\n• K689  — acetyltransferase p300/CBP\n\nNote: PTM data sourced from UniProt experimental annotations (EXP) and similarity-based inference (ISS)."
+    },
+    {
+      "id": "sequence-properties-analysis",
+      "title": "Sequence Properties",
+      "category": "sequence",
+      "icon": "activity",
+      "description": "Compute physical and chemical properties of a protein sequence locally: molecular weight, isoelectric point, GRAVY score, and amino acid composition.",
+      "examplePrompt": "Analyze this protein sequence and report its molecular weight, isoelectric point, GRAVY score, and amino acid composition:\n\n>test_protein\nMKTAYIAKQRQISFVKSHFSRQLESSPGNFQTPYGIDRNSTREACLNLLSVAADSQEWEQVEGSFGELLNALG",
+      "exampleResult": "Sequence Analysis Results:\n\nLength: 74 amino acids\n\nMolecular weight: 8,214.4 Da\nIsoelectric point (pI): 5.82\nGRAVY score: -0.431 (hydrophilic)\n\nAmino acid composition (top 5):\n  L (Leucine):    9 residues (12.2%)\n  A (Alanine):    7 residues (9.5%)\n  G (Glycine):    5 residues (6.8%)\n  S (Serine):     5 residues (6.8%)\n  E (Glutamate):  5 residues (6.8%)\n\nExtinction coefficients:\n  At 280 nm (oxidized cysteines):  2,980 M⁻¹cm⁻¹\n  At 280 nm (reduced cysteines):   2,980 M⁻¹cm⁻¹\n\nNo cysteines detected — no disulfide bonds expected."
+    },
+    {
+      "id": "expasy-protparam-analysis",
+      "title": "ProtParam Analysis",
+      "category": "sequence",
+      "icon": "bar-chart",
+      "description": "Run a full ExPASy ProtParam-style analysis including instability index, signal peptide prediction, and transmembrane helix detection.",
+      "examplePrompt": "Run a full ProtParam analysis on the TP53 N-terminal transactivation domain sequence and report all physicochemical properties including stability.\n\n>sp|P04637|P53_HUMAN transactivation domain\nMEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDP",
+      "exampleResult": "ExPASy ProtParam Analysis:\n\nSequence length: 61 amino acids\nMolecular weight: 7,024.0 Da\nIsoelectric point (pI): 3.93 (acidic)\n\nAmino acid composition:\n  D (Asp): 7 (11.5%)  E (Glu): 5 (8.2%)\n  P (Pro): 7 (11.5%)  L (Leu): 6 (9.8%)\n  S (Ser): 5 (8.2%)   W (Trp): 1 (1.6%)\n\nInstability index: 62.3 → UNSTABLE\n(Proteins with index > 40 are predicted unstable in vitro)\n\nAliphatic index: 59.5 (relatively low — consistent with intrinsically disordered region)\n\nGRAVY: -1.066 (strongly hydrophilic — consistent with disordered transactivation domain)\n\nExtinction coefficient at 280 nm: 5,500 M⁻¹cm⁻¹ (1 Trp, 0 Tyr, 0 Cys)\n\nSignal peptide: NOT detected\nTransmembrane helices: 0 predicted\n\nNote: This region is a well-characterized intrinsically disordered domain."
+    },
+    {
+      "id": "cath-domain-classification",
+      "title": "CATH Domain Classification",
+      "category": "structure",
+      "icon": "grid",
+      "description": "Query the CATH database to get structural domain classification for a protein, including the four-level CATH hierarchy: Class, Architecture, Topology, and Homology.",
+      "examplePrompt": "Classify the structural domains of the EGFR kinase domain. Use UniProt accession P00533.",
+      "exampleResult": "CATH Classification for P00533 (EGFR_HUMAN):\n\nDomain 1 — Kinase domain (residues 712–979)\nCATH code: 3.30.200.20\n  Class:        3 — Mixed alpha/beta\n  Architecture: 3.30 — Two-layer sandwich\n  Topology:     3.30.200 — Adenylate Kinase; chain A\n  Homology:     3.30.200.20 — Phosphorylase Kinase; domain 1\n\nRelated PDB entries in same H-group:\n  1IVO, 3NJP, 7JXR (all EGFR kinase structures)\n  Number of structures in homology group: 312\n\nDomain 2 — Receptor L domain (residues 57–167)\nCATH code: 2.60.40.10\n  Class:        2 — Mostly beta\n  Architecture: 2.60 — Beta sandwich\n  Topology:     2.60.40 — Immunoglobulin-like fold\n  Homology:     2.60.40.10 — Immunoglobulins\n\nFunctional site: The ATP-binding cleft lies between the N-lobe (β-strands) and C-lobe (α-helices) of domain 1."
+    },
+    {
+      "id": "clinvar-variant-search",
+      "title": "Clinical Variant Search",
+      "category": "variants",
+      "icon": "alert-triangle",
+      "description": "Search ClinVar for clinically significant variants associated with a gene, including pathogenic calls and associated disease conditions.",
+      "examplePrompt": "What pathogenic and likely pathogenic variants are reported in ClinVar for BRCA2?",
+      "exampleResult": "ClinVar Results for BRCA2:\n\nTotal variants: 14,892 submissions\nPathogenic: 1,204\nLikely pathogenic: 687\nVUS (uncertain significance): 8,341\nLikely benign: 2,103\nBenign: 2,557\n\nTop pathogenic variants:\n• c.5946delT (p.Ser1982Argfs) — Hereditary breast/ovarian cancer\n  ClinVar ID: 52555 | Review status: ★★★★ (practice guideline)\n• c.6275_6276delTT — Fanconi anemia D1 / Breast-ovarian cancer\n  ClinVar ID: 38071 | Review status: ★★★ (expert panel)\n• c.1813dup (p.Thr605Asnfs) — Hereditary breast/ovarian cancer\n  ClinVar ID: 52558\n\nAssociated conditions: Hereditary breast and ovarian cancer syndrome, Fanconi anemia complementation group D1, Familial cancer of breast"
+    },
+    {
+      "id": "dbsnp-rsid-lookup",
+      "title": "SNP Lookup by rsID",
+      "category": "variants",
+      "icon": "search",
+      "description": "Look up a specific SNP by its rsID to retrieve genomic position, alleles, population frequencies, and clinical significance.",
+      "examplePrompt": "Look up rs121434568. What are its alleles, allele frequency, and clinical significance?",
+      "exampleResult": "dbSNP Entry: rs121434568\n\nVariant type: SNV (single nucleotide variant)\nGene: EGFR\nHGVS (coding): NM_005228.5:c.2573T>G\nHGVS (protein): NP_005219.2:p.Leu858Arg (L858R)\n\nGenomic location: chr7:55,191,822 (GRCh38)\nRef allele: T\nAlt allele: G\n\nAllele frequency:\n  gnomAD overall: 0.000004 (4 in 1,000,000)\n  gnomAD East Asian: 0.000012\n  Note: primarily observed as somatic mutation in lung cancer\n\nClinical significance: PATHOGENIC\n  Condition: Non-small cell lung carcinoma (somatic driver)\n  Review status: ★★★ (criteria provided, multiple submitters)\n\nSomatic context: Present in ~38% of EGFR-mutant NSCLCs; sensitizing mutation for erlotinib/gefitinib"
+    },
+    {
+      "id": "gnomad-gene-constraint",
+      "title": "Gene Constraint Metrics",
+      "category": "variants",
+      "icon": "shield",
+      "description": "Check gnomAD constraint metrics for a gene to understand its tolerance to loss-of-function and missense variants in the general population.",
+      "examplePrompt": "How constrained is TP53 against loss-of-function variants? Show pLI, LOEUF, and missense constraint.",
+      "exampleResult": "gnomAD Constraint Metrics for TP53:\n\nLoss-of-function constraint:\n  pLI score: 1.00 (probability of being LoF intolerant)\n  LOEUF: 0.27 (observed/expected upper bound fraction)\n  → Highly constrained — TP53 is in the top 10% most LoF-intolerant genes\n  Expected LoF variants: 12.4 | Observed: 3 | O/E ratio: 0.24\n\nMissense constraint:\n  z-score: 3.09 (highly constrained for missense)\n  Expected missense: 187.3 | Observed: 90 | O/E: 0.48\n\nCopy number variation:\n  pHaplo: 0.97 (haploinsufficient)\n  pTriplo: 0.41 (moderate triplosensitivity)\n\nInterpretation: TP53 is one of the most constrained genes in the human genome. Nearly all observed LoF variants are de novo or heterozygous cancer somatic mutations — homozygous germline LoF is lethal."
+    },
+    {
+      "id": "uniprot-protein-variants",
+      "title": "Protein Variant Annotations",
+      "category": "variants",
+      "icon": "list",
+      "description": "Retrieve known protein variants with clinical significance from UniProt/EBI Proteins API, including consequence type and position.",
+      "examplePrompt": "What clinically significant variants are annotated in UniProt for BRCA1 (P38398)?",
+      "exampleResult": "Variants for P38398 (BRCA1_HUMAN) — EBI Proteins API:\n\nTotal variants: 3,847\nWith clinical annotation: 318\n\nPathogenic variants (top 5):\n1. R1699W (pos 1699) — Hereditary breast/ovarian cancer\n   Consequence: missense | dbSNP: rs28897696\n2. C61G (pos 61) — Breast cancer\n   Consequence: missense (RING domain disruption) | dbSNP: rs28897672\n3. M1775R (pos 1775) — Breast cancer\n   Consequence: missense (BRCT domain) | dbSNP: rs28897727\n4. Y1853X (pos 1853) — Hereditary breast/ovarian cancer\n   Consequence: stop gained | dbSNP: rs80357382\n5. 185delAG (pos 23) — Hereditary breast/ovarian cancer\n   Consequence: frameshift | Frequency in Ashkenazi Jews: ~1%\n\nBenign variants: 94\nVUS: 210\nNote: Variants sourced from ClinVar, OMIM, and UniProt curated annotations."
+    },
+    {
+      "id": "gwas-catalog-associations",
+      "title": "GWAS Associations",
+      "category": "variants",
+      "icon": "trending-up",
+      "description": "Search the NHGRI-EBI GWAS Catalog for genome-wide association study hits linked to a gene, including traits, p-values, and odds ratios.",
+      "examplePrompt": "What GWAS associations have been reported for the APOE gene?",
+      "exampleResult": "GWAS Catalog Associations for APOE:\n\nTotal GWAS hits: 156\n\nTop associations by significance:\n1. Alzheimer's disease (late-onset)\n   Lead SNP: rs429358 (APOE ε4 allele, C allele)\n   p-value: 1×10⁻³⁰⁰ | OR: 3.7 | Sample: 1,126,563 individuals\n   PMID: 35379992 (2022)\n\n2. LDL cholesterol levels\n   Lead SNP: rs7412 (APOE ε2 allele, T allele)\n   p-value: 3×10⁻⁴²⁰ | Beta: -15.3 mg/dL | Sample: 1,320,016\n\n3. Coronary artery disease\n   Lead SNP: rs445925\n   p-value: 4×10⁻¹⁸ | OR: 1.18 | Sample: 547,261\n\n4. Total cholesterol\n   Lead SNP: rs429358 | p-value: 2×10⁻³⁸⁰\n\n5. Longevity / lifespan\n   Lead SNP: rs4420638 | p-value: 8×10⁻¹² | Sample: 390,000\n\nNote: APOE ε4 (rs429358-C + rs7412-C haplotype) is the strongest known genetic risk factor for sporadic Alzheimer's disease."
+    },
+    {
+      "id": "opentargets-disease-associations",
+      "title": "Target-Disease Associations",
+      "category": "disease",
+      "icon": "target",
+      "description": "Query Open Targets Platform for disease associations and drug tractability for a target gene.",
+      "examplePrompt": "What are the top disease associations for BRAF on Open Targets? Include tractability and known drug count.",
+      "exampleResult": "Open Targets: BRAF (ENSG00000157764)\n\nTop disease associations (by overall score):\n1. Melanoma                    score: 0.97  (genetic + somatic + drug evidence)\n2. Colorectal carcinoma        score: 0.91\n3. Non-small cell lung cancer  score: 0.88\n4. Thyroid gland carcinoma     score: 0.85\n5. Hairy cell leukemia         score: 0.79\n\nDrug tractability:\n  Small molecule: HIGH (clinical precedence — vemurafenib, dabrafenib approved)\n  Antibody: LOW\n  Other modalities: PREDICTED tractable\n\nApproved drugs: 6 (vemurafenib, dabrafenib, encorafenib + MEK inhibitor combinations)\nClinical candidates: 23 additional compounds in trials\n\nGenetic evidence: BRAF V600E somatic mutation — present in 50% of melanomas, 10% of colorectal cancers, 60% of papillary thyroid cancers"
+    },
+    {
+      "id": "disgenet-gene-diseases",
+      "title": "Disease-Gene Associations",
+      "category": "disease",
+      "icon": "activity",
+      "description": "Search DisGeNET for diseases associated with a gene, with evidence scores from curated and text-mined sources.",
+      "examplePrompt": "What diseases are associated with CFTR according to DisGeNET? Show scores and evidence types.",
+      "exampleResult": "DisGeNET Associations for CFTR (Gene ID: 1080):\n\nTop disease associations:\n1. Cystic fibrosis\n   Score: 1.00 | Evidence: curated (OMIM, ClinVar, Orphanet)\n   EI (evidence index): 1.0 | Publications: 4,312\n\n2. Bronchiectasis\n   Score: 0.61 | Evidence: curated + text-mined\n   EI: 0.72 | Publications: 187\n\n3. Pancreatitis, chronic\n   Score: 0.52 | Evidence: curated\n   EI: 0.68 | Publications: 94\n\n4. Male infertility\n   Score: 0.48 | Evidence: curated\n   CFTR mutations cause congenital bilateral absence of vas deferens (CBAVD)\n\n5. Nasal polyps\n   Score: 0.31 | Evidence: text-mined\n   EI: 0.44 | Publications: 41\n\nTotal associations: 67 diseases\nMost severe: Cystic fibrosis (autosomal recessive, life-limiting)\nNote: DisGeNET v7.0 data; score combines evidence from 14 databases."
+    },
+    {
+      "id": "omim-mendelian-diseases",
+      "title": "OMIM Disease Lookup",
+      "category": "disease",
+      "icon": "book-open",
+      "description": "Look up OMIM entries for Mendelian diseases associated with a gene via NCBI Gene linkage.",
+      "examplePrompt": "What Mendelian diseases does OMIM associate with FGFR3?",
+      "exampleResult": "OMIM Entries for FGFR3 (Gene ID: 2261):\n\nOMIM Gene entry: *134934 (FGFR3)\n\nAssociated phenotypes:\n1. Achondroplasia (#100800)\n   Inheritance: Autosomal dominant\n   Mutation: G380R (gain-of-function, constitutive activation)\n   Frequency: 1/25,000 live births — most common form of dwarfism\n\n2. Thanatophoric dysplasia, type I (#187600)\n   Inheritance: Autosomal dominant (de novo)\n   Mutation: R248C, Y373C (severe gain-of-function)\n   Lethal perinatally\n\n3. Thanatophoric dysplasia, type II (#187601)\n   Mutation: K650E (kinase domain)\n\n4. Hypochondroplasia (#146000)\n   Mutation: N540K (milder than achondroplasia)\n\n5. Bladder cancer, somatic (#109800)\n   Somatic mutations in ~70% of superficial bladder tumors (S249C most common)\n\n6. LADD syndrome (#149730)\n   Inheritance: Autosomal dominant; features: lacrimal gland aplasia\n\nAll pathogenic FGFR3 mutations are gain-of-function; loss-of-function is embryonic lethal."
+    },
+    {
+      "id": "cbioportal-cancer-mutations",
+      "title": "Cancer Mutation Landscape",
+      "category": "disease",
+      "icon": "bar-chart-2",
+      "description": "Query cBioPortal for the cancer mutation landscape of a gene across studies, including mutation types and alteration frequency.",
+      "examplePrompt": "What is the mutation frequency and top mutation types for KRAS across cancer types in cBioPortal?",
+      "exampleResult": "cBioPortal: KRAS (Entrez ID: 3845)\n\nGene overview:\nCytoband: 12p12.1 | Type: protein-coding\nAlteration frequency: 20% across all cancer studies (535+ studies)\n\nTop cancer types by alteration frequency:\n1. Pancreatic adenocarcinoma:    92% (G12D 36%, G12V 34%, G12R 16%)\n2. Colorectal adenocarcinoma:    42% (G12D 37%, G12V 26%, G13D 19%)\n3. Non-small cell lung cancer:   31% (G12C 40%, G12V 21%, G12D 17%)\n4. Endometrial carcinoma:        22% (G12D most common)\n5. Ovarian serous adenocarcinoma: 12%\n\nMutation types (all cancer):\n  Missense: 95.4%\n  Truncating: 2.1%\n  Amplification: 1.8%\n  Other: 0.7%\n\nTop hotspot residues: G12 (78% of mutations), G13 (14%), Q61 (5%)\n\nNote: KRAS G12C is the target of sotorasib (AMG 510) — first approved KRAS inhibitor."
+    },
+    {
+      "id": "chembl-drug-targets",
+      "title": "Drug-Target Interactions",
+      "category": "disease",
+      "icon": "pill",
+      "description": "Search ChEMBL for approved drugs and clinical candidates targeting a specific protein, including mechanism of action and IC50 values.",
+      "examplePrompt": "What approved drugs and clinical candidates target VEGFR2 (KDR/FLK-1)?",
+      "exampleResult": "ChEMBL Drug-Target Results for VEGFR2 (KDR, CHEMBL279):\n\nApproved drugs (Phase 4): 8\n1. Sunitinib (CHEMBL535)   — multi-kinase inhibitor; IC50 9 nM (KDR)\n   Approved: renal cell carcinoma, GIST; oral\n2. Sorafenib (CHEMBL1336)  — RAF/VEGFR/PDGFR inhibitor; IC50 90 nM\n   Approved: HCC, RCC, thyroid cancer\n3. Axitinib (CHEMBL1289926)— selective VEGFR1/2/3 inhibitor; IC50 0.2 nM\n   Approved: renal cell carcinoma\n4. Pazopanib (CHEMBL477772)— VEGFR/PDGFR/FGFR; IC50 10 nM\n   Approved: RCC, soft tissue sarcoma\n5. Cabozantinib (CHEMBL2105717) — VEGFR2/MET/RET; IC50 0.035 nM\n   Approved: RCC, HCC, thyroid\n\nClinical candidates (Phase 1–3): 47 additional compounds\nTop Phase 3: tivozanib (IC50 0.16 nM, approved in EU)\n\nMechanism: All are ATP-competitive kinase inhibitors binding the VEGFR2 activation loop."
+    },
+    {
+      "id": "reactome-pathway-search",
+      "title": "Reactome Pathway Search",
+      "category": "pathways",
+      "icon": "share-2",
+      "description": "Query Reactome for biological pathways associated with a protein, including sub-pathway hierarchy and diagram availability.",
+      "examplePrompt": "What are the top biological pathways that MTOR participates in according to Reactome?",
+      "exampleResult": "Reactome Pathways for MTOR (P42345):\n\nTop-level pathways: 12\nTotal pathway entries (incl. sub-pathways): 89\n\nTop pathways:\n1. R-HSA-165159 — mTOR signalling\n   Species: Homo sapiens | Diagram: available\n   Sub-pathways: mTORC1 activation (R-HSA-166208), mTORC2 activation (R-HSA-5663202)\n\n2. R-HSA-2219528 — PI3K/AKT Signaling in Cancer\n   Top-level: Signal Transduction | Diagram: available\n\n3. R-HSA-5633007 — Regulation of TP53 Degradation\n   mTOR activates MDM2 via S6K1 → TP53 ubiquitination\n\n4. R-HSA-9612973 — Autophagy\n   mTORC1 phosphorylates ULK1 to suppress autophagy initiation\n   Sub-pathway: Mitophagy (R-HSA-9612973)\n\n5. R-HSA-1257604 — PIP3 activates AKT signaling\n   Upstream of mTOR; AKT → TSC1/2 → Rheb → mTORC1\n\nNote: mTOR acts as a central sensor of nutrient availability, energy status, and growth factor signals."
+    },
+    {
+      "id": "wikipathways-gene-search",
+      "title": "WikiPathways Search",
+      "category": "pathways",
+      "icon": "map",
+      "description": "Search WikiPathways for biological pathways involving a specific gene, with pathway IDs and species information.",
+      "examplePrompt": "Which WikiPathways involve INSR (the insulin receptor gene)? List pathways with IDs.",
+      "exampleResult": "WikiPathways Results for INSR:\n\nTotal pathways found: 24\n\nTop pathways (Homo sapiens):\n1. WP481 — Insulin Signaling\n   Species: Homo sapiens | Last revised: 2024-01-15\n   Includes: INSR → IRS1/2 → PI3K → AKT → GLUT4 translocation\n\n2. WP4723 — SARS-CoV-2 and COVID-19 Pathway\n   INSR involved in metabolic dysregulation in COVID-19\n\n3. WP23 — B cell receptor signaling pathway\n   Cross-talk between insulin and immune signaling\n\n4. WP4396 — Nonalcoholic fatty liver disease\n   Insulin resistance branch\n\n5. WP1584 — Type 2 Diabetes\n   INSR → IRS → PI3K → AKT axis; resistance mechanisms\n\n6. WP4963 — COVID-19 adverse outcome pathway\n   Metabolic complications\n\nOther species: Mus musculus (8 pathways), Rattus norvegicus (5 pathways), Danio rerio (3)"
+    },
+    {
+      "id": "string-interaction-partners",
+      "title": "Protein Interaction Partners",
+      "category": "pathways",
+      "icon": "git-merge",
+      "description": "Query STRING for top protein-protein interaction partners with combined confidence scores.",
+      "examplePrompt": "Who are the top 8 interaction partners of TP53 in STRING?",
+      "exampleResult": "STRING PPI Partners for TP53 (P04637, taxon: 9606):\n\nTop partners (by combined interaction score):\n\n1. MDM2    combined: 0.999  (textmining: 0.99, experiments: 0.99, co-expression: 0.78)\n   MDM2 is the primary negative regulator of TP53 — E3 ubiquitin ligase targeting p53 for degradation\n\n2. MDM4    combined: 0.996  (textmining: 0.98, experiments: 0.98)\n   MDMX/MDM4 — p53 inhibitor, forms heterodimer with MDM2\n\n3. ATM     combined: 0.993  (experiments: 0.98, textmining: 0.97)\n   ATM phosphorylates TP53 at S15 in response to double-strand breaks\n\n4. CDKN2A  combined: 0.987  (textmining: 0.96, co-expression: 0.88)\n   ARF (p14ARF) sequesters MDM2 → stabilizes p53\n\n5. CHEK2   combined: 0.981  (experiments: 0.97)\n   CHK2 phosphorylates TP53 at S20\n\n6. EP300   combined: 0.977  (experiments: 0.95, textmining: 0.94)\n   p300 acetyltransferase activates TP53 transcriptional activity\n\n7. TP63    combined: 0.972  (co-expression: 0.91, textmining: 0.88)\n   p63 — p53 family member, competitive binding\n\n8. BRCA1   combined: 0.968  (experiments: 0.94)\n   Co-activates TP53 transcription; DNA damage response"
+    },
+    {
+      "id": "intact-curated-interactions",
+      "title": "Curated Molecular Interactions",
+      "category": "pathways",
+      "icon": "link",
+      "description": "Retrieve curated binary protein interactions from IntAct (EBI), including detection methods and MI scores.",
+      "examplePrompt": "What curated interactions are known for MDM2 in IntAct? Show top partners and experimental methods.",
+      "exampleResult": "IntAct Interactions for MDM2 (Q00987):\n\nTotal curated interactions: 1,247\nUnique interactors: 189\n\nTop interaction partners:\n1. TP53 (P04637)   — 312 records\n   Methods: anti-bait co-IP (124), two-hybrid (87), fluorescence microscopy (41)\n   MI score: 0.87 (high confidence)\n   Key interface: MDM2 N-terminal domain (aa 25–109) binds p53 transactivation domain\n\n2. MDM4 (O15151)   — 94 records\n   Methods: co-IP (61), GST pull-down (21), FRET (12)\n   MDM2-MDM4 RING domain heterodimerization → enhanced p53 ubiquitination\n\n3. USP7 (Q93009)   — 67 records\n   MDM2 deubiquitinase; USP7 removes K48-linked ubiquitin from MDM2 and p53\n\n4. DAXX (Q9UER7)   — 34 records\n   DAXX/HAUSP complex; regulates MDM2 stability\n\n5. CDKN2A (P42771) — 28 records (p14ARF)\n   ARF binds MDM2 RING domain → nucleolar sequestration → p53 stabilization\n\nDetection method breakdown:\n  Co-immunoprecipitation: 487 records (39%)\n  Two-hybrid: 312 records (25%)\n  Pull-down: 198 records (16%)\n  Other: 250 records (20%)"
+    },
+    {
+      "id": "gtex-tissue-expression",
+      "title": "Tissue Expression (GTEx)",
+      "category": "expression",
+      "icon": "bar-chart",
+      "description": "Query the GTEx Portal for tissue-specific gene expression levels, showing median TPM values across human tissues.",
+      "examplePrompt": "In which tissues is ACE2 most highly expressed according to GTEx? Show the top 10 tissues.",
+      "exampleResult": "GTEx Expression for ACE2:\n\nTop 10 tissues by median TPM:\n1. Small intestine (terminal ileum):  105.3 TPM\n2. Testis:                             91.6 TPM\n3. Kidney cortex:                      48.2 TPM\n4. Thyroid:                            30.9 TPM\n5. Heart — left ventricle:             22.1 TPM\n6. Heart — atrial appendage:           19.8 TPM\n7. Adipose — visceral (omentum):       18.4 TPM\n8. Colon — transverse:                 14.2 TPM\n9. Liver:                              12.7 TPM\n10. Breast — mammary tissue:           11.3 TPM\n\nLow expression tissues:\n  Lung: 2.1 TPM (unexpectedly low for SARS-CoV-2 entry receptor)\n  Brain regions: < 1.0 TPM\n  Blood: 0.3 TPM\n\nNote: GTEx v8 data, 17,382 samples across 54 tissues from 948 donors.\nDespite low lung TPM, single-cell studies show ACE2 is highly expressed in type II pneumocytes."
+    },
+    {
+      "id": "protein-atlas-expression",
+      "title": "Protein Atlas Expression",
+      "category": "expression",
+      "icon": "grid",
+      "description": "Retrieve tissue expression, IHC staining results, and subcellular localization from the Human Protein Atlas.",
+      "examplePrompt": "Where is CDH1 (E-cadherin) expressed according to the Human Protein Atlas? Include subcellular localization and cancer expression.",
+      "exampleResult": "Human Protein Atlas: CDH1 (P12830, E-Cadherin)\n\nRNA expression (HPA RNA consensus dataset):\n  Highest: small intestine, liver, kidney, thyroid\n  Tissue specificity: Enhanced in epithelial tissues\n\nIHC protein expression (antibody HPA001765):\n  Strong staining: liver hepatocytes, kidney tubules, small intestine enterocytes\n  Moderate staining: pancreas, breast, skin\n  Negative: brain, blood cells, skeletal muscle\n\nSubcellular localization:\n  Primary: Cell junctions (adherens junctions) — ★★★\n  Secondary: Plasma membrane — ★★★\n  Note: Forms Ca²⁺-dependent homophilic trans-dimers at E-cadherin-based adherens junctions\n\nCancer atlas:\n  Normal-to-cancer expression change:\n  • Colorectal cancer: LOW/absent in 62% of cases (EMT marker — loss = poor prognosis)\n  • Gastric cancer: LOW in 45% (CDH1 germline mutations → hereditary diffuse gastric cancer)\n  • Breast cancer: absent in triple-negative subtypes\n  • Lung adenocarcinoma: generally retained"
+    },
+    {
+      "id": "ensembl-gene-lookup",
+      "title": "Ensembl Gene Lookup",
+      "category": "genomics",
+      "icon": "map-pin",
+      "description": "Query Ensembl REST API for genomic coordinates, biotype, transcript count, and cross-references for a gene.",
+      "examplePrompt": "What are the genomic coordinates, transcript count, and Ensembl ID for the MYC gene?",
+      "exampleResult": "Ensembl Gene: MYC\n\nEnsembl ID: ENSG00000136997\nGene name: MYC (also known as c-Myc, bHLHe39, MRTL)\nOrganism: Homo sapiens\nBiotype: protein_coding\nChromosome: 8\nStrand: +1\nCoordinates (GRCh38): chr8:127,735,434–127,742,951\nGene length: 7,518 bp\n\nTranscripts: 5\n• ENST00000377970 (canonical) — 1,011 nt CDS, 439 aa; CCDS: CCDS6332\n• ENST00000621592 — retained intron\n• ENST00000624735 — nonsense mediated decay\n• ENST00000453380 — processed transcript\n• ENST00000541872 — protein coding, shorter isoform\n\nCross-references:\n  UniProt: P01106 | HGNC: 7553 | EntrezGene: 4609\n  OMIM: 190080 | RefSeq: NM_002467.6\n\nOrthologs: 185 species including Mus musculus (ENSMUSG00000022346, 88% identity)"
+    },
+    {
+      "id": "ncbi-gene-search",
+      "title": "NCBI Gene Search",
+      "category": "genomics",
+      "icon": "search",
+      "description": "Search NCBI Gene (Entrez) for gene information including official symbol, aliases, chromosome location, and function summary.",
+      "examplePrompt": "Search NCBI Gene for PTEN. Report its gene ID, chromosome location, aliases, and official summary.",
+      "exampleResult": "NCBI Gene: PTEN\n\nGene ID: 5728\nOfficial symbol: PTEN\nOfficial full name: phosphatase and tensin homolog\nAlso known as: BZS, DEC, GLM2, MHAM, MMAC1, PTEN1, TEP1, 10q23del\n\nOrganism: Homo sapiens\nChromosome: 10 | Location: 10q23.31\nCoordinates (GRCh38): chr10:87,863,113–87,971,930\nOrientation: minus strand\n\nGene type: protein-coding\nMIM: 601728\n\nSummary:\nThis gene encodes a phosphatidylinositol-3,4,5-trisphosphate 3-phosphatase and dual-specificity protein phosphatase. The protein, a tumor suppressor, antagonizes the PI3K-AKT-PKB signaling pathway by dephosphorylating PIP3 to PIP2, which inhibits cell growth and migration. PTEN is the second most commonly mutated gene in human cancer after TP53. Germline mutations cause PTEN hamartoma tumor syndrome (Cowden disease).\n\nExpression: ubiquitous (brain, prostate, breast most relevant)\nInteractome partners: AKT1, PIK3CA, TP53, MDM2, MAGI2"
+    },
+    {
+      "id": "kegg-pathway-membership",
+      "title": "KEGG Pathway Membership",
+      "category": "genomics",
+      "icon": "corner-right-up",
+      "description": "Look up which KEGG pathways a gene participates in using the KEGG REST API.",
+      "examplePrompt": "Which KEGG pathways does AKT1 participate in? Show pathway IDs and names.",
+      "exampleResult": "KEGG Pathways for AKT1 (hsa:207):\n\nTotal pathways: 47\n\nTop pathways:\n1. hsa04151 — PI3K-Akt signaling pathway\n2. hsa04068 — FoxO signaling pathway\n3. hsa04012 — ErbB signaling pathway\n4. hsa04014 — Ras signaling pathway\n5. hsa04015 — Rap1 signaling pathway\n6. hsa04150 — mTOR signaling pathway\n7. hsa04210 — Apoptosis\n8. hsa04910 — Insulin signaling pathway\n9. hsa04920 — Adipocytokine signaling pathway\n10. hsa05200 — Pathways in cancer\n11. hsa05205 — Proteoglycans in cancer\n12. hsa05230 — Central carbon metabolism in cancer\n13. hsa04066 — HIF-1 signaling pathway\n14. hsa04152 — AMPK signaling pathway\n15. hsa04024 — cAMP signaling pathway\n\nCancer-related pathways: 18 (38% of total)\nCore signaling: PI3K-AKT is the most frequently activated pathway in human cancer (~30% of tumors)\n\nNote: AKT1 is a serine/threonine kinase; Thr308 (PDK1) and Ser473 (mTORC2) are activation phosphosites."
+    },
+    {
+      "id": "pubmed-literature-search",
+      "title": "PubMed Search",
+      "category": "literature",
+      "icon": "book",
+      "description": "Search PubMed for biomedical literature, returning article titles, authors, journal, year, and abstract snippets.",
+      "examplePrompt": "Find recent PubMed articles on CRISPR base editing for cancer therapy. Show top 5 results.",
+      "exampleResult": "PubMed Search: 'CRISPR base editing cancer therapy'\n\nTotal results: 347 articles (last search: 2024)\n\n1. PMID: 38491234\n   Title: Adenine base editing of oncogenic KRAS G12D in pancreatic cancer\n   Authors: Chen X, Li J, Wang Y et al.\n   Journal: Nature Medicine (2024) | Citations: 87\n   Abstract: We demonstrate that ABE8e can efficiently correct KRAS G12D to wild-type in vivo using lipid nanoparticle delivery...\n\n2. PMID: 38102847\n   Title: Prime editing corrects TP53 hotspot mutations in patient-derived organoids\n   Authors: Kim S, Park H et al.\n   Journal: Cell (2024) | Citations: 143\n\n3. PMID: 37891023\n   Title: Base editing strategies for hematologic malignancies\n   Authors: Rodriguez A et al.\n   Journal: Blood (2023) | Citations: 211\n\n4. PMID: 37654321\n   Title: Off-target analysis of cytosine base editors in clinical cancer applications\n   Journal: Nature Biotechnology (2023) | Citations: 178\n\n5. PMID: 37234109\n   Title: High-efficiency base editing of EGFR T790M resistance mutation\n   Journal: Cancer Cell (2023) | Citations: 124"
+    },
+    {
+      "id": "multi-source-literature",
+      "title": "Multi-Source Literature Search",
+      "category": "literature",
+      "icon": "layers",
+      "description": "Search 6 literature databases in parallel (PubMed, Europe PMC, Semantic Scholar, CrossRef, bioRxiv, arXiv), deduplicate by DOI, and rank by citation count.",
+      "examplePrompt": "Search all literature databases for recent publications on liquid biopsy and circulating tumor DNA in early cancer detection. Deduplicate by DOI.",
+      "exampleResult": "Multi-Source Literature Search: 'liquid biopsy circulating tumor DNA early detection'\n\nSources queried in parallel:\n  ✓ PubMed          — 412 results\n  ✓ Europe PMC      — 389 results\n  ✓ Semantic Scholar — 567 results\n  ✓ CrossRef        — 341 results\n  ✓ bioRxiv         — 47 preprints\n  ✓ arXiv           — 12 results\n\nAfter DOI deduplication: 498 unique records\n\nTop results by citation count:\n1. DOI: 10.1038/s41586-020-2892-4\n   'Sensitive tumour detection and classification using plasma cell-free DNA methylomes'\n   Nature (2020) | 2,341 citations\n   Authors: Shen SY et al.\n\n2. DOI: 10.1126/science.aar7888\n   'Detection and localization of surgically resectable cancers with a multi-analyte blood test'\n   Science (2018) | 3,187 citations\n\n3. DOI: 10.1038/s41591-023-02342-9\n   'Clinical validation of a multi-cancer early detection test'\n   Nature Medicine (2023) | 612 citations\n\n4. bioRxiv: 2024.02.14.580312 (preprint)\n   'MCED test performance in population screening cohort'\n   Posted: 2024-02-14\n\nRecommendation: Start with Smith 2023 (Nature Medicine) for clinical validation context."
     }
   ]
 }
