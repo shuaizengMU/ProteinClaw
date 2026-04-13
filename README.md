@@ -165,6 +165,148 @@ proteinclaw query "What drugs bind EGFR and what are their affinities?"
 | Pathways | `What pathways does EGFR participate in?` | `reactome` → `wikipathways` → `kegg` |
 | Literature | `Recent papers on EGFR resistance` | `literature` → `pubmed` |
 
+---
+
+### Per-category usage examples
+
+**Protein Annotation — BRCA1**
+```
+proteinclaw
+
+> Give me a complete annotation for BRCA1 (P38398): function, domains, family, GO terms, and known PTMs.
+  [tool: uniprot]         P38398 — BRCA1_HUMAN, DNA repair protein, 1863 aa, chr 17q21.31
+                          Function: maintains genomic stability; E3 ubiquitin ligase activity
+  [tool: interpro]        BRCT domain (×2) at 1646–1736, 1756–1855; RING-type zinc finger at 8–98
+                          Pfam: PF00533 (BRCT), PF13638 (RING_2); PROSITE: PS50172
+  [tool: panther]         PTHR11289:SF62 — Breast cancer type 1 susceptibility protein
+                          Protein class: DNA binding protein
+  [tool: gene_ontology]   MF: ubiquitin-protein transferase, DNA binding, BRCA1 A complex binding
+                          BP: DNA repair, double-strand break repair, cell cycle checkpoint
+                          CC: nucleus, BRCA1-A complex, PML body
+  [tool: phosphosite]     23 phosphosites; S988 (ATM-mediated, DNA damage response)
+                          S1387 (CHK2-mediated); S1524 (CDK2); 4 ubiquitination sites
+```
+
+**Protein Structure — EGFR**
+```
+proteinclaw
+
+> What structures exist for the EGFR kinase domain, and how is it classified?
+  [tool: pdb]             7JXR — X-ray, 1.9 Å, erlotinib-bound kinase domain (residues 696–1022)
+                          3NJP — X-ray, 2.8 Å, gefitinib-bound; 6ARU — cryo-EM, 4.1 Å, full-length dimer
+  [tool: alphafold]       AF-P00533-F1 — pLDDT 87.4 (high confidence); residues 1–1210 modeled
+                          Fragment 1 (N-terminal EGF-binding domains): pLDDT 82.1
+  [tool: cath]            Kinase domain: 3.30.200.20 (Alpha Beta / Sandwich / Protein Kinase)
+                          EGF-like domain: 2.10.25.10 (Few Secondary Structures / Immunoglobulin-like)
+```
+
+**Sequence & Motifs — Custom sequence**
+```
+proteinclaw
+
+> For the sequence below, find similar proteins, predict SLiMs, and check for disorder.
+  MKTAYIAKQRQISFVKSHFSRQLESSPGNFQTPYGIDRNSTREACLNLLSVAADSQEWE
+
+  [tool: blast]           Top hit: sp|P04637|P53_HUMAN (E-value 3e-8, 72% identity, 55 aa aligned)
+                          2nd: sp|P02340|P53_MOUSE (E-value 1e-7, 68% identity)
+  [tool: elm]             LIG_SH3_3 at positions 12–17 (binding site)
+                          DEG_APCC_DBOX_1 at positions 38–41 (degradation signal)
+                          MOD_CDK_SPxK_1 at positions 49–52 (phosphorylation site)
+  [tool: disprot]         No validated disordered regions (DisProt contains 0 entries for this sequence)
+  [tool: mobidb]          Disorder consensus: low (< 0.2) across full length; structured protein
+```
+
+**Variants & Clinical — BRCA2**
+```
+proteinclaw
+
+> What are the key clinical variants in BRCA2 and how constrained is the gene?
+  [tool: clinvar]         BRCA2 (gene ID 675): 4,312 variants submitted
+                          Pathogenic: 892 variants (incl. c.5946delT — Fanconi anemia; c.6275_6276del)
+                          Likely pathogenic: 312; VUS: 2,847; Benign/Likely benign: 261
+  [tool: gnomad]          pLI: 0.98 (highly intolerant to loss-of-function)
+                          LOEUF: 0.17 (top 5% most constrained genes in genome)
+                          Missense z-score: 2.8 (moderately constrained)
+  [tool: uniprot_variants] P51587 — 318 variants with clinical annotation
+                          Most severe: R3128S (Pathogenic, breast cancer); D2723H (Pathogenic)
+  [tool: dbsnp]           rs80358981 (c.5946delT): AF < 0.00001, ClinVar: Pathogenic
+  [tool: gwas_catalog]    12 GWAS hits: breast cancer risk (OR 2.4, p=3×10⁻¹⁵); ovarian cancer (p=8×10⁻¹²)
+```
+
+**Gene & Genomics — MYC**
+```
+proteinclaw
+
+> What are the genomic coordinates, transcripts, and pathways for MYC?
+  [tool: ensembl]         ENSG00000136997 — MYC, protein-coding, chr 8q24.21
+                          5 transcripts (ENST00000377970 is canonical, 1011 nt CDS, 439 aa)
+                          Orthologs: MYCMUS (mouse), MYC (zebrafish), dm-Myc (Drosophila)
+  [tool: ncbi_gene]       Gene ID: 4609 — MYC, alias: c-Myc, MRTL, bHLHe39
+                          Location: 8q24.21; Summary: transcription factor, proto-oncogene
+  [tool: kegg]            hsa:4609 → 9 pathways:
+                          hsa05166 (HTLV-I infection), hsa04110 (Cell cycle), hsa05200 (Pathways in cancer)
+```
+
+**Pathways & Interactions — MTOR**
+```
+proteinclaw
+
+> What pathways involve MTOR and who are its top interaction partners?
+  [tool: reactome]        Top pathways: mTORC1-mediated signalling (R-HSA-166208)
+                          PI3K/AKT Signaling in Cancer (R-HSA-2219528); 89 pathways total
+  [tool: wikipathways]    WP1471 (mTOR signaling pathway, Homo sapiens); WP615 (Senescence and autophagy)
+                          WP3888 (VEGFA-VEGFR2 signaling) — cross-talk with MTOR
+  [tool: string]          Top partners (combined score ≥ 0.9): RPTOR (0.999), MLST8 (0.999)
+                          RICTOR (0.997), AKT1 (0.995), TSC1 (0.991), TSC2 (0.990)
+  [tool: intact]          847 curated interactions for P42345 (MTOR_HUMAN)
+                          Top method: anti-bait co-immunoprecipitation (312 records)
+                          Key partners: RPTOR (72 records), DEPTOR (48 records)
+```
+
+**Disease & Oncology — BRAF**
+```
+proteinclaw
+
+> What diseases is BRAF linked to, what cancer mutations are reported, and what drugs target it?
+  [tool: opentargets]     Top associations: melanoma (score 0.97), colorectal cancer (0.91)
+                          Non-small cell lung cancer (0.88); 14 approved drugs; small molecule tractable
+  [tool: disgenet]        87 disease associations; top: melanoma (score 0.91), colorectal neoplasms (0.87)
+                          Noonan syndrome (0.72); cardiovascular disease (0.55)
+  [tool: omim]            OMIM 164757 — BRAF; associated: CARDIO-FACIO-CUTANEOUS SYNDROME (CFC1, #115150)
+                          Noonan syndrome 7 (#613706); melanoma, malignant, somatic (#155600)
+  [tool: cbioportal]      Altered in 7% of all cancer studies; BRAF V600E: 95% of BRAF-altered melanomas
+                          Amplification in 4% of thyroid cancers; fusion in papillary thyroid
+  [tool: chembl]          39 approved/clinical compounds; vemurafenib (PLX4032) — V600E-selective
+                          dabrafenib IC50 0.65 nM; trametinib (MEK1/2 inhibitor, combination)
+```
+
+**Expression — ACE2**
+```
+proteinclaw
+
+> Where is ACE2 expressed and what is its subcellular localization?
+  [tool: gtex]            Highest expression: small intestine (105 TPM), testis (92 TPM)
+                          Kidney cortex (48 TPM), thyroid (31 TPM), heart (22 TPM)
+                          Low in lung (2.1 TPM); brain: < 1 TPM in most regions
+  [tool: protein_atlas]   IHC: strong in small intestine epithelium, kidney proximal tubules
+                          Subcellular: plasma membrane + cytoplasm (single-pass type I)
+                          RNA: highest in small intestine, kidney, testis (consistent with GTEx)
+                          Cancer: low/absent in most tumor types
+```
+
+**Literature — CAR-T resistance**
+```
+proteinclaw
+
+> Find recent papers on CAR-T cell therapy resistance mechanisms
+  [tool: pubmed]          243 articles for "CAR-T resistance"; 31 reviews in last 2 years
+                          Top: "Mechanisms of resistance to CAR T cell therapy" — Nat Rev Cancer 2023
+  [tool: literature]      Searched PubMed, Europe PMC, Semantic Scholar, CrossRef, bioRxiv, arXiv
+                          187 unique records after DOI deduplication
+                          Top cited: "Antigen loss and tumor heterogeneity in CAR-T resistance"
+                          Cell 2024 — 287 citations; preprint: biorxiv 2024.03.12 (antigen escape)
+```
+
 **TUI slash commands:**
 
 | Command | Effect |
