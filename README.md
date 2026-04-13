@@ -6,7 +6,7 @@ The AI agent for protein bioinformatics. Describe your research goal in plain En
 
 ![Python](https://img.shields.io/badge/python-3.13%2B-blue)
 ![Tests](https://img.shields.io/badge/tests-73%20passed-brightgreen)
-![Tools](https://img.shields.io/badge/tools-53-blue)
+![Tools](https://img.shields.io/badge/tools-35-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
@@ -48,7 +48,7 @@ A ReAct loop (`proteinclaw/core/agent/`) that drives all three interfaces:
 
 ### ProteinBox — the Tool Layer
 
-All database integrations live in `proteinbox/api_tools/`. Each tool is independently testable and auto-discovered by the agent at startup. 53 tools across 15 categories. See [Supported Tools](#supported-tools) for the full list.
+All database integrations live in `proteinbox/api_tools/`. Each tool is independently testable and auto-discovered by the agent at startup. 35 tools across 9 categories. See [Supported Tools](#supported-tools) for the full list.
 
 ---
 
@@ -235,7 +235,7 @@ You only need one key to get started.
 
 ## Supported Tools
 
-53 tools across 15 categories. **API** = calls an external database. **Local** = runs entirely on-device, no network required. Tools marked **†** require free registration (see [API Keys](#api-keys)).
+35 tools across 9 categories. **API** = calls an external database. **Local** = runs entirely on-device, no network required.
 
 | Category | Tool | Type | Database / Source | What it fetches |
 |----------|------|------|-------------------|-----------------|
