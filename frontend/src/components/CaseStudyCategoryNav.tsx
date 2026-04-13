@@ -21,6 +21,7 @@ export function CaseStudyCategoryNav({ activeCategoryId, counts, onSelect }: Pro
       {CATEGORIES.map((cat) => (
         <button
           key={cat.id}
+          type="button"
           className={`cs-cat-item${activeCategoryId === cat.id ? " cs-cat-item--active" : ""}`}
           onClick={() => onSelect(cat.id)}
           aria-current={activeCategoryId === cat.id ? "page" : undefined}

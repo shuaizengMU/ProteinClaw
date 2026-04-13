@@ -1,20 +1,7 @@
-import { useEffect } from "react";
-import { X, ChevronRight, Dna, Search, BarChart2, GitBranch, Layers, Box, FlaskConical, Activity, BookOpen } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { X, ChevronRight } from "lucide-react";
 import type { CaseStudy } from "../types";
-
-const ICON_MAP: Record<string, React.FC<{ size?: number; strokeWidth?: number }>> = {
-  dna: Dna, search: Search, "bar-chart": BarChart2, "git-branch": GitBranch,
-  layers: Layers, box: Box, flask: FlaskConical, activity: Activity,
-};
-
-const CATEGORY_COLORS: Record<string, string> = {
-  sequence: "#60a5fa", structure: "#a78bfa", drug: "#34d399", function: "#fb923c",
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  sequence: "Sequence Analysis", structure: "Structure",
-  drug: "Drug Discovery", function: "Function",
-};
+import { getCaseIcon, CASE_CATEGORY_COLORS, CASE_CATEGORY_LABELS } from "./caseStudyUtils";
 
 interface Props {
   caseStudy: CaseStudy;
@@ -23,8 +10,13 @@ interface Props {
 }
 
 export function CaseStudyModal({ caseStudy, onClose, onTryIt }: Props) {
-  const Icon = ICON_MAP[caseStudy.icon] ?? BookOpen;
-  const color = CATEGORY_COLORS[caseStudy.category] ?? "#aaa";
+  const Icon = getCaseIcon(caseStudy.icon);
+  const color = CASE_CATEGORY_COLORS[caseStudy.category] ?? "#aaa";
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    modalRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -38,10 +30,12 @@ export function CaseStudyModal({ caseStudy, onClose, onTryIt }: Props) {
     <>
       <div className="cs-modal-backdrop" onClick={onClose} aria-hidden="true" />
       <div
+        ref={modalRef}
+        tabIndex={-1}
         className="cs-modal"
         role="dialog"
         aria-modal="true"
-        aria-label={caseStudy.title}
+        aria-labelledby="cs-modal-title"
       >
         {/* Header */}
         <div className="cs-modal__header">
@@ -52,12 +46,12 @@ export function CaseStudyModal({ caseStudy, onClose, onTryIt }: Props) {
             <Icon size={20} strokeWidth={1.8} />
           </div>
           <div className="cs-modal__title-block">
-            <div className="cs-modal__title">{caseStudy.title}</div>
+            <div id="cs-modal-title" className="cs-modal__title">{caseStudy.title}</div>
             <div className="cs-modal__category" style={{ color, background: `${color}1a` }}>
-              {CATEGORY_LABELS[caseStudy.category] ?? caseStudy.category}
+              {CASE_CATEGORY_LABELS[caseStudy.category] ?? caseStudy.category}
             </div>
           </div>
-          <button className="cs-modal__close" onClick={onClose} aria-label="Close">
+          <button type="button" className="cs-modal__close" onClick={onClose} aria-label="Close">
             <X size={15} strokeWidth={2} />
           </button>
         </div>
@@ -79,10 +73,11 @@ export function CaseStudyModal({ caseStudy, onClose, onTryIt }: Props) {
 
         {/* Footer */}
         <div className="cs-modal__footer">
-          <button className="cs-modal__btn-secondary" onClick={onClose}>
+          <button type="button" className="cs-modal__btn-secondary" onClick={onClose}>
             Close
           </button>
           <button
+            type="button"
             className="cs-modal__btn-primary"
             onClick={() => onTryIt(caseStudy.examplePrompt)}
           >

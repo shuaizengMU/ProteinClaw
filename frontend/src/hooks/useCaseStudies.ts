@@ -13,8 +13,9 @@ export function useCaseStudies(): UseCaseStudiesResult {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const port = (window as any).__BACKEND_PORT__ || 8000;
-    fetch(`http://localhost:${port}/api/case-studies`)
+    fetch(`http://localhost:${port}/api/case-studies`, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -24,9 +25,12 @@ export function useCaseStudies(): UseCaseStudiesResult {
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message);
-        setLoading(false);
+        if (err.name !== "AbortError") {
+          setError(err.message);
+          setLoading(false);
+        }
       });
+    return () => controller.abort();
   }, []);
 
   return { cases, loading, error };
