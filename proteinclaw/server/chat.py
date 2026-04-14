@@ -1,10 +1,11 @@
 import json
 import os
+import uuid
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
-from proteinclaw.core.agent.loop import run
-from proteinclaw.core.agent.events import TokenEvent, ToolCallEvent, ErrorEvent
 from proteinclaw.core.config import SUPPORTED_MODELS, settings
+from proteinclaw.core.nanobot.adapter import WebSocketAdapter
+from proteinclaw.core.nanobot.instance import get_nanobot
 
 router = APIRouter()
 
@@ -27,28 +28,33 @@ async def health():
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
+    """One-shot REST endpoint (used by CLI/tests). Collects all streamed tokens."""
     model = request.model if request.model in SUPPORTED_MODELS else settings.default_model
-    reply_parts = []
-    tool_calls_log = []
+    tokens: list[str] = []
+    tool_calls_log: list[dict] = []
 
-    async for event in run(
-        query=request.message,
-        history=request.history,
-        model=model,
-    ):
-        if isinstance(event, TokenEvent):
-            reply_parts.append(event.content)
-        elif isinstance(event, ToolCallEvent):
-            tool_calls_log.append(event.to_dict())
-        elif isinstance(event, ErrorEvent):
-            reply_parts.append(f"\n[Error: {event.message}]")
+    async def collect(event: dict) -> None:
+        if event["type"] == "token":
+            tokens.append(event["content"])
+        elif event["type"] == "tool_call":
+            tool_calls_log.append(event)
 
-    return ChatResponse(reply="".join(reply_parts).strip(), tool_calls=tool_calls_log)
+    bot = get_nanobot(model)
+    adapter = WebSocketAdapter(send_json=collect)
+    result = await bot.run(
+        request.message,
+        session_key=f"rest:{uuid.uuid4().hex}",
+        hooks=[adapter],
+    )
+    reply = result.content or "".join(tokens)
+    return ChatResponse(reply=reply.strip(), tool_calls=tool_calls_log)
 
 
 @router.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
+    # One session_key per connection — nanobot accumulates memory within the session
+    session_key = f"ws:{uuid.uuid4().hex}"
     try:
         while True:
             raw = await websocket.receive_text()
@@ -60,20 +66,21 @@ async def websocket_chat(websocket: WebSocket):
 
             message = payload.get("message", "")
             model = payload.get("model", settings.default_model)
-            history = payload.get("history", [])
             api_key = payload.get("api_key", "")
             config_key = payload.get("config_key", "")
 
             if model not in SUPPORTED_MODELS:
                 model = settings.default_model
 
-            # Set API key from frontend if provided
+            # Apply API key from frontend if provided
             if api_key and config_key:
                 os.environ[config_key] = api_key
 
             try:
-                async for event in run(query=message, history=history, model=model):
-                    await websocket.send_json(event.to_dict())
+                bot = get_nanobot(model)
+                adapter = WebSocketAdapter(send_json=websocket.send_json)
+                await bot.run(message, session_key=session_key, hooks=[adapter])
+                await websocket.send_json({"type": "done"})
             except Exception as e:
                 await websocket.send_json({"type": "error", "message": str(e)})
 

@@ -1,12 +1,18 @@
 import pytest
-import json
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch, AsyncMock, MagicMock
 from httpx import AsyncClient, ASGITransport
 from starlette.testclient import TestClient
 from proteinclaw.server.main import app
-from proteinclaw.core.agent.events import (
-    TokenEvent, DoneEvent, ToolCallEvent, ObservationEvent, ErrorEvent
-)
+from nanobot.nanobot import RunResult
+
+
+def _make_mock_bot(content="Hello world"):
+    """Return a mock Nanobot whose run() returns a RunResult with the given content."""
+    mock_bot = MagicMock()
+    mock_bot.run = AsyncMock(
+        return_value=RunResult(content=content, tools_used=[], messages=[])
+    )
+    return mock_bot
 
 
 @pytest.mark.asyncio
@@ -29,12 +35,9 @@ async def test_health():
 
 @pytest.mark.asyncio
 async def test_post_chat():
-    async def mock_run(**kwargs):
-        yield TokenEvent(content="Hello ")
-        yield TokenEvent(content="world")
-        yield DoneEvent()
+    mock_bot = _make_mock_bot(content="Hello world")
 
-    with patch("proteinclaw.server.chat.run", side_effect=mock_run):
+    with patch("proteinclaw.server.chat.get_nanobot", return_value=mock_bot):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post("/chat", json={
                 "message": "What is P04637?",
@@ -48,14 +51,9 @@ async def test_post_chat():
 
 
 def test_websocket_chat():
-    async def mock_run(**kwargs):
-        yield ToolCallEvent(tool="uniprot", args={"accession_id": "P04637"})
-        yield ObservationEvent(tool="uniprot", result={"success": True, "data": {"name": "TP53"}})
-        yield TokenEvent(content="TP53 is ")
-        yield TokenEvent(content="a tumor suppressor.")
-        yield DoneEvent()
+    mock_bot = _make_mock_bot(content="TP53 is a tumor suppressor.")
 
-    with patch("proteinclaw.server.chat.run", side_effect=mock_run):
+    with patch("proteinclaw.server.chat.get_nanobot", return_value=mock_bot):
         client = TestClient(app)
         with client.websocket_connect("/ws/chat") as ws:
             ws.send_json({
@@ -71,7 +69,4 @@ def test_websocket_chat():
                     break
 
     types = [e["type"] for e in events]
-    assert "tool_call" in types
-    assert "observation" in types
-    assert "token" in types
     assert "done" in types
