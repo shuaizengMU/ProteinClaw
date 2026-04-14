@@ -78,6 +78,7 @@ export function ChatWindow({
       <div className="chat-main">
       <TopBar title={title} onMenuToggle={onMenuToggle} onRightSidebarToggle={() => setShowRightSidebar(v => !v)} rightSidebarOpen={showRightSidebar} />
       <MessageList messages={messages} loading={loading} />
+      <RunningBar messages={messages} loading={loading} />
       <InputArea
         onSend={onSend}
         loading={loading}
@@ -298,6 +299,17 @@ function TopBar({
   );
 }
 
+function getRunningTool(messages: Message[]): string | null {
+  const last = messages.at(-1);
+  if (!last || last.role !== 'assistant' || !last.toolCalls) return null;
+  const calls = last.toolCalls.filter((e) => e.type === 'tool_call');
+  const obs = last.toolCalls.filter((e) => e.type === 'observation');
+  if (calls.length > obs.length) {
+    return calls.at(-1)?.tool ?? null;
+  }
+  return null;
+}
+
 function MessageList({
   messages,
   loading,
@@ -337,6 +349,18 @@ function MessageList({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function RunningBar({ messages, loading }: { messages: Message[]; loading: boolean }) {
+  const runningTool = loading ? getRunningTool(messages) : null;
+  if (!runningTool) return null;
+  return (
+    <div className="running-status-bar">
+      <span className="running-status-bar__dot" />
+      <span className="running-status-bar__label">Running</span>
+      <code className="running-status-bar__tool">{runningTool}</code>
     </div>
   );
 }

@@ -57,7 +57,7 @@ export interface Project {
   conversations: ConversationMeta[];
 }
 
-export type CaseStudyCategoryId = 'sequence' | 'structure' | 'drug' | 'function';
+export type CaseStudyCategoryId = 'sequence' | 'structure' | 'drug' | 'function' | 'annotation' | 'variants' | 'disease' | 'pathways' | 'expression' | 'genomics' | 'literature';
 
 export interface CaseStudyCategory {
   id: CaseStudyCategoryId | 'all';

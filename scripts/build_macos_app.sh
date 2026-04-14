@@ -58,17 +58,26 @@ else
   ok "uv sidecar downloaded: $DEST"
 fi
 
-# ── 3. Build frontend ────────────────────────
+# ── 3. Clear debug chat data ─────────────────
+APP_DATA="$HOME/Library/Application Support/com.proteinclaw.app"
+if [[ -d "$APP_DATA" ]]; then
+  info "Clearing debug chat data from app data directory..."
+  rm -f "$APP_DATA/index.json"
+  rm -rf "$APP_DATA/conversations"
+  ok "Debug chat data cleared (venv preserved)"
+fi
+
+# ── 4. Build frontend ────────────────────────
 info "Building frontend..."
 (cd frontend && npm install && npm run build)
 ok "Frontend built"
 
-# ── 4. Tauri build ───────────────────────────
+# ── 5. Tauri build ───────────────────────────
 info "Running cargo tauri build (this takes a few minutes)..."
 cargo tauri build
 ok "Tauri build complete"
 
-# ── 5. Print artifact path ───────────────────
+# ── 6. Print artifact path ───────────────────
 DMG=$(find src-tauri/target/release/bundle/dmg -name "*.dmg" 2>/dev/null | head -1)
 if [[ -n "$DMG" ]]; then
   echo ""

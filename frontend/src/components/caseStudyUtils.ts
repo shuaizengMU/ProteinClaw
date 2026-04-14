@@ -19,6 +19,13 @@ export const CASE_CATEGORY_COLORS: Record<string, string> = {
   structure: "#a78bfa",
   drug: "#34d399",
   function: "#fb923c",
+  annotation: "#f59e0b",
+  variants: "#ec4899",
+  disease: "#ef4444",
+  pathways: "#06b6d4",
+  expression: "#84cc16",
+  genomics: "#8b5cf6",
+  literature: "#94a3b8",
 };
 
 export const CASE_CATEGORY_LABELS: Record<string, string> = {
@@ -26,6 +33,13 @@ export const CASE_CATEGORY_LABELS: Record<string, string> = {
   structure: "Structure",
   drug: "Drug Discovery",
   function: "Function",
+  annotation: "Annotation",
+  variants: "Variants & Clinical",
+  disease: "Disease & Oncology",
+  pathways: "Pathways & Networks",
+  expression: "Expression",
+  genomics: "Gene & Genomics",
+  literature: "Literature",
 };
 
 export function getCaseIcon(icon: string) {

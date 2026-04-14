@@ -60,7 +60,7 @@ export function FeedbackModal({ type, messageContent, onClose }: Props) {
       <div className="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
         <div className="feedback-modal__header">
           <h3 className="feedback-modal__title" id="feedback-modal-title">
-            {isPositive ? "👍 Positive Feedback" : "👎 Report an Issue"}
+            {isPositive ? "Positive Feedback" : "Report an Issue"}
           </h3>
           <button
             className="feedback-modal__close"

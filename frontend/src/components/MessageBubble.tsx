@@ -38,12 +38,12 @@ export function MessageBubble({ message }: Props) {
         <ClaudeLogo size={20} />
       </div>
       <div className="msg-assistant-body">
-        {calls.map((tc, j) => (
-          <ToolCallCard key={j} toolCall={tc} observation={obs[j]} />
-        ))}
         <div className="msg-assistant-content">
           <ReactMarkdown>{message.content}</ReactMarkdown>
         </div>
+        {calls.map((tc, j) => (
+          <ToolCallCard key={j} toolCall={tc} observation={obs[j]} />
+        ))}
         {message.content && (
           <div className="msg-reactions">
             <button className="msg-reaction-btn" onClick={handleCopy} title="Copy" aria-label={copied ? "Copied" : "Copy response"}>

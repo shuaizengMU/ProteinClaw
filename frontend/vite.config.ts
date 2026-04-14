@@ -7,4 +7,7 @@ export default defineConfig({
   server: {
     open: false,
   },
+  optimizeDeps: {
+    exclude: ['@tauri-apps/api', '@tauri-apps/plugin-dialog'],
+  },
 })

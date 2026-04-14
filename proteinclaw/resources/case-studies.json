@@ -341,6 +341,240 @@
       "description": "Search 6 literature databases in parallel (PubMed, Europe PMC, Semantic Scholar, CrossRef, bioRxiv, arXiv), deduplicate by DOI, and rank by citation count.",
       "examplePrompt": "Search all literature databases for recent publications on liquid biopsy and circulating tumor DNA in early cancer detection. Deduplicate by DOI.",
       "exampleResult": "Multi-Source Literature Search: 'liquid biopsy circulating tumor DNA early detection'\n\nSources queried in parallel:\n  ✓ PubMed          — 412 results\n  ✓ Europe PMC      — 389 results\n  ✓ Semantic Scholar — 567 results\n  ✓ CrossRef        — 341 results\n  ✓ bioRxiv         — 47 preprints\n  ✓ arXiv           — 12 results\n\nAfter DOI deduplication: 498 unique records\n\nTop results by citation count:\n1. DOI: 10.1038/s41586-020-2892-4\n   'Sensitive tumour detection and classification using plasma cell-free DNA methylomes'\n   Nature (2020) | 2,341 citations\n   Authors: Shen SY et al.\n\n2. DOI: 10.1126/science.aar7888\n   'Detection and localization of surgically resectable cancers with a multi-analyte blood test'\n   Science (2018) | 3,187 citations\n\n3. DOI: 10.1038/s41591-023-02342-9\n   'Clinical validation of a multi-cancer early detection test'\n   Nature Medicine (2023) | 612 citations\n\n4. bioRxiv: 2024.02.14.580312 (preprint)\n   'MCED test performance in population screening cohort'\n   Posted: 2024-02-14\n\nRecommendation: Start with Smith 2023 (Nature Medicine) for clinical validation context."
+    },
+    {
+      "id": "dbptm-ptm-database",
+      "title": "Experimental PTM Database",
+      "category": "annotation",
+      "icon": "zap",
+      "description": "Retrieve experimentally verified post-translational modifications from dbPTM, covering phosphorylation, ubiquitination, acetylation, and methylation with residue-level evidence.",
+      "examplePrompt": "What experimentally verified PTMs are known for EGFR (P00533) in dbPTM?",
+      "exampleResult": "dbPTM Results for P00533 (EGFR_HUMAN):\n\nTotal experimentally verified PTMs: 87\n\nPhosphorylation (42 sites):\n• Y1068 — autophosphorylation; 23 publications (GRB2 recruitment)\n• Y1086 — autophosphorylation; 18 publications\n• Y1148 — autophosphorylation; 15 publications (SHC1 recruitment)\n• Y1173 — autophosphorylation; 31 publications (major regulatory site)\n• T669  — ERK1/2-mediated (negative feedback loop)\n• S695  — PKC-mediated; 7 publications\n\nUbiquitination (18 sites):\n• K692  — CBL E3 ligase; K48-linked (proteasomal degradation)\n• K708  — monoubiquitination (endocytosis signal)\n• K730  — polyubiquitination (K48-linked)\n• K737, K754, K775 — detected by mass spectrometry\n\nAcetylation (6 sites):\n• K689  — p300/CBP acetyltransferase; 4 publications\n• K690  — detected in nuclear EGFR\n\nMethylation (3 sites):\n• R1175 — SMYD2-mediated; stabilizes EGFR\n\nSumoylation (2 sites), Neddylation (1 site)\n\nEvidence: 87/87 sites supported by mass spectrometry or antibody-based methods."
+    },
+    {
+      "id": "expasy-ec-number-lookup",
+      "title": "EC Number Lookup",
+      "category": "annotation",
+      "icon": "hash",
+      "description": "Look up an enzyme by EC number in the ExPASy ENZYME database to retrieve reaction type, cofactors, and the number of characterized UniProt entries.",
+      "examplePrompt": "What kinetic parameters are known for EC 2.7.10.1? How many proteins are classified under this EC number?",
+      "exampleResult": "ExPASy ENZYME: EC 2.7.10.1\n\nEC class: 2.7.10 — Protein-tyrosine kinases\nEntry name: Receptor protein-tyrosine kinase\n\nCatalytic activity:\n  Reaction: ATP + [protein]-L-tyrosine → ADP + [protein]-L-tyrosine phosphate\n  Cofactors: Mg²⁺ or Mn²⁺\n\nCharacterized UniProt entries: 312 (Swiss-Prot reviewed)\n\nRepresentative enzymes:\n• EGFR_HUMAN (P00533) — Epidermal growth factor receptor\n• INSR_HUMAN (P06213) — Insulin receptor\n• FGFR1_HUMAN (P11362) — Fibroblast growth factor receptor 1\n• MET_HUMAN (P08581)  — Hepatocyte growth factor receptor\n• KIT_HUMAN (P10721)  — Mast/stem cell growth factor receptor\n\nClinical relevance: Receptor tyrosine kinases are mutated or amplified in many cancers. 30+ approved drugs target this class (erlotinib, imatinib, sunitinib, etc.)."
+    },
+    {
+      "id": "imgt-immune-gene",
+      "title": "IMGT Immune Gene Lookup",
+      "category": "annotation",
+      "icon": "shield",
+      "description": "Query the IMGT database to characterize immunoglobulin and T-cell receptor germline genes, including allele information, CDR lengths, and repertoire usage statistics.",
+      "examplePrompt": "Characterize the IGHV1-2 germline gene from IMGT. Include allele information, CDR lengths, and known repertoire usage.",
+      "exampleResult": "IMGT Gene: IGHV1-2\n\nGene family: IGHV | Chromosome: 14q32.33\nGene type: V-GENE (variable) | Functionality: Functional\n\nAlleles:\n• IGHV1-2*01 — reference allele (313 nt)\n• IGHV1-2*02 — 99.6% identity (1 nt difference at position 231)\n• IGHV1-2*04 — 98.7% identity; 4 nt differences\n• IGHV1-2*05 — 98.1% identity\n\nCDR lengths (IGHV1-2*02):\n• FR1: 25 aa | CDR1: 8 aa | FR2: 17 aa\n• CDR2: 8 aa  | FR3: 38 aa\n• Total V region: 98 aa (excluding CDR3)\n\nRepertoire usage:\n• Frequency in mature B-cell repertoire: ~12%\n• One of the most commonly used VH genes in humans\n• Preferentially paired with JH6 in antigen-experienced B cells\n\nClinical associations:\n• Predominant VH gene in broadly neutralizing anti-HIV antibodies\n  (VRC01, b12, 3BNC117 — all use IGHV1-2 with specific CDR2 contacts)\n• Associated with certain CLL subsets (stereotyped BCR subset #1)"
+    },
+    {
+      "id": "scop-domain-classification",
+      "title": "SCOP Domain Classification",
+      "category": "structure",
+      "icon": "layers",
+      "description": "Query the SCOP (Structural Classification of Proteins) database to classify protein domains by class, fold, superfamily, and family at the evolutionary level.",
+      "examplePrompt": "What is the SCOP classification of the EGFR kinase domain? Include class, fold, superfamily, and family.",
+      "exampleResult": "SCOP Classification for EGFR Kinase Domain (P00533, residues 712–979):\n\nSCOP entry: d.144.1.7\n\nHierarchy:\n• Class:       d — Alpha and beta proteins (a+b)\n• Fold:        d.144 — Protein kinase-like (PK-like)\n  Two-lobe architecture; N-lobe β-sheet + αC-helix; C-lobe predominantly α-helical\n• Superfamily: d.144.1 — Protein kinase-like\n  Catalytic mechanism conserved: DFG motif, activation loop, gatekeeper residue\n• Family:      d.144.1.7 — Receptor tyrosine kinase-like\n  EGF receptor family: EGFR, ERBB2, ERBB3, ERBB4\n\nRepresentative PDB structures:\n• 1IVO — EGFR kinase domain (inactive)\n• 3NJP — EGFR kinase domain (gefitinib-bound)\n• 7JXR — EGFR kinase domain (erlotinib-bound, 1.9 Å)\n\nRelated superfamily members:\n• CDK2 (cyclin-dependent kinase) — same fold, different family\n• PKA catalytic subunit — canonical kinase architecture\n• MAP kinases (ERK2, p38) — activation segment differences\n\nNote: All protein kinases share the PK-like fold despite low sequence identity; the fold is one of the most ancient in the proteome."
+    },
+    {
+      "id": "opm-membrane-topology",
+      "title": "Membrane Protein Topology",
+      "category": "structure",
+      "icon": "align-center",
+      "description": "Query the OPM (Orientations of Proteins in Membranes) database to retrieve the membrane topology, hydrophobic thickness, and tilt angle for a transmembrane protein.",
+      "examplePrompt": "What is the membrane orientation and hydrophobic thickness of EGFR (P00533) according to OPM?",
+      "exampleResult": "OPM Entry for P00533 (EGFR_HUMAN):\n\nMembrane class: Single-pass type I transmembrane protein\nRepresentative structure: PDB 3NJP (EGFR TM region)\n\nMembrane parameters:\n• Tilt angle:             26° relative to membrane normal\n• Hydrophobic thickness:  30 Å (±1.5 Å)\n• ΔGtransfer:             −28.4 kcal/mol (predicted)\n\nTransmembrane segment:\n• TM helix: residues 645–667 (IATGMVGALLLLLVVALGIGLFM)\n• Length: 23 residues (α-helical, single pass)\n• Orientation: N-terminus extracellular, C-terminus cytoplasmic (Type I)\n\nMembrane boundary residues:\n• Extracellular leaflet: I645\n• Cytoplasmic leaflet:   M667\n• Juxtamembrane region (cytoplasmic): 668–685 (regulatory)\n\nBiological note: The TM helix undergoes conformational changes during EGFR dimerization. Mutations in the TM region (e.g., G652D in glioblastoma) constitutively activate EGFR signaling."
+    },
+    {
+      "id": "eggnog-ortholog-analysis",
+      "title": "EggNOG Ortholog & COG Analysis",
+      "category": "annotation",
+      "icon": "git-branch",
+      "description": "Query the EggNOG database to retrieve orthologous groups, COG functional categories, number of orthologs, and taxonomic spread for a protein.",
+      "examplePrompt": "What is the EggNOG orthologous group for EGFR (P00533)? Show COG category, number of orthologs, and taxonomic spread.",
+      "exampleResult": "EggNOG Ortholog Analysis for P00533 (EGFR_HUMAN):\n\nOrthologous Group: ENOG502S1B9\nTaxonomic level: Metazoa (Opisthokonta)\n\nFunctional annotation:\n• COG category: T — Signal transduction mechanisms\n• Preferred name: EGFR\n• Description: Epidermal growth factor receptor; receptor tyrosine kinase\n\nGroup statistics:\n• Total orthologs: 847 across 312 species\n• Paralogs in Homo sapiens: ERBB2, ERBB3, ERBB4 (EGFR family)\n\nTaxonomic spread:\n  Vertebrata:    all 47 species — 1:1 orthologs in all mammals\n  Insecta:       Drosophila melanogaster — DER (CG10079)\n  Nematoda:      C. elegans — LET-23\n  Echinodermata: present in sea urchin\n  Outgroup:      no clear orthologs in fungi or plants\n\nGO annotations (EggNOG-derived):\n• MF: protein tyrosine kinase activity, ATP binding\n• BP: EGF receptor signaling, cell proliferation\n• CC: integral component of plasma membrane\n\nNote: The EGFR/ERBB family originated in early metazoans; the kinase domain is conserved from worms to humans with >40% identity."
+    },
+    {
+      "id": "consurf-conservation-scores",
+      "title": "ConSurf Evolutionary Conservation",
+      "category": "annotation",
+      "icon": "trending-up",
+      "description": "Query ConSurf to retrieve per-residue evolutionary conservation scores for a protein domain, identifying functionally critical and variable residues.",
+      "examplePrompt": "What are the ConSurf conservation scores for the EGFR kinase domain (P00533)? Identify the most conserved and variable residues.",
+      "exampleResult": "ConSurf Conservation for P00533 — Kinase Domain (residues 712–979):\n\nMethod: Maximum likelihood (JTT model)\nMSA: 127 sequences across metazoa, 35% average pairwise identity\n\nOverall statistics:\n• Average conservation grade: 7.9 / 9\n• Highly conserved (grade 8–9): 124 / 268 residues (46%)\n• Variable (grade 1–3): 31 / 268 residues (12%)\n\nMost conserved residues (grade 9 — invariant):\n• K745  — ATP-binding lysine (DFG mechanism)\n• D855  — Catalytic base (DFG motif D855-F856-G857)\n• E762  — αC-helix glutamate; salt bridge with K745\n• T790  — Gatekeeper residue, activation loop (grade 9)\n  ↳ T790M mutation causes resistance to erlotinib/gefitinib\n• A743  — Hinge residue; H-bond donor for ATP\n\nActivation loop (T790–P794): average grade 9.0 — completely invariant\n\nVariable positions (grade 1–3):\n• Surface loops 781–789: grade 2.1 (solvent exposed)\n• C-terminal tail (960–979): grade 2.8\n\nNote: T790 gatekeeper invariance explains why T790M is a resistance mutation — any change disrupts drug binding while preserving catalytic function."
+    },
+    {
+      "id": "phylomedb-phylome-analysis",
+      "title": "PhylomeDB Phylome Analysis",
+      "category": "annotation",
+      "icon": "share-2",
+      "description": "Query PhylomeDB to retrieve the phylogenetic tree and ortholog/paralog relationships for a protein from a pre-computed phylome.",
+      "examplePrompt": "What ortholog relationships does EGFR (P00533) have in PhylomeDB? List 1:1 orthologs in key model organisms.",
+      "exampleResult": "PhylomeDB Results for P00533 (EGFR_HUMAN):\n\nPhylome: Phylome 1 (Human seed, 46 eukaryotic species)\nMethod: PhyML (maximum likelihood) | Model: LG + Γ4\n\nOrthologs summary:\n• Total orthologs: 32 across 28 species\n• 1:1 orthologs (no duplication): 19 species\n• 1:many orthologs (lineage-specific duplication): 9 species\n\n1:1 Orthologs in model organisms:\n• Mus musculus           — ENSMUSG00000055491 (EGFR, 84% identity)\n• Rattus norvegicus      — ENSRNOG00000005678 (Egfr, 83% identity)\n• Danio rerio            — ENSDARG00000003948 (egfra, 68% identity)\n• Drosophila melanogaster — FBgn0003731 (Egfr/DER, 46% identity)\n• Caenorhabditis elegans  — WBGene00002299 (let-23, 41% identity)\n\nDuplications:\n• Homo sapiens: EGFR → ERBB2, ERBB3, ERBB4 (ancient tandem duplication)\n• Danio rerio: egfra + egfrb (teleost-specific whole genome duplication)\n\nTree topology: EGFR clade is sister to VEGFR/PDGFR clade; split ~600 MYA in early bilaterian evolution.\nBootstrap support: 98% for EGFR monophyly; 95% for full ERBB family clade."
+    },
+    {
+      "id": "paxdb-protein-abundance",
+      "title": "Protein Abundance (PaxDB)",
+      "category": "expression",
+      "icon": "activity",
+      "description": "Query PaxDB for integrated proteomics abundance data across tissues and cell lines, reported in parts per million (ppm) from mass spectrometry experiments.",
+      "examplePrompt": "What is the tissue-specific protein abundance of EGFR (P00533) according to PaxDB? Show top tissues in ppm.",
+      "exampleResult": "PaxDB Protein Abundance for P00533 (EGFR_HUMAN):\n\nIntegrated dataset: 50 proteomics experiments across 29 tissues\nAbundance metric: Integrated iBAQ-normalized, ppm\n\nTop tissues by abundance:\n1. Skin / epidermis:      524 ppm\n2. Kidney cortex:         418 ppm\n3. Liver:                 187 ppm\n4. Placenta:              165 ppm\n5. Lung:                  143 ppm\n6. Breast tissue:         112 ppm\n7. Colon:                  98 ppm\n8. Small intestine:        87 ppm\n9. Brain (cerebral cortex): 24 ppm\n10. Blood (PBMC):            8 ppm\n\nCross-species comparison:\n• H. sapiens:          524 ppm (skin, max)\n• M. musculus:         312 ppm (skin, max)\n• D. melanogaster:     198 ppm (Egfr/DER)\n\nNote: 1 ppm ≈ 1 molecule per million total protein molecules. EGFR abundance in amplified cancer cell lines can reach 8,400 ppm (HCC827 — 32 gene copies)."
+    },
+    {
+      "id": "proteomicsdb-ms-expression",
+      "title": "ProteomicsDB MS Expression",
+      "category": "expression",
+      "icon": "bar-chart-2",
+      "description": "Query ProteomicsDB for mass spectrometry-based protein detection and intensity data across human tissues, body fluids, and cell lines.",
+      "examplePrompt": "In how many tissues is EGFR (P00533) detected by mass spectrometry in ProteomicsDB? Show highest-expression tissues.",
+      "exampleResult": "ProteomicsDB Results for P00533 (EGFR_HUMAN):\n\nDetection summary:\n• Tissues detected: 57 / 62 tested (92%)\n• Cell lines detected: 423 / 510 (83%)\n• Body fluids: plasma, urine, cerebrospinal fluid\n\nHighest MS intensity tissues:\n1. Epidermis / skin:           MS1 intensity 4.2 × 10⁸\n2. Placenta:                   3.8 × 10⁸\n3. Kidney proximal tubule:     3.1 × 10⁸\n4. Liver:                      2.7 × 10⁸\n5. Colon epithelium:           2.3 × 10⁸\n6. Lung type II pneumocytes:   1.9 × 10⁸\n7. Breast epithelium:          1.7 × 10⁸\n\nPost-translational modifications detected by MS:\n• 38 phosphopeptides (Y1068, Y1086, Y1173 most abundant)\n• 7 ubiquitin remnant peptides (GlyGly tags)\n\nDrug relevance: EGFR protein expression positively correlates with erlotinib sensitivity across 503 cancer cell lines (Pearson r = 0.43, p = 0.002)."
+    },
+    {
+      "id": "complex-portal-lookup",
+      "title": "Complex Portal Search",
+      "category": "pathways",
+      "icon": "circle",
+      "description": "Query the EBI Complex Portal for curated macromolecular complexes involving a protein, including stoichiometry, activation mechanism, and experimental evidence.",
+      "examplePrompt": "What complexes does EGFR form according to the Complex Portal? Include homodimers, heterodimers, and signaling complexes.",
+      "exampleResult": "Complex Portal Results for EGFR (P00533):\n\nTotal curated complexes: 12\n\n1. CPX-906 — EGFR homodimer (EGF-activated)\n   Stoichiometry: EGFR(2)\n   Activation: EGF binding induces asymmetric homodimerization\n   Evidence: X-ray crystallography (3NJP, 2GS2) + biochemistry\n\n2. CPX-907 — EGFR:ERBB2 heterodimer\n   Stoichiometry: EGFR(1):ERBB2(1)\n   Note: ERBB2 has no ligand but is the preferred heterodimerization partner\n   Clinical relevance: targeted by lapatinib (dual EGFR/ERBB2 inhibitor)\n\n3. CPX-2273 — EGFR:ERBB3 heterodimer\n   Stoichiometry: EGFR(1):ERBB3(1)\n   Activated by neuregulin-1; ERBB3 has impaired kinase, EGFR provides phosphorylation\n\n4. CPX-1834 — EGFR:GRB2:SOS1 signaling complex\n   Stoichiometry: EGFR(1):GRB2(1):SOS1(1)\n   Function: Mediates RAS activation via EGFR pY1068 → GRB2 SH2 → SOS1\n\n5. CPX-4521 — EGFR:CBL ubiquitination complex\n   Function: CBL-dependent ubiquitination and lysosomal degradation of EGFR\n\nAll complexes manually curated with experimental evidence codes (EXP, IDA)."
+    },
+    {
+      "id": "corum-protein-complexes",
+      "title": "CORUM Mammalian Complexes",
+      "category": "pathways",
+      "icon": "package",
+      "description": "Search the CORUM database for experimentally characterized mammalian protein complexes involving a target protein, including full subunit lists and evidence publications.",
+      "examplePrompt": "What protein complexes involving EGFR are recorded in the CORUM database? Show component lists and experimental evidence.",
+      "exampleResult": "CORUM Results for EGFR:\n\nComplex 5540 — EGFR signalosome\nOrganism: Homo sapiens (HEK293T)\nSubunits:\n  EGFR (P00533) — core receptor, pY1068 docking site\n  GRB2 (P62993) — adaptor; SH2 binds pY1068\n  SOS1 (Q07889) — RAS guanine nucleotide exchange factor\n  SHC1 (P29353) — adaptor; SH2 binds pY1173\n  GAB1 (Q13480) — scaffolding adaptor; amplifies PI3K signal\nFunction: Couples EGFR activation to RAS/MAPK and PI3K/AKT pathways\nEvidence: co-IP + mass spectrometry (PMID: 17353931)\n\nComplex 6712 — EGFR:STAT3 complex\nSubunits: EGFR, STAT3, SRC\nFunction: Non-canonical nuclear EGFR signaling; transcriptional co-activation\nEvidence: co-IP, proximity ligation assay (PMID: 24091725)\n\nComplex 8834 — EGFR ubiquitination complex\nSubunits: EGFR, CBL, UBQLN4, HSP90AA1\nFunction: EGF-stimulated EGFR ubiquitination and lysosomal targeting\nEvidence: tandem affinity purification (PMID: 20081857)\n\nTotal CORUM complexes containing EGFR: 7 (all with mammalian experimental evidence)."
+    },
+    {
+      "id": "drugbank-drug-lookup",
+      "title": "DrugBank Drug Lookup",
+      "category": "disease",
+      "icon": "pill",
+      "description": "Query DrugBank for approved drugs and clinical candidates targeting a protein, including mechanism of action, drug type, and clinical indications.",
+      "examplePrompt": "What approved drugs target EGFR according to DrugBank? Include mechanism of action and clinical indications.",
+      "exampleResult": "DrugBank Drugs Targeting EGFR (P00533):\n\nTotal approved drugs: 11\n\n1. Erlotinib (DB00530)\n   Type: Small molecule | Mechanism: Reversible ATP-competitive inhibitor\n   Indication: EGFR-mutant NSCLC, pancreatic cancer\n   FDA approval: 2004 (NSCLC)\n\n2. Gefitinib (DB00317)\n   Type: Small molecule | Mechanism: Reversible ATP-competitive inhibitor\n   Indication: EGFR-mutant NSCLC (1st line)\n\n3. Afatinib (DB08916)\n   Type: Small molecule | Mechanism: Irreversible covalent inhibitor (C797)\n   Indication: EGFR exon 19del / L858R NSCLC\n   Generation: 2nd-generation\n\n4. Osimertinib (DB11579)\n   Type: Small molecule | Mechanism: Irreversible, T790M-selective\n   Indication: T790M-resistant NSCLC; also 1st-line for EGFR-mutant NSCLC\n   Generation: 3rd-generation | IC50: 1 nM (T790M/L858R)\n\n5. Cetuximab (DB00002)\n   Type: Monoclonal antibody (chimeric IgG1)\n   Mechanism: Blocks EGF binding; induces receptor internalization + ADCC\n   Indication: KRAS wild-type colorectal cancer, head and neck cancer\n\n6. Panitumumab (DB01269) — fully human anti-EGFR IgG2\n7. Necitumumab (DB09559) — EGFR antibody, squamous NSCLC\n8. Lapatinib (DB01259)   — dual EGFR/ERBB2 inhibitor\n9. Neratinib (DB11979)   — irreversible EGFR/ERBB2/ERBB4\n10. Dacomitinib (DB12267) — irreversible pan-ERBB\n11. Vandetanib (DB08764)  — EGFR/VEGFR2/RET inhibitor"
+    },
+    {
+      "id": "bindingdb-affinity-data",
+      "title": "BindingDB Affinity Data",
+      "category": "disease",
+      "icon": "link-2",
+      "description": "Query BindingDB for measured binding affinities (Kd, Ki, IC50) between small molecules or antibodies and a target protein, with assay conditions.",
+      "examplePrompt": "What are the measured binding affinities for EGFR inhibitors in BindingDB? Show Kd and IC50 values for key drugs.",
+      "exampleResult": "BindingDB Affinity Data for EGFR (P00533):\n\nTotal binding measurements: 4,312 (1,847 unique compounds)\n\nApproved drugs — measured affinities:\n\n1. Erlotinib\n   Kd = 0.4 nM  (ITC, pH 7.4, 25°C)\n   IC50 = 2 nM  (biochemical kinase assay)\n   Ki = 0.7 nM  (competitive with ATP)\n   PDB co-structure: 1IVO\n\n2. Gefitinib\n   Ki = 0.2 nM  (fluorescence polarization)\n   IC50 = 0.9 nM (cell-based phosphorylation assay)\n\n3. Osimertinib (T790M-selective)\n   IC50 = 1 nM    (T790M/L858R double mutant)\n   IC50 = 182 nM  (wild-type EGFR) — >180-fold selectivity window\n   Mechanism: covalent irreversible (C797 alkylation)\n\n4. Afatinib\n   IC50 = 0.5 nM (wild-type EGFR)\n   IC50 = 10 nM  (T790M mutant)\n   Mechanism: covalent irreversible (C797)\n\n5. Cetuximab (antibody)\n   Kd = 0.2 nM  (SPR against extracellular domain)\n\nMeasurement methods: ITC, SPR (Biacore), fluorescence polarization, radiometric kinase assay"
+    },
+    {
+      "id": "dgidb-drug-gene-interactions",
+      "title": "DGIdb Drug-Gene Interactions",
+      "category": "disease",
+      "icon": "git-merge",
+      "description": "Query the Drug-Gene Interaction Database (DGIdb) for all known drug interactions with a gene, aggregated from multiple sources with interaction types and clinical significance.",
+      "examplePrompt": "What drug-gene interactions are recorded for EGFR in DGIdb? Show interaction types and counts.",
+      "exampleResult": "DGIdb Drug-Gene Interactions for EGFR:\n\nTotal interactions: 34 (from 12 sources)\n\nInteraction type breakdown:\n• Inhibitors:   28 drugs\n• Antibodies:    3 drugs (cetuximab, panitumumab, necitumumab)\n• Other/unknown: 3\n\nSource databases: PharmGKB, DrugBank, CIVIC, CGI, ChEMBL, OncoKB, TTD, NCI\n\nTop inhibitor interactions (curated evidence):\n1. Osimertinib  — INHIBITOR | CIViC level A (T790M + L858R)\n2. Erlotinib    — INHIBITOR | PharmGKB 1A significance\n3. Gefitinib    — INHIBITOR | CIViC level A\n4. Afatinib     — INHIBITOR | DrugBank\n5. Lapatinib    — INHIBITOR | DrugBank (dual EGFR/ERBB2)\n\nAntibody interactions:\n• Cetuximab    — ANTIBODY | CIViC level A (colorectal, KRAS WT)\n• Panitumumab  — ANTIBODY | CIViC level A\n• Necitumumab  — ANTIBODY | DrugBank\n\nGenomically informed interactions:\n• Exon 19 deletion → erlotinib/gefitinib sensitivity (CIViC 1A)\n• T790M          → osimertinib recommended (CIViC 1A)\n• Exon 20 ins    → amivantamab/mobocertinib (CIViC 2B)"
+    },
+    {
+      "id": "sabio-rk-kinetics",
+      "title": "SABIO-RK Enzyme Kinetics",
+      "category": "annotation",
+      "icon": "activity",
+      "description": "Query the SABIO-RK database for experimentally measured enzyme kinetic parameters (Km, kcat, Vmax, Ki, IC50) under defined assay conditions.",
+      "examplePrompt": "What kinetic parameters are known for EGFR kinase (EC 2.7.10.1) in SABIO-RK? Include Km for ATP, kcat, and inhibitor Ki values.",
+      "exampleResult": "SABIO-RK Kinetics for EC 2.7.10.1 (EGFR, UniProt P00533):\n\nTotal kinetic entries: 47 (from 18 publications)\n\nKm for ATP:\n• Km(ATP) = 18 µM  (human EGFR, pH 7.4, 37°C, EGF-activated)\n  Assay: radiometric filter-binding | PMID: 9603962\n• Km(ATP) = 23 µM  (human EGFR, pH 7.5, 30°C, basal)\n• Km(ATP) = 11 µM  (EGFR L858R mutant, pH 7.4, 37°C)\n  Note: ~40% lower Km vs WT — increased catalytic efficiency of activating mutant\n\nTurnover number (kcat):\n• kcat = 0.8 s⁻¹  (EGF-activated, peptide substrate EEPLYWSFPAKKK)\n• kcat = 0.08 s⁻¹ (basal, unactivated)\n  → 10-fold activation upon EGF ligand binding\n\nKm for peptide substrate:\n• Km(peptide) = 45 µM  (EEPLYWSFPAKKK, pH 7.4)\n• kcat/Km = 17,800 M⁻¹s⁻¹\n\nInhibitor kinetics:\n• Erlotinib:    Ki = 0.7 nM (competitive with ATP), IC50 = 2 nM\n• Gefitinib:    Ki = 0.3 nM (competitive with ATP), IC50 = 1 nM\n• Staurosporine: Ki = 3 nM  (non-selective pan-kinase reference)\n\nConditions: All values at physiological Mg²⁺ (10 mM) unless noted."
+    },
+    {
+      "id": "brenda-enzyme-database",
+      "title": "BRENDA Enzyme Data",
+      "category": "annotation",
+      "icon": "database",
+      "description": "Query the BRENDA enzyme database for comprehensive kinetic properties including Km, kcat, optimal pH and temperature, substrate specificity, and inhibitor data.",
+      "examplePrompt": "What does BRENDA report for EGFR kinase (EC 2.7.10.1)? Include Km, optimal pH, and key inhibitor data.",
+      "exampleResult": "BRENDA Entry for EC 2.7.10.1 — Receptor Protein-Tyrosine Kinase\nOrganism: Homo sapiens (UniProt P00533)\n\nKinetic parameters:\n• Km(ATP):              18 µM   (pH 7.4, 37°C)\n• Km(peptide substrate): 45 µM  (EEPLYWSFPAKKK)\n• kcat:                 0.8 s⁻¹ (EGF-activated)\n• kcat/Km:              17,778 M⁻¹s⁻¹\n\nOptimal conditions:\n• pH optimum:      7.5 (range 6.5–8.5)\n• Temperature:     37°C (range 25–42°C)\n• Cofactor:        Mg²⁺ preferred; Km(Mg²⁺) = 0.8 mM\n\nInhibitors:\n• Erlotinib:     IC50 = 2 nM    (reversible ATP-competitive)\n• Gefitinib:     IC50 = 1 nM    (reversible ATP-competitive)\n• Osimertinib:   IC50 = 1 nM    (irreversible, T790M-selective)\n• Lapatinib:     IC50 = 10.8 nM (reversible, bimodal)\n• Staurosporine: IC50 = 3 nM    (non-selective reference)\n\nActivators:\n• EGF ligand binding: 10-fold increase in kcat\n• Asymmetric dimerization: up to 50-fold vs monomer\n\nSubstrate preference: pYXXM motifs (PI3K docking); acidic residues N-terminal to Y\n\nReferences: 312 BRENDA publications for this EC number (H. sapiens: 47)"
+    },
+    {
+      "id": "brca1-comprehensive-annotation",
+      "title": "Complete Protein Annotation — BRCA1",
+      "category": "annotation",
+      "icon": "layers",
+      "description": "Full multi-tool annotation of a human protein: UniProt function, InterPro domains, PANTHER family, GO terms, and PhosphoSite PTMs — all in a single query.",
+      "examplePrompt": "Give me a complete annotation for BRCA1 (P38398): function, domains, family, GO terms, and known PTMs.",
+      "exampleResult": "UniProt (P38398 — BRCA1_HUMAN):\n  Protein: Breast cancer type 1 susceptibility protein | Gene: BRCA1\n  Sequence: 1863 aa | Chromosome: 17q21.31 | Status: Reviewed\n  Function: DNA repair (double-strand breaks); E3 ubiquitin-protein ligase;\n            maintains genomic stability; tumor suppressor\n\nInterPro Domains:\n  BRCT domain (×2):          1646–1736, 1756–1855 | Pfam: PF00533\n  RING-type zinc finger:     8–98 | Pfam: PF13638 (RING_2)\n  PROSITE:                   PS50172 (BRCT)\n\nPANTHER Classification:\n  Family:    PTHR11289 — Breast cancer type 1 susceptibility protein\n  Subfamily: PTHR11289:SF62\n  Class:     DNA binding protein; Tumor suppressor\n\nGene Ontology (QuickGO):\n  MF: ubiquitin-protein transferase activity, DNA binding, BRCA1 A complex binding\n  BP: DNA repair, double-strand break repair, cell cycle checkpoint, apoptotic process\n  CC: nucleus, BRCA1-A complex, PML body\n  Total: 47 annotations (18 manually reviewed)\n\nPTM Sites (PhosphoSite):\n  Phosphorylation (23 sites):\n    S988  — ATM-mediated; DNA damage response (major site)\n    S1387 — CHK2-mediated; cell cycle checkpoint\n    S1524 — CDK2-mediated; cell cycle regulation\n  Ubiquitination (4 sites): K775, K1268, K1494, K1836\n  Acetylation (2 sites): K1494 (CBP/p300)\n\nSummary: BRCA1 integrates DNA repair, cell cycle, and ubiquitin signaling. The BRCT and RING domains are hotspots for pathogenic mutations causing hereditary breast/ovarian cancer."
+    },
+    {
+      "id": "egfr-structure-multi-tool",
+      "title": "Multi-Database Structure Analysis — EGFR",
+      "category": "structure",
+      "icon": "layers",
+      "description": "Combine PDB experimental structures, AlphaFold predictions, and CATH classification to get a complete picture of a protein's 3D organization in one query.",
+      "examplePrompt": "What structures exist for the EGFR kinase domain, and how is it classified? Use PDB, AlphaFold, and CATH.",
+      "exampleResult": "PDB Experimental Structures:\n  7JXR — X-ray, 1.9 Å (erlotinib-bound kinase domain, residues 696–1022; deposited 2020)\n  3NJP — X-ray, 2.8 Å (gefitinib-bound)\n  6ARU — cryo-EM, 4.1 Å (full-length dimer)\n  1IVO — X-ray, 2.6 Å (inactive kinase; classic reference)\n  Total PDB entries for P00533: 298 structures\n\nAlphaFold Prediction (AF-P00533-F1, v4):\n  Overall pLDDT: 87.4 — high confidence\n  Kinase domain (712–979): pLDDT 91.2 (very high confidence)\n  EGF-binding domain (1–330): pLDDT 88.7\n  Linker region (640–646): pLDDT 58.3 (disordered, expected)\n\nCATH Domain Classification:\n  Kinase domain (712–979): 3.30.200.20\n    Class 3 (Mixed α/β) → Architecture 3.30 (Two-layer sandwich)\n    → Topology 3.30.200 (Protein kinase) → Homology 3.30.200.20 (RTK)\n\n  EGF-like domain (57–167): 2.10.25.10\n    Class 2 (Mostly β) → Homology 2.10.25.10 (Laminin-like)\n\nNote: EGFR adopts an inactive tethered conformation without ligand; EGF binding induces an extended open conformation enabling asymmetric dimerization and kinase activation."
+    },
+    {
+      "id": "brca2-variants-comprehensive",
+      "title": "Comprehensive Variant Analysis — BRCA2",
+      "category": "variants",
+      "icon": "layers",
+      "description": "Complete variant analysis combining ClinVar pathogenicity calls, gnomAD population constraint, UniProt functional variants, dbSNP frequency, and GWAS associations in one query.",
+      "examplePrompt": "What are the key clinical variants in BRCA2 and how constrained is the gene? Include ClinVar, gnomAD, UniProt, dbSNP, and GWAS.",
+      "exampleResult": "ClinVar (BRCA2, Gene ID: 675):\n  Total variants: 14,892 | Pathogenic: 892 | Likely pathogenic: 312\n  VUS: 2,847 | Benign/Likely benign: 2,364\n  Top pathogenic:\n    c.5946delT (p.Ser1982Argfs) — Hereditary breast/ovarian cancer ★★★★\n    c.6275_6276del              — Fanconi anemia D1 / HBOC ★★★\n\ngnomAD Constraint:\n  pLI: 0.98 — highly intolerant to LoF\n  LOEUF: 0.17 — top 5% most constrained genes\n  Missense z-score: 2.8 (moderately constrained)\n  pHaplo: 0.96 (haploinsufficient)\n\nUniProt Variants (P51587 — 318 with clinical annotation):\n  Pathogenic: R3128S (breast cancer), D2723H (Pathogenic)\n  BRCT domain cluster (3263–3309): high pathogenicity rate\n\ndbSNP Key Variants:\n  rs80358981 — c.5946delT: AF < 0.00001 | Pathogenic\n  rs169547   — N372H: AF = 0.26 (common; disputed clinical significance)\n\nGWAS Catalog (12 hits):\n  Breast cancer risk:    OR 2.4, p = 3×10⁻¹⁵ (rs11571833)\n  Ovarian cancer:        OR 2.1, p = 8×10⁻¹²\n  Pancreatic cancer:     OR 1.9, p = 1×10⁻⁸\n\nSummary: Germline pathogenic BRCA2 variants confer ~60–70% lifetime breast cancer risk and ~15–20% ovarian cancer risk. Pathogenic variants span the full gene with clustering in the BRCT domain."
+    },
+    {
+      "id": "myc-genomics-multi-tool",
+      "title": "Multi-Tool Gene & Genomics — MYC",
+      "category": "genomics",
+      "icon": "layers",
+      "description": "Combine Ensembl (genomic coordinates, transcripts), NCBI Gene (aliases, summary), and KEGG (pathway membership) to fully characterize a gene in one query.",
+      "examplePrompt": "What are the genomic coordinates, transcripts, and pathways for MYC?",
+      "exampleResult": "Ensembl (ENSG00000136997):\n  Gene: MYC | Biotype: protein_coding | Chromosome: 8q24.21\n  Coordinates (GRCh38): chr8:127,735,434–127,742,951 | Strand: +1 | Length: 7,518 bp\n  Transcripts: 5\n    ENST00000377970 (canonical): 1,011 nt CDS, 439 aa | CCDS6332\n    ENST00000621592 — retained intron\n    ENST00000624735 — nonsense-mediated decay\n  Orthologs: 185 species | Mouse: ENSMUSG00000022346 (88% identity)\n\nNCBI Gene (Gene ID: 4609):\n  Symbol: MYC | Full name: MYC proto-oncogene, bHLH transcription factor\n  Aliases: c-Myc, MRTL, bHLHe39, MYCC\n  Location: 8q24.21 | RefSeq: NM_002467.6\n  Summary: Master transcriptional regulator of cell growth and proliferation;\n            proto-oncogene amplified or translocated in Burkitt lymphoma and ~30% of all cancers.\n\nKEGG Pathways (hsa:4609) — 9 pathways:\n  hsa05166 — HTLV-I infection\n  hsa04110 — Cell cycle\n  hsa05200 — Pathways in cancer\n  hsa05202 — Transcriptional misregulation in cancer\n  hsa04012 — ErbB signaling pathway\n  hsa04310 — Wnt signaling pathway\n  hsa04350 — TGF-beta signaling\n  hsa04010 — MAPK signaling pathway\n  hsa05203 — Viral carcinogenesis"
+    },
+    {
+      "id": "mtor-pathways-multi-tool",
+      "title": "Multi-Tool Pathways & Interactions — MTOR",
+      "category": "pathways",
+      "icon": "layers",
+      "description": "Combine Reactome, WikiPathways, STRING, and IntAct to comprehensively map a protein's pathway membership and interaction network in one query.",
+      "examplePrompt": "What pathways involve MTOR and who are its top interaction partners? Use Reactome, WikiPathways, STRING, and IntAct.",
+      "exampleResult": "Reactome (P42345 — MTOR_HUMAN):\n  Total pathway entries: 89 | Top-level pathways: 12\n  Key pathways:\n    R-HSA-165159 — mTOR signalling\n    R-HSA-166208 — mTORC1-mediated signalling\n    R-HSA-5663202 — mTORC2 activation\n    R-HSA-2219528 — PI3K/AKT Signaling in Cancer\n    R-HSA-9612973 — Autophagy (mTORC1 suppresses ULK1)\n\nWikiPathways:\n  WP1471 — mTOR signaling pathway (H. sapiens; 2024)\n  WP615  — Senescence and autophagy in cancer\n  WP3888 — VEGFA-VEGFR2 signaling (cross-talk with mTOR)\n  WP4172 — PI3K-AKT-mTOR signaling (comprehensive)\n\nSTRING PPI (combined score ≥ 0.9):\n  RPTOR 0.999 | MLST8 0.999 | RICTOR 0.997\n  AKT1  0.995 | TSC1  0.991 | TSC2   0.990\n  DEPTOR 0.988 | RPS6KB1 0.985 | EIF4EBP1 0.981\n\nIntAct Curated Interactions:\n  Total interactions: 847\n  Top partners: RPTOR (72 records), DEPTOR (48), MLST8 (41)\n  Top detection method: anti-bait co-immunoprecipitation (312 records)\n  MI scores: RPTOR 0.91, MLST8 0.88, RICTOR 0.85\n\nSummary: mTOR is the catalytic core of two distinct complexes (mTORC1 and mTORC2) integrating nutrient, energy, and growth factor inputs to control cell growth and autophagy."
+    },
+    {
+      "id": "braf-disease-multi-tool",
+      "title": "Multi-Tool Disease & Oncology — BRAF",
+      "category": "disease",
+      "icon": "layers",
+      "description": "Complete disease and oncology profiling using Open Targets, DisGeNET, OMIM, cBioPortal, and ChEMBL to map a target from disease associations through the drug landscape.",
+      "examplePrompt": "What diseases is BRAF linked to, what cancer mutations are reported, and what drugs target it?",
+      "exampleResult": "Open Targets (BRAF — ENSG00000157764):\n  Top associations: melanoma (0.97), colorectal carcinoma (0.91), NSCLC (0.88)\n  Thyroid gland carcinoma (0.85), hairy cell leukemia (0.79)\n  Tractability: Small molecule HIGH | Approved drugs: 6 | Clinical candidates: 23\n\nDisGeNET (87 disease associations):\n  Melanoma: 0.91 | Colorectal neoplasms: 0.87\n  Noonan syndrome: 0.72 | Cardiovascular disease: 0.55\n\nOMIM (Gene 164757 — BRAF):\n  CFC1 — Cardio-Facio-Cutaneous syndrome (#115150); G469E/G469V\n  Noonan syndrome 7 (#613706); Q257R germline\n  Melanoma, malignant, somatic (#155600); V600E somatic\n\ncBioPortal (535+ studies):\n  Overall alteration frequency: 7%\n  Melanoma: 66% (V600E in 95% of BRAF-altered cases)\n  Thyroid papillary: 60% | Colorectal: 12% | NSCLC: 3%\n  Mutation types: missense 92%, amplification 5%, fusion 3%\n\nChEMBL (39 clinical compounds):\n  Vemurafenib (PLX4032): IC50 = 31 nM (V600E), 3,800 nM (WT) — V600E-selective\n  Dabrafenib: IC50 = 0.65 nM (V600E)\n  Encorafenib: IC50 = 0.35 nM (V600E)\n  Combination with MEK inhibitors (trametinib, cobimetinib) delays resistance\n\nSummary: BRAF V600E is one of the most druggable oncogenic mutations; 3rd-generation inhibitors under development to overcome acquired resistance."
+    },
+    {
+      "id": "ace2-expression-multi-tool",
+      "title": "Multi-Tool Expression Profile — ACE2",
+      "category": "expression",
+      "icon": "layers",
+      "description": "Combine GTEx mRNA expression with Human Protein Atlas protein-level IHC data and subcellular localization for a complete tissue expression profile.",
+      "examplePrompt": "Where is ACE2 expressed and what is its subcellular localization? Use GTEx and Human Protein Atlas.",
+      "exampleResult": "GTEx mRNA Expression (v8, 17,382 samples, 54 tissues):\n  Highest expression:\n    Small intestine (terminal ileum):  105.3 TPM\n    Testis:                             91.6 TPM\n    Kidney cortex:                      48.2 TPM\n    Thyroid:                            30.9 TPM\n    Heart — left ventricle:             22.1 TPM\n  Low expression:\n    Lung:       2.1 TPM (unexpectedly low given SARS-CoV-2 entry role)\n    Brain:      < 1.0 TPM in most regions\n    Blood:      0.3 TPM\n\nHuman Protein Atlas (P59101, ACE2):\n  IHC protein expression:\n    Strong:   small intestine epithelium (brush border), kidney proximal tubules\n    Moderate: liver hepatocytes, testis Sertoli cells\n    Low:      lung alveolar cells (consistent with low GTEx)\n    Negative: brain neurons, blood cells\n  Subcellular localization:\n    Primary:   Plasma membrane (single-pass type I) ★★★\n    Secondary: Cytoplasm (recycling endosome) ★★\n    Note: Shed as soluble form by ADAM17 proteolysis\n  Cancer atlas: generally low/absent; slight upregulation in renal clear cell carcinoma\n\nBiological note: Despite low bulk lung mRNA, single-cell RNA-seq shows high ACE2 in type II pneumocytes (AT2 cells) — the primary SARS-CoV-2 target."
+    },
+    {
+      "id": "car-t-literature-search",
+      "title": "Multi-Source Literature — CAR-T Resistance",
+      "category": "literature",
+      "icon": "layers",
+      "description": "Use both PubMed and the 6-source multi-database literature tool in parallel to comprehensively find, deduplicate, and rank papers on a topic by citation count.",
+      "examplePrompt": "Find recent papers on CAR-T cell therapy resistance mechanisms using both PubMed and all literature databases.",
+      "exampleResult": "PubMed Search: 'CAR-T resistance mechanisms'\n  Total results: 243 articles | Reviews in last 2 years: 31\n  Top results:\n    PMID: 36682373 — 'Mechanisms of resistance to CAR T cell therapy'\n      Nature Reviews Cancer (2023) | 412 citations\n    PMID: 37891023 — 'Antigen escape in CD19 CAR-T — B-ALL'\n      Blood (2023) | 187 citations\n    PMID: 38012847 — 'Dual-antigen targeting to prevent CAR-T resistance'\n      Nature Medicine (2024) | 94 citations\n\nMulti-Source Literature (6 databases in parallel):\n  Sources: PubMed, Europe PMC, Semantic Scholar, CrossRef, bioRxiv, arXiv\n  Raw results: 743 | After DOI deduplication: 498 unique records\n\n  Top by citation count:\n  1. DOI: 10.1016/j.cell.2024.01.012\n     'Antigen loss and tumor heterogeneity in CAR-T resistance'\n     Cell (2024) | 287 citations\n  2. DOI: 10.1038/s41591-023-02589-2\n     'T-cell exhaustion drives early CAR-T failure in solid tumors'\n     Nature Medicine (2023) | 234 citations\n  3. bioRxiv: 2024.03.12.584012 (preprint)\n     'Antigen escape mechanisms after CD19 CAR-T in DLBCL' | 43 citations\n\n  Recommendation: Start with the NRC 2023 review for mechanistic overview, then Cell 2024 for latest antigen loss data."
+    },
+    {
+      "id": "custom-sequence-blast-motifs",
+      "title": "Sequence Similarity & Motif Analysis",
+      "category": "sequence",
+      "icon": "layers",
+      "description": "Chain BLAST homology search with ELM motif prediction, DisProt disorder validation, and MobiDB consensus disorder to fully characterize an unknown protein sequence in one query.",
+      "examplePrompt": "For the sequence below, find similar proteins, predict SLiMs, and check for disorder.\n\nMKTAYIAKQRQISFVKSHFSRQLESSPGNFQTPYGIDRNSTREACLNLLSVAADSQEWE",
+      "exampleResult": "BLAST (NCBI NR, E-value < 1e-3):\n  Top hit:   sp|P04637|P53_HUMAN   E-value 3e-8, 72% identity, 55/60 aa\n  2nd hit:   sp|P02340|P53_MOUSE   E-value 1e-7, 68% identity\n  3rd hit:   sp|P10361|P53_RAT     E-value 8e-7, 65% identity\n  Conclusion: Query matches the N-terminal transactivation domain of TP53\n\nELM Motif Prediction:\n  LIG_SH3_3       positions 12–17 (KQRQIS) — SH3 domain binding; confirmed in GRB2, ABI1\n  DEG_APCC_DBOX_1 positions 38–41 (RNSTRE) — APC/C degron (mitotic destruction)\n  MOD_CDK_SPxK_1  positions 49–52 (SPGN)   — CDK phosphorylation site\n  ↳ S46 phosphorylated by HIPK2 → apoptosis induction\n\nDisProt (validated experimental disorder):\n  Entries for P53_HUMAN: DisProt DP00086\n  Query region (aa 1–61): fully validated as intrinsically disordered\n  Method: NMR, CD spectroscopy | PMID: 23213110\n\nMobiDB Disorder Consensus:\n  Consensus disorder score: 0.91 (highly disordered across full 61-aa query)\n  8/10 prediction tools agree: IUPred2A, ESpritz, PONDR, VSL2, DISOPRED3, ...\n\nConclusion: Query is the intrinsically disordered transactivation domain of TP53. Disorder enables binding to MDM2, TAFII31, CBP/p300, and SH3-domain proteins."
     }
   ]
 }
