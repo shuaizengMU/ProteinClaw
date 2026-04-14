@@ -4,7 +4,13 @@ const STORAGE_KEY = "proteinclaw_model";
 
 export function useStoredModel(): [string, (m: string) => void] {
   const [model, setModel] = useState(
-    () => localStorage.getItem(STORAGE_KEY) ?? "gpt-4o"
+    () => localStorage.getItem(STORAGE_KEY) ?? ""
   );
-  return [model, setModel];
+
+  const setStoredModel = (m: string) => {
+    setModel(m);
+    localStorage.setItem(STORAGE_KEY, m);
+  };
+
+  return [model, setStoredModel];
 }

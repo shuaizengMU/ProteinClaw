@@ -2,13 +2,95 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::path::PathBuf;
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, Command};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 use tauri::Manager;
 
 struct PythonServer(Arc<Mutex<Option<Child>>>);
+
+// ── Legacy (kept for one-time migration) ──────────────────────────────────
+#[tauri::command]
+fn load_projects(app: tauri::AppHandle) -> Result<String, String> {
+    let data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let file_path = data_dir.join("projects.json");
+    if file_path.exists() {
+        std::fs::read_to_string(&file_path).map_err(|e| e.to_string())
+    } else {
+        Ok("null".to_string())
+    }
+}
+
+#[tauri::command]
+fn delete_legacy_projects(app: tauri::AppHandle) -> Result<(), String> {
+    let data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let file_path = data_dir.join("projects.json");
+    if file_path.exists() {
+        std::fs::remove_file(&file_path).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+// ── Index (metadata) ───────────────────────────────────────────────────────
+#[tauri::command]
+fn load_index(app: tauri::AppHandle) -> Result<String, String> {
+    let data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let file_path = data_dir.join("index.json");
+    if file_path.exists() {
+        std::fs::read_to_string(&file_path).map_err(|e| e.to_string())
+    } else {
+        Ok("null".to_string())
+    }
+}
+
+#[tauri::command]
+fn save_index(app: tauri::AppHandle, data: String) -> Result<(), String> {
+    let data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    std::fs::create_dir_all(&data_dir).map_err(|e| e.to_string())?;
+    std::fs::write(data_dir.join("index.json"), data).map_err(|e| e.to_string())
+}
+
+// ── Conversations (messages) ───────────────────────────────────────────────
+#[tauri::command]
+fn load_conversation(app: tauri::AppHandle, id: String) -> Result<String, String> {
+    let data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let file_path = data_dir.join("conversations").join(format!("{}.json", id));
+    if file_path.exists() {
+        std::fs::read_to_string(&file_path).map_err(|e| e.to_string())
+    } else {
+        Ok("null".to_string())
+    }
+}
+
+#[tauri::command]
+fn save_conversation(app: tauri::AppHandle, id: String, data: String) -> Result<(), String> {
+    let data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let conv_dir = data_dir.join("conversations");
+    std::fs::create_dir_all(&conv_dir).map_err(|e| e.to_string())?;
+    std::fs::write(conv_dir.join(format!("{}.json", id)), data).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn delete_conversation_file(app: tauri::AppHandle, id: String) -> Result<(), String> {
+    let data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let file_path = data_dir.join("conversations").join(format!("{}.json", id));
+    if file_path.exists() {
+        std::fs::remove_file(&file_path).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+#[tauri::command]
+async fn pick_folder(app: tauri::AppHandle) -> Result<Option<String>, String> {
+    use tauri_plugin_dialog::DialogExt;
+    let (tx, rx) = tokio::sync::oneshot::channel();
+    app.dialog().file().pick_folder(move |path| {
+        let _ = tx.send(path);
+    });
+    let path = rx.await.map_err(|e| e.to_string())?;
+    Ok(path.map(|p| p.to_string()))
+}
 
 fn find_free_port(start: u16) -> u16 {
     for port in start..65535 {
@@ -72,12 +154,23 @@ fn poll_health(port: u16, timeout_secs: u64) -> bool {
 fn start_python_server(
     venv_dir: &PathBuf,
     port: u16,
+    app_data_dir: &PathBuf,
 ) -> std::io::Result<Child> {
     // Use the venv Python directly — avoids uv trying to re-sync on every launch.
     #[cfg(target_os = "windows")]
     let python = venv_dir.join("Scripts").join("python.exe");
     #[cfg(not(target_os = "windows"))]
     let python = venv_dir.join("bin").join("python");
+
+    // Log output to files for debugging
+    let stdout_file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(app_data_dir.join("backend.log"))?;
+    let stderr_file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(app_data_dir.join("backend.log"))?;
 
     Command::new(python)
         .args([
@@ -86,13 +179,14 @@ fn start_python_server(
             "--host", "127.0.0.1",
             "--port", &port.to_string(),
         ])
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stdout(stdout_file)
+        .stderr(stderr_file)
         .spawn()
 }
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let resource_dir = app.path().resource_dir().expect("resource dir");
             let app_data_dir = app.path().app_data_dir().expect("app data dir");
@@ -140,7 +234,7 @@ fn main() {
             // Start Python server — retry up to 3 times before giving up
             let mut child: Option<Child> = None;
             for attempt in 1..=4 {
-                match start_python_server(&venv_dir, port) {
+                match start_python_server(&venv_dir, port, &app_data_dir) {
                     Ok(c) => {
                         if poll_health(port, 30) {
                             child = Some(c);
@@ -185,8 +279,8 @@ fn main() {
             // Window was created hidden (visible: false in tauri.conf.json),
             // so __BACKEND_PORT__ is set before any React code runs.
             if let Some(window) = app.get_webview_window("main") {
-                let script = format!("window.__BACKEND_PORT__ = {};", port);
-                window.eval(&script).expect("failed to inject __BACKEND_PORT__");
+                let script = format!("window.__BACKEND_PORT__ = {}; window.__DEBUG_MODE__ = {};", port, cfg!(debug_assertions));
+                window.eval(&script).expect("failed to inject variables");
                 if let Err(e) = window.show() {
                     eprintln!("Warning: failed to show window: {}", e);
                 }
@@ -194,6 +288,12 @@ fn main() {
 
             Ok(())
         })
+        .invoke_handler(tauri::generate_handler![
+            load_projects, delete_legacy_projects,
+            load_index, save_index,
+            load_conversation, save_conversation, delete_conversation_file,
+            pick_folder
+        ])
         .run(tauri::generate_context!())
         .expect("error while running Tauri application");
 }

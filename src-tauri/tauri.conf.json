@@ -1,12 +1,12 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "ProteinClaw",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "com.proteinclaw.app",
   "build": {
     "frontendDist": "../frontend/dist",
     "devUrl": "http://localhost:5173",
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "cd ../frontend && npm run dev",
     "beforeBuildCommand": "npm run build"
   },
   "app": {
@@ -14,8 +14,8 @@
       {
         "label": "main",
         "title": "ProteinClaw",
-        "width": 800,
-        "height": 600,
+        "width": 1200,
+        "height": 800,
         "resizable": true,
         "fullscreen": false,
         "visible": false

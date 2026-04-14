@@ -1,41 +1,73 @@
-import { useState, useCallback } from "react";
-import type { Project, Conversation, Message } from "../types";
-import { loadProjects, saveProjects } from "../lib/storage";
+import { useState, useCallback, useEffect } from "react";
+import type { Project, ConversationMeta, Conversation, Message } from "../types";
+import {
+  loadIndex,
+  saveIndex,
+  loadConversationMessages,
+  saveConversationMessages,
+  deleteConversationFile,
+} from "../lib/storage";
 
 export function useProjects() {
-  const [projects, setProjects] = useState<Project[]>(() => loadProjects());
+  // Metadata only — fast to load, always in memory
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
+  // Messages for the currently open conversation
+  const [activeMessages, setActiveMessages] = useState<Message[]>([]);
+
+  // Load index on mount
+  useEffect(() => {
+    loadIndex().then((data) => {
+      setProjects(data);
+      setLoaded(true);
+    });
+  }, []);
+
+  // Load messages when active conversation changes
+  useEffect(() => {
+    if (!activeConversationId || activeConversationId === "pending") {
+      setActiveMessages([]);
+      return;
+    }
+    loadConversationMessages(activeConversationId).then(setActiveMessages);
+  }, [activeConversationId]);
+
+  // ── Metadata helpers ────────────────────────────────────────────────────
+
+  function updateIndex(updater: (prev: Project[]) => Project[]) {
+    setProjects((prev) => {
+      const next = updater(prev);
+      saveIndex(next);
+      return next;
+    });
+  }
+
+  // ── Project operations ───────────────────────────────────────────────────
+
   function createProject(name: string): string {
     const id = crypto.randomUUID();
-    const project: Project = { id, name, createdAt: Date.now(), conversations: [] };
-    setProjects((prev) => {
-      const updated = [project, ...prev];
-      saveProjects(updated);
-      return updated;
-    });
+    updateIndex((prev) => [{ id, name, createdAt: Date.now(), conversations: [] }, ...prev]);
     return id;
   }
 
+  // ── Conversation operations ──────────────────────────────────────────────
+
   function createConversation(projectId: string, model: string): string {
     const id = crypto.randomUUID();
-    const conversation: Conversation = {
-      id,
-      title: "New Chat",
-      model,
-      createdAt: Date.now(),
-      messages: [],
-    };
-    setProjects((prev) => {
-      const updated = prev.map((p) =>
+    const meta: ConversationMeta = { id, title: "New Chat", model, createdAt: Date.now() };
+    // Create empty messages file immediately
+    saveConversationMessages(id, []);
+    updateIndex((prev) =>
+      prev.map((p) =>
         p.id === projectId
-          ? { ...p, conversations: [conversation, ...p.conversations] }
+          ? { ...p, conversations: [meta, ...p.conversations] }
           : p
-      );
-      saveProjects(updated);
-      return updated;
-    });
+      )
+    );
     return id;
   }
 
@@ -46,34 +78,71 @@ export function useProjects() {
 
   const appendMessage = useCallback(
     (conversationId: string, message: Message): void => {
-      setProjects((prev) => {
-        const updated = prev.map((p) => ({
-          ...p,
-          conversations: p.conversations.map((c) => {
-            if (c.id !== conversationId) return c;
-            const messages = [...c.messages, message];
-            // Auto-set title from first user message
-            const title =
-              c.title === "New Chat" && message.role === "user"
-                ? message.content.slice(0, 60)
-                : c.title;
-            return { ...c, messages, title };
-          }),
-        }));
-        saveProjects(updated);
-        return updated;
+      setActiveMessages((prev) => {
+        const next = [...prev, message];
+        saveConversationMessages(conversationId, next);
+        return next;
       });
     },
-    [] // only uses setProjects (stable) and saveProjects (module-level)
+    []
   );
 
-  const activeConversation =
+  const updateConversationTitle = useCallback(
+    (conversationId: string, title: string): void => {
+      updateIndex((prev) =>
+        prev.map((p) => ({
+          ...p,
+          conversations: p.conversations.map((c) =>
+            c.id === conversationId ? { ...c, title } : c
+          ),
+        }))
+      );
+    },
+    []
+  );
+
+  const deleteConversation = useCallback((conversationId: string): void => {
+    deleteConversationFile(conversationId);
+    updateIndex((prev) =>
+      prev.map((p) => ({
+        ...p,
+        conversations: p.conversations.filter((c) => c.id !== conversationId),
+      }))
+    );
+  }, []);
+
+  const togglePinConversation = useCallback((conversationId: string): void => {
+    updateIndex((prev) =>
+      prev.map((p) => ({
+        ...p,
+        conversations: p.conversations.map((c) =>
+          c.id === conversationId ? { ...c, pinned: !c.pinned } : c
+        ),
+      }))
+    );
+  }, []);
+
+  const updateProjectFolder = useCallback((projectId: string, folderPath: string): void => {
+    updateIndex((prev) =>
+      prev.map((p) => (p.id === projectId ? { ...p, folderPath } : p))
+    );
+  }, []);
+
+  // ── Derived values ───────────────────────────────────────────────────────
+
+  const activeConversationMeta =
     projects
       .find((p) => p.id === activeProjectId)
       ?.conversations.find((c) => c.id === activeConversationId) ?? null;
 
+  // Combine metadata + loaded messages into a single object for App.tsx
+  const activeConversation: Conversation | null = activeConversationMeta
+    ? { ...activeConversationMeta, messages: activeMessages }
+    : null;
+
   return {
     projects,
+    loaded,
     activeProjectId,
     activeConversationId,
     activeConversation,
@@ -81,5 +150,9 @@ export function useProjects() {
     createConversation,
     selectConversation,
     appendMessage,
+    updateConversationTitle,
+    deleteConversation,
+    togglePinConversation,
+    updateProjectFolder,
   };
 }

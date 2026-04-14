@@ -5,10 +5,11 @@ declare global {
 }
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import type { Message, WsEvent, SendPayload } from "../types";
+import type { Message, WsEvent } from "../types";
 
 const port = window.__BACKEND_PORT__ ?? 8000;
 const WS_URL = `ws://localhost:${port}/ws/chat`;
+console.log('[useChat] Backend port:', port, 'WebSocket URL:', WS_URL);
 
 /**
  * Manages the active WebSocket session.
@@ -60,14 +61,42 @@ export function useChat(
       // Persist user message immediately
       onMessageRef.current({ role: "user", content: text });
 
-      const ws = new WebSocket(WS_URL);
-      wsRef.current = ws;
+      // Setup API key mapping
+      const apiKeyMap: Record<string, string> = {
+        "claude-opus-4-5": "ANTHROPIC_API_KEY",
+        "claude-sonnet-4-6": "ANTHROPIC_API_KEY",
+        "gpt-4o": "OPENAI_API_KEY",
+        "deepseek-chat": "DEEPSEEK_API_KEY",
+        "deepseek-reasoner": "DEEPSEEK_API_KEY",
+        "ollama/llama3": "OLLAMA_BASE_URL",
+      };
 
-      let currentContent = "";
-      let currentToolCalls: WsEvent[] = [];
+      const configKey = apiKeyMap[model];
+      const apiKey = configKey ? localStorage.getItem(configKey) : null;
 
-      const payload: SendPayload = { message: text, model, history };
-      ws.onopen = () => ws.send(JSON.stringify(payload));
+      const payload: any = { message: text, model, history };
+      if (apiKey) {
+        payload.api_key = apiKey;
+        payload.config_key = configKey;
+      }
+
+      // Attempt to connect with retries
+      let retryCount = 0;
+      const maxRetries = 3;
+
+      const attemptConnect = () => {
+        retryCount++;
+        console.log(`[useChat] Attempting to connect (attempt ${retryCount}/${maxRetries}):`, WS_URL);
+        const ws = new WebSocket(WS_URL);
+        wsRef.current = ws;
+
+        let currentContent = "";
+        let currentToolCalls: WsEvent[] = [];
+
+        ws.onopen = () => {
+          console.log('[useChat] WebSocket connected, sending payload');
+          ws.send(JSON.stringify(payload));
+        };
 
       ws.onmessage = (e) => {
         const event: WsEvent = JSON.parse(e.data);
@@ -102,17 +131,30 @@ export function useChat(
         }
       };
 
-      ws.onerror = () => {
-        const errMsg: Message = {
-          role: "assistant",
-          content: "[WebSocket connection error]",
-          toolCalls: [],
+        ws.onerror = (event) => {
+          console.error(`[useChat] WebSocket error (attempt ${retryCount}):`, event);
+          ws.close();
+
+          if (retryCount < maxRetries) {
+            console.log(`[useChat] Retrying in 500ms...`);
+            setTimeout(() => attemptConnect(), 500);
+          } else {
+            const debugInfo = `Backend port: ${port}, WebSocket URL: ${WS_URL}`;
+            const errMsg: Message = {
+              role: "assistant",
+              content: `[WebSocket connection error after ${maxRetries} attempts]\n${debugInfo}`,
+              toolCalls: [],
+            };
+            onMessageRef.current(errMsg);
+            setStreamingAssistant(null);
+            setLoading(false);
+            wsRef.current = null;
+          }
         };
-        onMessageRef.current(errMsg);
-        setStreamingAssistant(null);
-        setLoading(false);
-        wsRef.current = null;
       };
+
+      // Start connection attempt
+      attemptConnect();
     },
     [] // no deps — uses refs for everything that could change
   );

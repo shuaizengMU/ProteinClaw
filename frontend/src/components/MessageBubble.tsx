@@ -1,31 +1,83 @@
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { Copy, ThumbsUp, ThumbsDown, RotateCcw, Check } from "lucide-react";
 import type { Message } from "../types";
 import { ToolCallCard } from "./ToolCallCard";
+import { ClaudeLogo } from "./ClaudeLogo";
+import { FeedbackModal } from "./FeedbackModal";
 
 interface Props {
   message: Message;
 }
 
 export function MessageBubble({ message }: Props) {
+  const [copied, setCopied] = useState(false);
+  const [feedbackModal, setFeedbackModal] = useState<"positive" | "negative" | null>(null);
+
   const calls = message.toolCalls?.filter((e) => e.type === "tool_call") ?? [];
   const obs = message.toolCalls?.filter((e) => e.type === "observation") ?? [];
 
-  return (
-    <div className={`message-bubble message-bubble--${message.role}`}>
-      <div className="message-role">
-        {message.role === "user" ? "You" : "ProteinClaw"}
+  function handleCopy() {
+    navigator.clipboard.writeText(message.content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }
+
+  if (message.role === "user") {
+    return (
+      <div className="msg-user-wrap">
+        <div className="msg-user-bubble">{message.content}</div>
       </div>
+    );
+  }
 
-      {calls.map((tc, j) => (
-        <ToolCallCard key={j} toolCall={tc} observation={obs[j]} />
-      ))}
-
-      {message.role === "assistant" ? (
-        <div className="message-content message-content--markdown">
+  return (
+    <div className="msg-assistant-wrap">
+      <div className="msg-assistant-logo">
+        <ClaudeLogo size={20} />
+      </div>
+      <div className="msg-assistant-body">
+        <div className="msg-assistant-content">
           <ReactMarkdown>{message.content}</ReactMarkdown>
         </div>
-      ) : (
-        <div className="message-content">{message.content}</div>
+        {calls.map((tc, j) => (
+          <ToolCallCard key={j} toolCall={tc} observation={obs[j]} />
+        ))}
+        {message.content && (
+          <div className="msg-reactions">
+            <button className="msg-reaction-btn" onClick={handleCopy} title="Copy" aria-label={copied ? "Copied" : "Copy response"}>
+              {copied ? <Check size={14} strokeWidth={2} /> : <Copy size={14} strokeWidth={1.8} />}
+            </button>
+            <button
+              className="msg-reaction-btn"
+              title="Good response"
+              aria-label="Mark as helpful"
+              onClick={() => setFeedbackModal("positive")}
+            >
+              <ThumbsUp size={14} strokeWidth={1.8} />
+            </button>
+            <button
+              className="msg-reaction-btn"
+              title="Bad response"
+              aria-label="Mark as unhelpful"
+              onClick={() => setFeedbackModal("negative")}
+            >
+              <ThumbsDown size={14} strokeWidth={1.8} />
+            </button>
+            <button className="msg-reaction-btn" title="Retry" aria-label="Regenerate response">
+              <RotateCcw size={14} strokeWidth={1.8} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {feedbackModal && (
+        <FeedbackModal
+          type={feedbackModal}
+          messageContent={message.content}
+          onClose={() => setFeedbackModal(null)}
+        />
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import json
+import os
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from proteinclaw.core.agent.loop import run
@@ -60,9 +61,15 @@ async def websocket_chat(websocket: WebSocket):
             message = payload.get("message", "")
             model = payload.get("model", settings.default_model)
             history = payload.get("history", [])
+            api_key = payload.get("api_key", "")
+            config_key = payload.get("config_key", "")
 
             if model not in SUPPORTED_MODELS:
                 model = settings.default_model
+
+            # Set API key from frontend if provided
+            if api_key and config_key:
+                os.environ[config_key] = api_key
 
             try:
                 async for event in run(query=message, history=history, model=model):
