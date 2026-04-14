@@ -30,10 +30,8 @@ def _cmd_server(args: argparse.Namespace) -> None:
 
 async def _run_query(query: str, model: str) -> None:
     from proteinclaw.core.config import load_user_config, settings
-    from proteinclaw.core.agent.loop import run
-    from proteinclaw.core.agent.events import (
-        ToolCallEvent, ObservationEvent, TokenEvent, DoneEvent, ErrorEvent,
-    )
+    from proteinclaw.core.nanobot.instance import get_nanobot
+    from proteinclaw.core.nanobot.adapter import WebSocketAdapter
 
     load_user_config()
     resolved_model = model or settings.default_model
@@ -46,24 +44,37 @@ async def _run_query(query: str, model: str) -> None:
     except ImportError:
         _rich = False
 
-    async for event in run(query=query, history=[], model=resolved_model):
-        if isinstance(event, ToolCallEvent):
-            line = f"  [tool: {event.tool}] {event.args}"
+    tokens: list[str] = []
+    tool_calls_log: list[dict] = []
+
+    async def collect(event: dict) -> None:
+        if event["type"] == "token":
+            tokens.append(event["content"])
+            print(event["content"], end="", flush=True)
+        elif event["type"] == "tool_call":
+            tool_calls_log.append(event)
+            line = f"  [tool: {event.get('tool')}] {event.get('args', {})}"
             if _rich:
                 console.print(Text(line, style="dim cyan"))
             else:
                 print(line)
-        elif isinstance(event, TokenEvent):
-            print(event.content, end="", flush=True)
-        elif isinstance(event, DoneEvent):
-            print()
-        elif isinstance(event, ErrorEvent):
-            msg = f"\nError: {event.message}"
-            if _rich:
-                console.print(Text(msg, style="bold red"))
-            else:
-                print(msg, file=sys.stderr)
-            sys.exit(1)
+
+    bot = get_nanobot(resolved_model)
+    adapter = WebSocketAdapter(send_json=collect)
+    try:
+        result = await bot.run(
+            query,
+            session_key=f"cli:{sys.argv[0]}",
+            hooks=[adapter],
+        )
+        print()
+    except Exception as e:
+        msg = f"\nError: {str(e)}"
+        if _rich:
+            console.print(Text(msg, style="bold red"))
+        else:
+            print(msg, file=sys.stderr)
+        sys.exit(1)
 
 
 def _cmd_query(args: argparse.Namespace) -> None:
