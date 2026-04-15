@@ -56,6 +56,14 @@ def get_nanobot(model: str) -> Nanobot:
     return _instances[model]
 
 
+def invalidate_nanobot(model: str) -> None:
+    """Remove a cached instance so the next get_nanobot() rebuilds with fresh config.
+
+    Call this after updating an API key in os.environ so the new key is picked up.
+    """
+    _instances.pop(model, None)
+
+
 def _create_nanobot(model: str) -> Nanobot:
     workspace = _workspace or Path(tempfile.mkdtemp()) / "nanobot-workspace"
     config_path = workspace / f"config-{model.replace('/', '_')}.json"

@@ -69,6 +69,10 @@ export async function loadIndex(): Promise<Project[]> {
   }
   // Browser fallback (dev without Tauri)
   try {
+    // Try the current metadata-only format written by saveIndex first
+    const rawMeta = localStorage.getItem(LS_KEY + "_meta");
+    if (rawMeta) return JSON.parse(rawMeta) as Project[];
+    // Fall back to the legacy format (full conversations in one key)
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return [];
     const legacy = JSON.parse(raw) as LegacyProject[];

@@ -74,7 +74,7 @@ export function useChat(
       const configKey = apiKeyMap[model];
       const apiKey = configKey ? localStorage.getItem(configKey) : null;
 
-      const payload: any = { message: text, model, history };
+      const payload: any = { message: text, model, history, session_id: conversationId };
       if (apiKey) {
         payload.api_key = apiKey;
         payload.config_key = configKey;

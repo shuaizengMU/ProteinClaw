@@ -5,7 +5,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from proteinclaw.core.config import SUPPORTED_MODELS, settings
 from proteinclaw.core.nanobot.adapter import WebSocketAdapter
-from proteinclaw.core.nanobot.instance import get_nanobot
+from proteinclaw.core.nanobot.instance import get_nanobot, invalidate_nanobot
 
 router = APIRouter()
 
@@ -53,8 +53,6 @@ async def chat(request: ChatRequest):
 @router.websocket("/ws/chat")
 async def websocket_chat(websocket: WebSocket):
     await websocket.accept()
-    # One session_key per connection — nanobot accumulates memory within the session
-    session_key = f"ws:{uuid.uuid4().hex}"
     try:
         while True:
             raw = await websocket.receive_text()
@@ -68,13 +66,19 @@ async def websocket_chat(websocket: WebSocket):
             model = payload.get("model", settings.default_model)
             api_key = payload.get("api_key", "")
             config_key = payload.get("config_key", "")
+            # Use conversation-scoped session_key so nanobot memory persists across
+            # sends in the same conversation (frontend opens a new WS per send).
+            session_id = payload.get("session_id", "")
+            session_key = f"conv:{session_id}" if session_id else f"ws:{uuid.uuid4().hex}"
 
             if model not in SUPPORTED_MODELS:
                 model = settings.default_model
 
-            # Apply API key from frontend if provided
+            # Apply API key from frontend if provided, then invalidate the cached
+            # Nanobot instance so the next get_nanobot() rebuilds with the fresh key.
             if api_key and config_key:
                 os.environ[config_key] = api_key
+                invalidate_nanobot(model)
 
             try:
                 bot = get_nanobot(model)
